@@ -1,6 +1,7 @@
 # Artisane Frontend Roadmap
 
 ## Summary
+
 Build separate React client: `D:\2026- PROJECTS\ARTISANE\Artisane_Client`.
 
 Use recommended stack: Vite React TypeScript, Redux Toolkit + RTK Query, React Router, Tailwind + shadcn/ui, Zod, React Hook Form, lucide-react. Vite official React TypeScript template supports this path, Redux Toolkit is official standard Redux approach, shadcn has Vite setup docs. ([vite.dev](https://vite.dev/guide/?utm_source=openai)) ([redux-toolkit.js.org](https://redux-toolkit.js.org/introduction/getting-started?utm_source=openai)) ([ui.shadcn.com](https://ui.shadcn.com/docs/installation/vite?utm_source=openai))
@@ -8,7 +9,9 @@ Use recommended stack: Vite React TypeScript, Redux Toolkit + RTK Query, React R
 Backend fix first: change `GET /api/v1/auth/login` to `POST /api/v1/auth/login`, because login sends JSON body.
 
 ## Features
+
 Customer:
+
 - Home, product listing, product details, category filter, price filter, search, sort.
 - Register, login, logout, profile.
 - Cart in Redux + localStorage.
@@ -17,6 +20,7 @@ Customer:
 - Product reviews: create, update, delete own review.
 
 Admin:
+
 - Dashboard stats.
 - Manage categories: create, read, update, delete.
 - Manage products: create, read, update, delete.
@@ -25,6 +29,7 @@ Admin:
 - Manage reviews: list, delete.
 
 UX:
+
 - Responsive layout.
 - Loading skeletons.
 - Empty states.
@@ -34,6 +39,7 @@ UX:
 - Central API error handling.
 
 ## Folder Structure
+
 ```text
 Artisane_Client/
   src/
@@ -98,6 +104,7 @@ Artisane_Client/
 ```
 
 ## Step-by-Step Build Plan
+
 1. Backend readiness:
    - Fix login route to `POST`.
    - Confirm CORS allows client origin.
@@ -149,49 +156,51 @@ Artisane_Client/
    - Mobile nav.
 
 ## API/Type Contracts
+
 - Use backend response wrapper:
+
 ```ts
 type ApiResponse<T> = {
-  success: boolean;
-  message: string;
-  data?: T;
+  success: boolean
+  message: string
+  data?: T
   meta?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPage: number;
-  };
-  errorSources?: { path: string; message: string }[];
-};
+    page: number
+    limit: number
+    total: number
+    totalPage: number
+  }
+  errorSources?: { path: string; message: string }[]
+}
 ```
 
 - Auth token source:
+
 ```text
 response.data.accessToken
 ```
 
 - Auth header:
+
 ```text
 Authorization: Bearer <accessToken>
 ```
 
 - Role values:
+
 ```ts
-type UserRole = "admin" | "user";
+type UserRole = 'admin' | 'user'
 ```
 
 - Order status values:
+
 ```ts
 type OrderStatus =
-  | "pending"
-  | "confirmed"
-  | "processing"
-  | "shipped"
-  | "delivered"
-  | "cancelled";
+  'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
 ```
 
 ## Test Plan
+
 - Build: `npm run build`.
 - Lint: `npm run lint`.
 - Manual browser tests:
@@ -207,6 +216,7 @@ type OrderStatus =
   - API errors show clean toast messages.
 
 ## Assumptions
+
 - First version uses `Redux + localStorage` token storage because backend returns JWT in JSON and has no cookie refresh flow yet.
 - First version builds full customer + admin app.
 - UI stack: Tailwind + shadcn/ui.
