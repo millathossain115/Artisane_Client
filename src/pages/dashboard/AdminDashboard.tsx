@@ -18,6 +18,10 @@ import {
 } from 'lucide-react'
 
 import DashboardLayout from '../../components/layout/DashboardLayout'
+import {
+  type AdminDashboardStats,
+  useGetAdminStatsQuery,
+} from '../../features/dashboard/dashboardApi'
 
 const adminNavItems = [
   { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
@@ -29,33 +33,6 @@ const adminNavItems = [
   { label: 'Messages', to: '#messages', icon: MessageSquareText },
   { label: 'Analytics', to: '#analytics', icon: BarChart3 },
   { label: 'Settings', to: '#settings', icon: Settings },
-]
-
-const metrics = [
-  {
-    label: 'Revenue',
-    value: '$18,420',
-    detail: '+12.4% this month',
-    icon: DollarSign,
-  },
-  {
-    label: 'Orders',
-    value: '286',
-    detail: '34 awaiting fulfillment',
-    icon: Package,
-  },
-  {
-    label: 'Active products',
-    value: '148',
-    detail: '12 low-stock pieces',
-    icon: Palette,
-  },
-  {
-    label: 'Customers',
-    value: '2,410',
-    detail: '86 new this week',
-    icon: UsersRound,
-  },
 ]
 
 const orders = [
@@ -109,7 +86,132 @@ const activity = [
   },
 ]
 
+function readStat(stats: AdminDashboardStats | null, keys: string[]) {
+  if (!stats) {
+    return null
+  }
+
+  for (const key of keys) {
+    const value = stats[key]
+    const numericValue =
+      typeof value === 'number'
+        ? value
+        : typeof value === 'string'
+          ? Number(value.replace(/[^0-9.-]/g, ''))
+          : Number.NaN
+
+    if (Number.isFinite(numericValue)) {
+      return numericValue
+    }
+  }
+
+  return null
+}
+
+function formatCount(value: number | null, fallback: string) {
+  if (value === null) {
+    return fallback
+  }
+
+  return new Intl.NumberFormat('en-US').format(value)
+}
+
+function formatCurrency(value: number | null, fallback: string) {
+  if (value === null) {
+    return fallback
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    maximumFractionDigits: 0,
+    style: 'currency',
+  }).format(value)
+}
+
+function formatGrowth(value: number | null, fallback: string) {
+  if (value === null) {
+    return fallback
+  }
+
+  return `${value > 0 ? '+' : ''}${value}% this month`
+}
+
+function getMetrics(stats: AdminDashboardStats | null) {
+  const revenue = readStat(stats, [
+    'revenue',
+    'totalRevenue',
+    'monthlyRevenue',
+    'totalSales',
+  ])
+  const revenueGrowth = readStat(stats, ['revenueGrowth', 'monthlyGrowth'])
+  const totalOrders = readStat(stats, ['orders', 'totalOrders'])
+  const pendingOrders = readStat(stats, [
+    'pendingOrders',
+    'awaitingFulfillment',
+  ])
+  const activeProducts = readStat(stats, [
+    'activeProducts',
+    'products',
+    'totalProducts',
+  ])
+  const lowStockProducts = readStat(stats, ['lowStockProducts'])
+  const customers = readStat(stats, [
+    'customers',
+    'totalCustomers',
+    'users',
+    'totalUsers',
+  ])
+  const newCustomers = readStat(stats, [
+    'newCustomersThisWeek',
+    'newUsersThisWeek',
+  ])
+
+  return [
+    {
+      label: 'Revenue',
+      value: formatCurrency(revenue, '$18,420'),
+      detail: formatGrowth(revenueGrowth, '+12.4% this month'),
+      icon: DollarSign,
+    },
+    {
+      label: 'Orders',
+      value: formatCount(totalOrders, '286'),
+      detail:
+        pendingOrders === null
+          ? '34 awaiting fulfillment'
+          : `${formatCount(pendingOrders, '0')} awaiting fulfillment`,
+      icon: Package,
+    },
+    {
+      label: 'Active products',
+      value: formatCount(activeProducts, '148'),
+      detail:
+        lowStockProducts === null
+          ? '12 low-stock pieces'
+          : `${formatCount(lowStockProducts, '0')} low-stock pieces`,
+      icon: Palette,
+    },
+    {
+      label: 'Customers',
+      value: formatCount(customers, '2,410'),
+      detail:
+        newCustomers === null
+          ? '86 new this week'
+          : `${formatCount(newCustomers, '0')} new this week`,
+      icon: UsersRound,
+    },
+  ]
+}
+
 function AdminDashboard() {
+  const {
+    data: adminStats = null,
+    isError: hasStatsError,
+    isLoading: isStatsLoading,
+  } = useGetAdminStatsQuery()
+  const statsError = hasStatsError ? 'Failed to load admin stats' : ''
+  const metrics = getMetrics(adminStats)
+
   return (
     <DashboardLayout
       actions={[
@@ -123,6 +225,20 @@ function AdminDashboard() {
       title="Admin dashboard"
       workspaceLabel="Marketplace studio"
     >
+      {(isStatsLoading || statsError) && (
+        <div
+          className={`mb-4 border px-4 py-3 text-sm font-semibold ${
+            statsError
+              ? 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d]'
+              : 'border-black/10 bg-white text-[#6b5f53]'
+          }`}
+        >
+          {statsError
+            ? `${statsError}. Showing sample stats.`
+            : 'Loading live dashboard stats...'}
+        </div>
+      )}
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => {
           const Icon = metric.icon
