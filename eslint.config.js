@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'dist-ssr', 'node_modules', '__vite_scaffold'],
+    ignores: ['dist', 'dist-ssr', 'node_modules', '.playwright-cli'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

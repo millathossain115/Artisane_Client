@@ -10,7 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-__vite_scaffold
+.playwright-cli
 *.local
 
 # Editor directories and files

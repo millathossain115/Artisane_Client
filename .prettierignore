@@ -1,4 +1,4 @@
 dist
 dist-ssr
 node_modules
-__vite_scaffold
+.playwright-cli
