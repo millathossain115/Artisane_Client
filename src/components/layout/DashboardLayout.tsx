@@ -23,6 +23,7 @@ type SidebarItem = {
 
 type DashboardAction = {
   label: string
+  to?: string
   variant?: 'primary' | 'secondary'
 }
 
@@ -188,19 +189,30 @@ function DashboardLayout({
 
             {actions.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {actions.map((action) => (
-                  <button
-                    className={
-                      action.variant === 'primary'
-                        ? 'bg-[#181512] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#7a3f1d]'
-                        : 'border border-black/10 bg-white px-4 py-2 text-sm font-bold transition hover:border-[#181512]'
-                    }
-                    key={action.label}
-                    type="button"
-                  >
-                    {action.label}
-                  </button>
-                ))}
+                {actions.map((action) => {
+                  const className =
+                    action.variant === 'primary'
+                      ? 'bg-[#181512] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#7a3f1d]'
+                      : 'border border-black/10 bg-white px-4 py-2 text-sm font-bold transition hover:border-[#181512]'
+
+                  return action.to ? (
+                    <Link
+                      className={className}
+                      key={action.label}
+                      to={action.to}
+                    >
+                      {action.label}
+                    </Link>
+                  ) : (
+                    <button
+                      className={className}
+                      key={action.label}
+                      type="button"
+                    >
+                      {action.label}
+                    </button>
+                  )
+                })}
               </div>
             )}
           </div>

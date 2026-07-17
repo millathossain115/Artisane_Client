@@ -1,39 +1,22 @@
 import {
   AlertTriangle,
   ArrowUpRight,
-  BarChart3,
-  Boxes,
   CheckCircle2,
-  ClipboardList,
   DollarSign,
-  FolderTree,
-  LayoutDashboard,
-  MessageSquareText,
   Package,
   Palette,
-  Settings,
   Star,
   Truck,
   UsersRound,
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import {
   type AdminDashboardStats,
   useGetAdminStatsQuery,
 } from '../../features/dashboard/dashboardApi'
-
-const adminNavItems = [
-  { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
-  { label: 'Orders', to: '#orders', icon: ClipboardList },
-  { label: 'Products', to: '#products', icon: Boxes },
-  { label: 'Categories', to: '#categories', icon: FolderTree },
-  { label: 'Customers', to: '#customers', icon: UsersRound },
-  { label: 'Reviews', to: '#reviews', icon: Star },
-  { label: 'Messages', to: '#messages', icon: MessageSquareText },
-  { label: 'Analytics', to: '#analytics', icon: BarChart3 },
-  { label: 'Settings', to: '#settings', icon: Settings },
-]
+import { adminNavItems } from './adminNavItems'
 
 const orders = [
   {
@@ -216,7 +199,11 @@ function AdminDashboard() {
     <DashboardLayout
       actions={[
         { label: 'Export' },
-        { label: 'Add product', variant: 'primary' },
+        {
+          label: 'Add category',
+          to: '/dashboard/categories/create',
+          variant: 'primary',
+        },
       ]}
       helperText="Review pending orders and low-stock handmade pieces before publishing new drops."
       searchPlaceholder="Search orders, products, customers"
@@ -354,20 +341,31 @@ function AdminDashboard() {
             <h2 className="text-2xl font-bold">Quick actions</h2>
             <div className="mt-4 grid gap-2">
               {[
-                'Create product',
-                'Add category',
-                'Review refunds',
-                'Publish collection',
-              ].map((action) => (
-                <button
-                  className="flex items-center justify-between border border-black/10 px-4 py-3 text-left text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
-                  key={action}
-                  type="button"
-                >
-                  {action}
-                  <ArrowUpRight className="h-4 w-4" />
-                </button>
-              ))}
+                { label: 'Create product' },
+                { label: 'Add category', to: '/dashboard/categories/create' },
+                { label: 'Review refunds' },
+                { label: 'Publish collection' },
+              ].map((action) =>
+                action.to ? (
+                  <Link
+                    className="flex items-center justify-between border border-black/10 px-4 py-3 text-left text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+                    key={action.label}
+                    to={action.to}
+                  >
+                    {action.label}
+                    <ArrowUpRight className="h-4 w-4" />
+                  </Link>
+                ) : (
+                  <button
+                    className="flex items-center justify-between border border-black/10 px-4 py-3 text-left text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+                    key={action.label}
+                    type="button"
+                  >
+                    {action.label}
+                    <ArrowUpRight className="h-4 w-4" />
+                  </button>
+                ),
+              )}
             </div>
           </section>
         </aside>
