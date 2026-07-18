@@ -184,7 +184,7 @@ function DashboardLayout({
           )}
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-5">
+        <nav className="dashboard-sidebar-scroll flex-1 space-y-1 overflow-y-auto px-4 py-5">
           {sidebarItems.map((item) => {
             if (!isSidebarGroup(item)) {
               return renderSidebarLink(item)

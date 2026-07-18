@@ -53,6 +53,29 @@ input {
   animation: hero-enter 700ms ease-out both;
 }
 
+.dashboard-sidebar-scroll {
+  scrollbar-color: rgba(241, 201, 166, 0.55) rgba(255, 255, 255, 0.06);
+  scrollbar-width: thin;
+}
+
+.dashboard-sidebar-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dashboard-sidebar-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dashboard-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(241, 201, 166, 0.45);
+  border: 2px solid #181512;
+  border-radius: 999px;
+}
+
+.dashboard-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(241, 201, 166, 0.72);
+}
+
 @keyframes hero-enter {
   from {
     opacity: 0;
