@@ -13,6 +13,7 @@ import {
   Trash2,
   Upload,
   X,
+  RotateCcw,
 } from 'lucide-react'
 
 import { API_BASE_URL } from '../../../config/api'
@@ -22,6 +23,7 @@ import {
   useGetCategoriesQuery,
   useUpdateCategoryMutation,
 } from '../../../features/categories/categoryApi'
+import { useGetProductsQuery } from '../../../features/products/productApi'
 
 type CategoryEditForm = {
   description: string
@@ -115,6 +117,41 @@ function getSortParams(sortFilter: SortFilter) {
   return { sortBy: 'createdAt' as const, sortOrder: 'desc' as const }
 }
 
+function CategoryProductCount({ categoryId }: { categoryId: string }) {
+  const {
+    data: productList,
+    isError,
+    isLoading,
+  } = useGetProductsQuery({
+    category: categoryId,
+    limit: 1,
+    page: 1,
+  })
+  const productCount = productList?.meta.total ?? productList?.data.length ?? 0
+
+  if (isLoading) {
+    return (
+      <span className="inline-flex min-h-8 items-center bg-[#f8f3ea] px-3 text-xs font-bold text-[#6b5f53]">
+        Loading
+      </span>
+    )
+  }
+
+  if (isError) {
+    return (
+      <span className="inline-flex min-h-8 items-center bg-[#fff5ef] px-3 text-xs font-bold text-[#8f3f1d]">
+        Failed
+      </span>
+    )
+  }
+
+  return (
+    <span className="inline-flex min-h-8 items-center bg-[#effaf3] px-3 text-xs font-bold text-[#1f6b43]">
+      {productCount} {productCount === 1 ? 'product' : 'products'}
+    </span>
+  )
+}
+
 function CategoryTable() {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortFilter, setSortFilter] = useState<SortFilter>('newest')
@@ -162,6 +199,10 @@ function CategoryTable() {
     resultStart + (categoryMeta?.limit ?? pageSize) - 1,
     totalCategories,
   )
+  const hasActiveFilters =
+    searchTerm.trim() !== '' ||
+    sortFilter !== 'newest' ||
+    pageSize !== PAGE_SIZE_OPTIONS[0]
 
   useEffect(() => {
     return () => {
@@ -313,6 +354,13 @@ function CategoryTable() {
     }
   }
 
+  function handleResetFilters() {
+    setSearchTerm('')
+    setSortFilter('newest')
+    setPageSize(PAGE_SIZE_OPTIONS[0])
+    setCurrentPage(1)
+  }
+
   return (
     <section className="mt-6 border border-black/10 bg-white" id="categories">
       <div className="flex items-center gap-3 border-b border-black/10 p-5">
@@ -366,7 +414,7 @@ function CategoryTable() {
         </div>
       )}
 
-      <div className="grid gap-3 border-b border-black/10 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+      <div className="grid gap-3 border-b border-black/10 p-5 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:items-end">
         <label className="grid gap-2 text-sm font-bold">
           Search categories
           <span className="relative">
@@ -420,15 +468,26 @@ function CategoryTable() {
             </select>
           </label>
         </div>
+
+        <button
+          className="inline-flex min-h-12 items-center justify-center gap-2 border border-black/10 bg-white px-4 text-sm font-bold text-[#181512] transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+          disabled={!hasActiveFilters}
+          onClick={handleResetFilters}
+          type="button"
+        >
+          <RotateCcw className="h-4 w-4" />
+          Reset filters
+        </button>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px] border-collapse text-left text-sm">
+        <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
               <th className="px-5 py-3">Category</th>
               <th className="px-5 py-3">Slug</th>
               <th className="px-5 py-3">Description</th>
+              <th className="px-5 py-3">Products</th>
               <th className="px-5 py-3">Created</th>
               <th className="px-5 py-3">Updated</th>
               <th className="px-5 py-3">Status</th>
@@ -476,6 +535,9 @@ function CategoryTable() {
                       <span className="line-clamp-2">
                         {category.description || 'No description added.'}
                       </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <CategoryProductCount categoryId={category._id} />
                     </td>
                     <td className="px-5 py-4 text-[#6b5f53]">
                       {formatDate(category.createdAt)}
@@ -533,7 +595,7 @@ function CategoryTable() {
               <tr className="border-t border-black/10">
                 <td
                   className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
-                  colSpan={7}
+                  colSpan={8}
                 >
                   {totalCategories
                     ? 'No categories match the current filters.'

@@ -167,6 +167,12 @@ export const productApi = baseApi.injectEndpoints({
         params,
       ) => createProductListResult(response, params ?? undefined),
     }),
+    getProductById: builder.query<Product | null, string>({
+      providesTags: (_result, _error, id) => [{ id, type: 'Product' }],
+      query: (id) => `/products/${id}`,
+      transformResponse: (response: ApiResponse<Product>) =>
+        response.data ?? null,
+    }),
     updateProduct: builder.mutation<Product | null, UpdateProductPayload>({
       invalidatesTags: (_result, _error, { id }) => [
         'Product',
@@ -187,6 +193,7 @@ export const productApi = baseApi.injectEndpoints({
 export const {
   useCreateProductMutation,
   useDeleteProductMutation,
+  useGetProductByIdQuery,
   useGetProductsQuery,
   useUpdateProductMutation,
 } = productApi
