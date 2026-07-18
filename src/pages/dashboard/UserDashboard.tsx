@@ -1,13 +1,8 @@
 import {
   ArrowUpRight,
   CircleUserRound,
-  Heart,
-  HelpCircle,
-  LayoutDashboard,
   MessageSquareText,
   PackageCheck,
-  ReceiptText,
-  Settings,
   ShieldCheck,
   ShoppingBag,
   Star,
@@ -21,16 +16,7 @@ import {
   type UserDashboardStats,
   useGetUserStatsQuery,
 } from '../../features/dashboard/dashboardApi'
-
-const userNavItems = [
-  { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
-  { label: 'My orders', to: '#orders', icon: ReceiptText },
-  { label: 'Wishlist', to: '#wishlist', icon: Heart },
-  { label: 'Profile', to: '#profile', icon: CircleUserRound },
-  { label: 'Reviews', to: '#reviews', icon: Star },
-  { label: 'Support', to: '#support', icon: HelpCircle },
-  { label: 'Settings', to: '#settings', icon: Settings },
-]
+import { userNavItems } from './userNavItems'
 
 const wishlist = [
   {

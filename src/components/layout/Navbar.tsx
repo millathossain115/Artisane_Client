@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ChevronDown,
   LayoutDashboard,
@@ -32,6 +32,24 @@ function Navbar() {
   const navigate = useNavigate()
   const [user, setUser] = useState<AuthUser | null>(() => getStoredUser())
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   function handleLogout() {
     clearAuthSession()
@@ -74,7 +92,7 @@ function Navbar() {
         </form>
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
-          <div className="relative">
+          <div className="relative" ref={profileMenuRef}>
             <button
               className="flex min-w-0 items-center gap-3 border border-black/10 bg-white px-2 py-2 text-left transition hover:border-[#181512] sm:min-w-56 sm:px-3"
               aria-expanded={isProfileOpen}
@@ -119,14 +137,15 @@ function Navbar() {
                       <LayoutDashboard className="h-4 w-4" />
                       Dashboard
                     </Link>
-                    <a
+                    <Link
                       className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
-                      href="#"
+                      onClick={() => setIsProfileOpen(false)}
                       role="menuitem"
+                      to="/dashboard/profile"
                     >
                       <UserRound className="h-4 w-4" />
                       My profile
-                    </a>
+                    </Link>
                     <a
                       className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
                       href="#"

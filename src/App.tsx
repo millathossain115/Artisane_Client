@@ -5,6 +5,7 @@ import CreateCategory from './pages/admin/categories/CreateCategory'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import Dashboard from './pages/dashboard/Dashboard'
+import ProfilePage from './pages/dashboard/ProfilePage'
 import Home from './pages/Home'
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard/profile" element={<ProfilePage />} />
         <Route
           path="/dashboard/categories/create"
           element={

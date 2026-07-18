@@ -10,6 +10,7 @@ export type AuthUser = {
   _id: string
   name: string
   email: string
+  phone?: string
   role: 'admin' | 'user'
 }
 
@@ -105,6 +106,10 @@ export function getStoredUser() {
   } catch {
     return null
   }
+}
+
+export function saveStoredUser(user: AuthUser) {
+  localStorage.setItem(USER_KEY, JSON.stringify(user))
 }
 
 export function clearAuthSession() {
