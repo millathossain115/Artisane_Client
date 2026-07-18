@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import {
+  AlertTriangle,
   ChevronLeft,
   ChevronRight,
   ImageOff,
@@ -10,12 +11,14 @@ import {
   Search,
   Trash2,
   Upload,
+  X,
 } from 'lucide-react'
 
 import { API_BASE_URL } from '../../../config/api'
 import { useGetCategoriesQuery } from '../../../features/categories/categoryApi'
 import {
   type Product,
+  useDeleteProductMutation,
   useGetProductsQuery,
   useUpdateProductMutation,
 } from '../../../features/products/productApi'
@@ -149,6 +152,7 @@ function getSortParams(sortFilter: SortFilter) {
 function ProductTable() {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortFilter, setSortFilter] = useState<SortFilter>('newest')
+  const [categoryFilter, setCategoryFilter] = useState('')
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
   const [currentPage, setCurrentPage] = useState(1)
   const sortParams = getSortParams(sortFilter)
@@ -159,6 +163,7 @@ function ProductTable() {
   } = useGetProductsQuery({
     limit: pageSize,
     page: currentPage,
+    category: categoryFilter || undefined,
     searchTerm: searchTerm.trim() || undefined,
     ...sortParams,
   })
@@ -174,7 +179,11 @@ function ProductTable() {
   })
   const [updateProduct, { isLoading: isUpdating }] =
     useUpdateProductMutation()
+  const [deleteProduct, { isLoading: isDeleting }] =
+    useDeleteProductMutation()
   const [productToEdit, setProductToEdit] = useState<Product | null>(null)
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null)
+  const [showUpdateConfirm, setShowUpdateConfirm] = useState(false)
   const [editForm, setEditForm] = useState<ProductEditForm>({
     brand: '',
     categoryId: '',
@@ -317,11 +326,9 @@ function ProductTable() {
     }))
   }
 
-  async function handleUpdateSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
+  function validateEditForm() {
     if (!productToEdit) {
-      return
+      return null
     }
 
     setStatus('')
@@ -332,16 +339,34 @@ function ProductTable() {
 
     if (!editForm.categoryId) {
       setError('Select a category before updating product.')
-      return
+      return null
     }
 
     if (!Number.isFinite(numericPrice) || numericPrice < 0) {
       setError('Price must be a valid number.')
-      return
+      return null
     }
 
     if (!Number.isInteger(numericStock) || numericStock < 0) {
       setError('Stock must be a valid whole number.')
+      return null
+    }
+
+    return {
+      numericPrice,
+      numericStock,
+    }
+  }
+
+  async function updateConfirmedProduct() {
+    if (!productToEdit) {
+      return
+    }
+
+    const validatedValues = validateEditForm()
+
+    if (!validatedValues) {
+      setShowUpdateConfirm(false)
       return
     }
 
@@ -353,15 +378,49 @@ function ProductTable() {
         id: productToEdit._id,
         images: editImageFiles.length ? editImageFiles : undefined,
         name: editForm.name.trim(),
-        price: numericPrice,
+        price: validatedValues.numericPrice,
         slug: editForm.slug.trim(),
-        stock: numericStock,
+        stock: validatedValues.numericStock,
       }).unwrap()
 
       setStatus('Product updated successfully.')
+      setShowUpdateConfirm(false)
       closeEditModal()
     } catch (caughtError) {
+      setShowUpdateConfirm(false)
       setError(getErrorMessage(caughtError, 'Failed to update product.'))
+    }
+  }
+
+  function handleUpdateSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setStatus('')
+    setError('')
+
+    if (!validateEditForm()) {
+      return
+    }
+
+    setShowUpdateConfirm(true)
+  }
+
+  async function handleConfirmDelete() {
+    if (!productToDelete) {
+      return
+    }
+
+    setStatus('')
+    setError('')
+
+    try {
+      await deleteProduct(productToDelete._id).unwrap()
+      setStatus('Product deleted successfully.')
+      setProductToDelete(null)
+      setCurrentPage((page) =>
+        products.length === 1 ? Math.max(1, page - 1) : page,
+      )
+    } catch (caughtError) {
+      setError(getErrorMessage(caughtError, 'Failed to delete product.'))
     }
   }
 
@@ -380,15 +439,28 @@ function ProductTable() {
       </div>
 
       {(status || error) && (
-        <p
+        <div
           className={`border-b border-black/10 px-5 py-3 text-sm font-semibold ${
             error
               ? 'bg-[#fff5ef] text-[#8f3f1d]'
               : 'bg-[#effaf3] text-[#1f6b43]'
           }`}
         >
-          {error || status}
-        </p>
+          <div className="flex items-center justify-between gap-3">
+            <span>{error || status}</span>
+            <button
+              aria-label="Close message"
+              className="grid h-8 w-8 shrink-0 place-items-center border border-current/20 transition hover:bg-white/45"
+              onClick={() => {
+                setStatus('')
+                setError('')
+              }}
+              type="button"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       )}
 
       {(isProductsLoading || hasProductsError) && (
@@ -421,7 +493,27 @@ function ProductTable() {
           </span>
         </label>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="grid gap-2 text-sm font-bold">
+            Category
+            <select
+              className="min-h-12 w-full border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+              disabled={isCategoriesLoading}
+              onChange={(event) => {
+                setCategoryFilter(event.target.value)
+                setCurrentPage(1)
+              }}
+              value={categoryFilter}
+            >
+              <option value="">All categories</option>
+              {categories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <label className="grid gap-2 text-sm font-bold">
             Sort
             <select
@@ -521,14 +613,28 @@ function ProductTable() {
                       {formatDate(product.createdAt)}
                     </td>
                     <td className="px-5 py-4">
-                      <button
-                        aria-label={`Update ${product.name}`}
-                        className="inline-flex h-9 w-9 items-center justify-center border border-black/10 text-[#181512] transition hover:border-[#181512] hover:bg-white"
-                        onClick={() => openEditModal(product)}
-                        type="button"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          aria-label={`Update ${product.name}`}
+                          className="inline-flex h-9 w-9 items-center justify-center border border-black/10 text-[#181512] transition hover:border-[#181512] hover:bg-white"
+                          onClick={() => openEditModal(product)}
+                          type="button"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          aria-label={`Delete ${product.name}`}
+                          className="inline-flex h-9 w-9 items-center justify-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef]"
+                          onClick={() => {
+                            setStatus('')
+                            setError('')
+                            setProductToDelete(product)
+                          }}
+                          type="button"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )
@@ -783,7 +889,10 @@ function ProductTable() {
                 <button
                   className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
                   disabled={isUpdating}
-                  onClick={closeEditModal}
+                  onClick={() => {
+                    setShowUpdateConfirm(false)
+                    closeEditModal()
+                  }}
                   type="button"
                 >
                   Cancel
@@ -802,6 +911,107 @@ function ProductTable() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showUpdateConfirm && productToEdit && (
+        <div
+          className="fixed inset-0 z-[60] grid place-items-center bg-[#181512]/55 px-4"
+          role="presentation"
+        >
+          <div
+            aria-modal="true"
+            className="w-full max-w-md border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
+            role="dialog"
+          >
+            <div className="flex items-start gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center bg-[#fff5ef] text-[#8f3f1d]">
+                <AlertTriangle className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-sm font-bold text-[#8f3f1d]">
+                  Confirm product update
+                </p>
+                <h2 className="mt-2 text-2xl font-bold">
+                  Update {productToEdit.name}?
+                </h2>
+              </div>
+            </div>
+
+            <p className="mt-4 text-sm leading-6 text-[#6b5f53]">
+              This will save the edited product details. If replacement photos
+              are selected, the product images will be updated too.
+            </p>
+
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button
+                className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
+                disabled={isUpdating}
+                onClick={() => setShowUpdateConfirm(false)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isUpdating}
+                onClick={updateConfirmedProduct}
+                type="button"
+              >
+                {isUpdating ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                {isUpdating ? 'Updating...' : 'Confirm update'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {productToDelete && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-[#181512]/55 px-4"
+          role="presentation"
+        >
+          <div
+            aria-modal="true"
+            className="w-full max-w-md border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
+            role="dialog"
+          >
+            <p className="text-sm font-bold text-[#8f3f1d]">Delete product</p>
+            <h2 className="mt-2 text-2xl font-bold">
+              Delete {productToDelete.name}?
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-[#6b5f53]">
+              This will remove the product from the marketplace database.
+            </p>
+
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button
+                className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
+                disabled={isDeleting}
+                onClick={() => setProductToDelete(null)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="inline-flex min-h-11 items-center gap-2 bg-[#8f3f1d] px-4 text-sm font-bold text-white transition hover:bg-[#181512] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                type="button"
+              >
+                {isDeleting ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+                {isDeleting ? 'Deleting...' : 'Confirm delete'}
+              </button>
+            </div>
           </div>
         </div>
       )}

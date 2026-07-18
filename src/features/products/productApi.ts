@@ -52,6 +52,7 @@ export type ProductListResult = {
 }
 
 export type ProductQueryParams = {
+  category?: string
   limit?: number
   page?: number
   searchTerm?: string
@@ -147,6 +148,13 @@ export const productApi = baseApi.injectEndpoints({
       transformResponse: (response: ApiResponse<Product>) =>
         response.data ?? null,
     }),
+    deleteProduct: builder.mutation<ApiResponse<null>, string>({
+      invalidatesTags: ['Product', 'Dashboard'],
+      query: (id) => ({
+        method: 'DELETE',
+        url: `/products/${id}`,
+      }),
+    }),
     getProducts: builder.query<ProductListResult, ProductQueryParams | void>({
       providesTags: ['Product'],
       query: (params) => ({
@@ -178,6 +186,7 @@ export const productApi = baseApi.injectEndpoints({
 
 export const {
   useCreateProductMutation,
+  useDeleteProductMutation,
   useGetProductsQuery,
   useUpdateProductMutation,
 } = productApi
