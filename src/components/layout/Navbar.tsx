@@ -22,6 +22,7 @@ import {
   decreaseCartItem,
   increaseCartItem,
   removeFromCart,
+  syncCartForCurrentUser,
 } from '../../features/cart/cartSlice'
 import {
   clearAuthSession,
@@ -70,6 +71,7 @@ function Navbar() {
     (sum, item) => sum + item.price * item.quantity,
     0,
   )
+  const isAdmin = user?.role === 'admin'
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -104,6 +106,7 @@ function Navbar() {
 
   function handleLogout() {
     clearAuthSession()
+    dispatch(syncCartForCurrentUser())
     setUser(null)
     setIsProfileOpen(false)
     navigate('/login')
@@ -203,7 +206,7 @@ function Navbar() {
                         className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
                         onClick={() => setIsProfileOpen(false)}
                         role="menuitem"
-                        to="/dashboard#orders"
+                        to="/dashboard/orders"
                       >
                         <Package className="h-4 w-4" />
                         My orders
@@ -241,17 +244,19 @@ function Navbar() {
             ) : null}
           </div>
 
-          <button
-            className="relative grid h-10 w-10 place-items-center bg-[#181512] text-white transition hover:bg-[#7a3f1d]"
-            aria-label="Open cart"
-            onClick={() => setIsCartOpen(true)}
-            type="button"
-          >
-            <ShoppingBag className="h-5 w-5" />
-            <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center bg-[#c85f2f] px-1 text-xs font-bold">
-              {cartQuantity}
-            </span>
-          </button>
+          {!isAdmin ? (
+            <button
+              className="relative grid h-10 w-10 place-items-center bg-[#181512] text-white transition hover:bg-[#7a3f1d]"
+              aria-label="Open cart"
+              onClick={() => setIsCartOpen(true)}
+              type="button"
+            >
+              <ShoppingBag className="h-5 w-5" />
+              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center bg-[#c85f2f] px-1 text-xs font-bold">
+                {cartQuantity}
+              </span>
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -284,7 +289,7 @@ function Navbar() {
       </div>
       </header>
 
-      {isCartOpen ? (
+      {isCartOpen && !isAdmin ? (
         <div className="fixed inset-0 z-[100]" role="presentation">
           <button
             aria-label="Close cart"
@@ -423,9 +428,13 @@ function Navbar() {
               <button
                 className="mt-4 min-h-12 w-full bg-[#181512] px-5 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-45"
                 disabled={!cartItems.length}
+                onClick={() => {
+                  setIsCartOpen(false)
+                  navigate('/checkout')
+                }}
                 type="button"
               >
-                Checkout coming soon
+                Checkout
               </button>
               <button
                 className="mt-3 min-h-11 w-full border border-black/10 px-5 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"

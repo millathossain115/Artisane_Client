@@ -18,6 +18,8 @@ import {
   getStoredUser,
   type AuthUser,
 } from '../../features/auth/authApi'
+import { syncCartForCurrentUser } from '../../features/cart/cartSlice'
+import { useAppDispatch } from '../../redux/hooks'
 
 type SidebarLinkItem = {
   label: string
@@ -63,6 +65,7 @@ function DashboardLayout({
 }: DashboardLayoutProps) {
   const location = useLocation()
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement | null>(null)
@@ -110,6 +113,7 @@ function DashboardLayout({
 
   function handleLogout() {
     clearAuthSession()
+    dispatch(syncCartForCurrentUser())
     setIsProfileOpen(false)
     setIsSidebarOpen(false)
     navigate('/login')
@@ -343,7 +347,7 @@ function DashboardLayout({
                         className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
                         onClick={() => setIsProfileOpen(false)}
                         role="menuitem"
-                        to="/dashboard#orders"
+                        to="/dashboard/orders"
                       >
                         <Package className="h-4 w-4" />
                         My orders

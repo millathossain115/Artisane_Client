@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
+import { getStoredUser } from '../auth/authApi'
 import type { Product } from '../products/productApi'
 
 export type CartItem = {
@@ -25,6 +26,13 @@ export type CartState = {
 }
 
 const CART_STORAGE_KEY = 'artisane_cart'
+
+function getCartStorageKey() {
+  const user = getStoredUser()
+  const userKey = user?._id || user?.email
+
+  return userKey ? `${CART_STORAGE_KEY}:${userKey}` : `${CART_STORAGE_KEY}:guest`
+}
 
 function getProductCategory(product: Product) {
   if (typeof product.category === 'string') {
@@ -67,13 +75,13 @@ export function createCartItem(product: Product, quantity = 1): CartItem {
   }
 }
 
-export function loadCartState(): CartState {
+function readCartState(storageKey: string): CartState {
   if (typeof window === 'undefined') {
     return { feedback: null, items: [] }
   }
 
   try {
-    const storedCart = window.localStorage.getItem(CART_STORAGE_KEY)
+    const storedCart = window.localStorage.getItem(storageKey)
 
     if (!storedCart) {
       return { feedback: null, items: [] }
@@ -109,13 +117,34 @@ export function loadCartState(): CartState {
   }
 }
 
+export function loadCartState(): CartState {
+  const storageKey = getCartStorageKey()
+  const cartState = readCartState(storageKey)
+
+  if (cartState.items.length || storageKey !== `${CART_STORAGE_KEY}:guest`) {
+    return cartState
+  }
+
+  const legacyCartState = readCartState(CART_STORAGE_KEY)
+
+  if (legacyCartState.items.length && typeof window !== 'undefined') {
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify({ items: legacyCartState.items }),
+    )
+    window.localStorage.removeItem(CART_STORAGE_KEY)
+  }
+
+  return legacyCartState
+}
+
 export function saveCartState(cart: CartState) {
   if (typeof window === 'undefined') {
     return
   }
 
   window.localStorage.setItem(
-    CART_STORAGE_KEY,
+    getCartStorageKey(),
     JSON.stringify({ items: cart.items }),
   )
 }
@@ -202,6 +231,12 @@ const cartSlice = createSlice({
 
       item.quantity = clampQuantity(action.payload.quantity, item.stock)
     },
+    syncCartForCurrentUser: (state) => {
+      const nextCart = loadCartState()
+
+      state.feedback = null
+      state.items = nextCart.items
+    },
   },
 })
 
@@ -213,6 +248,7 @@ export const {
   increaseCartItem,
   removeFromCart,
   setCartItemQuantity,
+  syncCartForCurrentUser,
 } = cartSlice.actions
 
 export default cartSlice.reducer

@@ -1,4 +1,5 @@
-import { ArrowRight } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 
 import type { Category } from '../../features/categories/categoryApi'
 import { getAssetUrl } from '../../utils/productDisplay'
@@ -22,6 +23,59 @@ function HomeCategories({
   hasError,
   isLoading,
 }: HomeCategoriesProps) {
+  const railRef = useRef<HTMLDivElement>(null)
+  const [scrollState, setScrollState] = useState({
+    canScrollNext: false,
+    canScrollPrevious: false,
+  })
+
+  const updateScrollState = useCallback(() => {
+    const rail = railRef.current
+
+    if (!rail) {
+      return
+    }
+
+    const maxScrollLeft = rail.scrollWidth - rail.clientWidth
+
+    setScrollState({
+      canScrollNext: rail.scrollLeft < maxScrollLeft - 8,
+      canScrollPrevious: rail.scrollLeft > 8,
+    })
+  }, [])
+
+  useEffect(() => {
+    const rail = railRef.current
+
+    if (!rail) {
+      return
+    }
+
+    updateScrollState()
+    rail.addEventListener('scroll', updateScrollState, { passive: true })
+    window.addEventListener('resize', updateScrollState)
+
+    return () => {
+      rail.removeEventListener('scroll', updateScrollState)
+      window.removeEventListener('resize', updateScrollState)
+    }
+  }, [categories.length, isLoading, updateScrollState])
+
+  function scrollCategoryRail(direction: 'next' | 'previous') {
+    const rail = railRef.current
+
+    if (!rail) {
+      return
+    }
+
+    const distance = Math.max(288, rail.clientWidth * 0.82)
+
+    rail.scrollBy({
+      behavior: 'smooth',
+      left: direction === 'next' ? distance : -distance,
+    })
+  }
+
   return (
     <section
       className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8"
@@ -55,7 +109,20 @@ function HomeCategories({
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-[linear-gradient(90deg,#f6f0e5,rgba(246,240,229,0))]" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-[linear-gradient(270deg,#f6f0e5,rgba(246,240,229,0))]" />
 
-        <div className="category-craft-scroll flex gap-4 overflow-x-auto pb-5">
+        <button
+          aria-label="Previous categories"
+          className="absolute left-2 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center border border-white/60 bg-white/92 text-[#181512] shadow-[0_14px_34px_rgba(24,21,18,0.18)] backdrop-blur transition hover:bg-[#181512] hover:text-white disabled:pointer-events-none disabled:opacity-35 sm:-left-5"
+          disabled={!scrollState.canScrollPrevious}
+          onClick={() => scrollCategoryRail('previous')}
+          type="button"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+
+        <div
+          className="category-craft-scroll flex scroll-px-4 gap-4 overflow-x-auto scroll-smooth pb-1"
+          ref={railRef}
+        >
           {isLoading
             ? Array.from({ length: 6 }).map((_, index) => (
                 <div
@@ -90,6 +157,16 @@ function HomeCategories({
                 </a>
               ))}
         </div>
+
+        <button
+          aria-label="Next categories"
+          className="absolute right-2 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center border border-white/60 bg-white/92 text-[#181512] shadow-[0_14px_34px_rgba(24,21,18,0.18)] backdrop-blur transition hover:bg-[#181512] hover:text-white disabled:pointer-events-none disabled:opacity-35 sm:-right-5"
+          disabled={!scrollState.canScrollNext}
+          onClick={() => scrollCategoryRail('next')}
+          type="button"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
       </div>
     </section>
   )

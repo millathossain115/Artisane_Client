@@ -416,13 +416,13 @@ function AdminDashboard() {
                 Latest paid and fulfillment activity.
               </p>
             </div>
-            <button
+            <Link
               className="inline-flex items-center gap-2 border border-black/10 px-3 py-2 text-sm font-bold transition hover:border-[#181512]"
-              type="button"
+              to="/dashboard/admin/orders"
             >
               View all
               <ArrowUpRight className="h-4 w-4" />
-            </button>
+            </Link>
           </div>
 
           <div className="overflow-x-auto">

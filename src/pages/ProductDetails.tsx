@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router-dom'
 import Footer from '../components/layout/Footer'
 import Navbar from '../components/layout/Navbar'
 import { addToCart, createCartItem } from '../features/cart/cartSlice'
+import { getStoredUser } from '../features/auth/authApi'
 import {
   useGetProductByIdQuery,
   useGetProductsQuery,
@@ -26,6 +27,7 @@ import {
 
 function ProductDetails() {
   const dispatch = useAppDispatch()
+  const isAdmin = getStoredUser()?.role === 'admin'
   const cartItems = useAppSelector((state) => state.cart.items)
   const { id } = useParams<{ id: string }>()
   const {
@@ -118,7 +120,7 @@ function ProductDetails() {
   }
 
   function handleAddToCart() {
-    if (!product || isOutOfStock) {
+    if (!product || isOutOfStock || isAdmin) {
       return
     }
 
@@ -174,6 +176,7 @@ function ProductDetails() {
               />
 
               <ProductPurchasePanel
+                canBuy={!isAdmin}
                 isOutOfStock={isOutOfStock}
                 onAddToCart={handleAddToCart}
                 onUpdateQuantity={updateQuantity}

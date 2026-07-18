@@ -10,7 +10,7 @@ import {
 
 export const userNavItems = [
   { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
-  { label: 'My orders', to: '#orders', icon: ReceiptText },
+  { label: 'My orders', to: '/dashboard/orders', icon: ReceiptText },
   { label: 'Wishlist', to: '#wishlist', icon: Heart },
   { label: 'Profile', to: '/dashboard/profile', icon: CircleUserRound },
   { label: 'Reviews', to: '#reviews', icon: Star },

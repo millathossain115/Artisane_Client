@@ -5,6 +5,8 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import artistImage from '../../assets/artist-optimized.jpg'
 import { login, saveAuthSession } from '../../features/auth/authApi'
+import { syncCartForCurrentUser } from '../../features/cart/cartSlice'
+import { useAppDispatch } from '../../redux/hooks'
 
 const demoAccounts = [
   {
@@ -21,6 +23,7 @@ const demoAccounts = [
 
 function Login() {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -46,6 +49,7 @@ function Login() {
       const authData = response.data
 
       saveAuthSession(authData)
+      dispatch(syncCartForCurrentUser())
       setStatus(response.message)
 
       window.setTimeout(() => {

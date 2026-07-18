@@ -8,6 +8,7 @@ import {
   Star,
   Truck,
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { getStoredUser } from '../../features/auth/authApi'
@@ -167,8 +168,8 @@ function UserDashboard() {
   return (
     <DashboardLayout
       actions={[
-        { label: 'Continue shopping' },
-        { label: 'Track order', variant: 'primary' },
+        { label: 'Continue shopping', to: '/' },
+        { label: 'Track order', to: '/dashboard/orders', variant: 'primary' },
       ]}
       eyebrow="My account"
       helperText="Track orders, finish profile details, and keep an eye on saved artwork before it sells."
@@ -224,13 +225,13 @@ function UserDashboard() {
                 Current delivery status and recent purchases.
               </p>
             </div>
-            <button
+            <Link
               className="inline-flex items-center gap-2 border border-black/10 px-3 py-2 text-sm font-bold transition hover:border-[#181512]"
-              type="button"
+              to="/dashboard/orders"
             >
               View all
               <ArrowUpRight className="h-4 w-4" />
-            </button>
+            </Link>
           </div>
 
           <div className="overflow-x-auto">

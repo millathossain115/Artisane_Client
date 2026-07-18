@@ -12,7 +12,7 @@ import {
 
 export const adminNavItems = [
   { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
-  { label: 'Orders', to: '#orders', icon: ClipboardList },
+  { label: 'Orders', to: '/dashboard/admin/orders', icon: ClipboardList },
   {
     label: 'Product',
     items: [

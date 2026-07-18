@@ -16,6 +16,7 @@ import {
 } from '../../utils/productDisplay'
 
 type ProductPurchasePanelProps = {
+  canBuy?: boolean
   isOutOfStock: boolean
   onAddToCart: () => void
   onUpdateQuantity: (quantity: number) => void
@@ -25,6 +26,7 @@ type ProductPurchasePanelProps = {
 }
 
 function ProductPurchasePanel({
+  canBuy = true,
   isOutOfStock,
   onAddToCart,
   onUpdateQuantity,
@@ -85,6 +87,7 @@ function ProductPurchasePanel({
           </div>
         </div>
 
+        {canBuy ? (
         <div className="mt-6">
           <p className="text-sm font-bold">Quantity</p>
           <div className="mt-2 inline-grid grid-cols-[44px_64px_44px] overflow-hidden border border-black/10 bg-white">
@@ -111,6 +114,7 @@ function ProductPurchasePanel({
             </button>
           </div>
         </div>
+        ) : null}
 
         {statusMessage ? (
           <p className="mt-4 bg-[#effaf3] px-4 py-3 text-sm font-bold text-[#1f6b43]">
@@ -118,6 +122,7 @@ function ProductPurchasePanel({
           </p>
         ) : null}
 
+        {canBuy ? (
         <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
           <button
             className="inline-flex min-h-12 items-center justify-center gap-2 bg-[#181512] px-5 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
@@ -128,14 +133,21 @@ function ProductPurchasePanel({
             <ShoppingBag className="h-4 w-4" />
             Add to cart
           </button>
-          <button
-            aria-label="Add to wishlist"
-            className="grid h-12 w-full place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-[#f8f3ea] sm:w-12"
-            type="button"
-          >
-            <Heart className="h-4 w-4" />
-          </button>
         </div>
+        ) : (
+          <p className="mt-6 bg-[#f8f3ea] px-4 py-3 text-sm font-bold text-[#6b5f53]">
+            Admin account can manage products from dashboard. Cart and checkout
+            are available for customer accounts only.
+          </p>
+        )}
+        <button
+          aria-label="Add to wishlist"
+          className="mt-3 grid h-12 w-full place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-[#f8f3ea] sm:w-12"
+          type="button"
+        >
+          <Heart className="h-4 w-4" />
+        </button>
+        {canBuy ? (
         <button
           className="mt-3 min-h-12 w-full border border-black/10 bg-[#f8f3ea] px-5 text-sm font-bold text-[#6b5f53] disabled:cursor-not-allowed"
           disabled
@@ -143,6 +155,7 @@ function ProductPurchasePanel({
         >
           Buy now coming with checkout
         </button>
+        ) : null}
       </div>
     </aside>
   )

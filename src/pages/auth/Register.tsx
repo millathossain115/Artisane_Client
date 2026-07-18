@@ -12,9 +12,12 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import paletteImage from '../../assets/palette-optimized.jpg'
 import { register, saveAuthSession } from '../../features/auth/authApi'
+import { syncCartForCurrentUser } from '../../features/cart/cartSlice'
+import { useAppDispatch } from '../../redux/hooks'
 
 function Register() {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -38,6 +41,7 @@ function Register() {
       }
 
       saveAuthSession(response.data)
+      dispatch(syncCartForCurrentUser())
       setStatus(response.message)
 
       window.setTimeout(() => {

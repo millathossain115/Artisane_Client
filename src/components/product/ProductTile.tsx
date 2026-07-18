@@ -3,6 +3,7 @@ import { Heart, ImageOff, ShoppingBag, Star } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { addToCart, createCartItem } from '../../features/cart/cartSlice'
+import { getStoredUser } from '../../features/auth/authApi'
 import type { Product } from '../../features/products/productApi'
 import { useAppDispatch } from '../../redux/hooks'
 import {
@@ -26,6 +27,7 @@ function ProductTile({
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const imageUrl = getProductImage(product)
+  const isAdmin = getStoredUser()?.role === 'admin'
   const isDark = tone === 'dark'
   const productUrl = `/products/${product._id}`
 
@@ -44,6 +46,10 @@ function ProductTile({
 
   function handleAddToCart(event: MouseEvent<HTMLButtonElement>) {
     event.stopPropagation()
+    if (isAdmin) {
+      return
+    }
+
     dispatch(addToCart(createCartItem(product)))
   }
 
@@ -120,6 +126,7 @@ function ProductTile({
           </div>
         </div>
 
+        {!isAdmin ? (
         <div className="mt-4">
           <button
             aria-label={`Add ${product.name} to cart`}
@@ -132,6 +139,7 @@ function ProductTile({
             {product.stock <= 0 ? 'Out of stock' : 'Add to cart'}
           </button>
         </div>
+        ) : null}
       </div>
     </article>
   )
