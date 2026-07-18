@@ -51,40 +51,45 @@ function HomeCategories({
         </div>
       ) : null}
 
-      <div className="mt-8 flex gap-4 overflow-x-auto pb-3">
-        {isLoading
-          ? Array.from({ length: 6 }).map((_, index) => (
-              <div
-                className="h-72 w-72 shrink-0 animate-pulse bg-white"
-                key={index}
-              />
-            ))
-          : categories.map((category, index) => (
-              <a
-                className="group relative h-72 w-72 shrink-0 overflow-hidden bg-[#181512]"
-                href="#products"
-                key={category._id}
-              >
-                <img
-                  alt={`${category.name} category`}
-                  className="absolute inset-0 h-full w-full object-cover opacity-76 transition duration-500 group-hover:scale-105 group-hover:opacity-90"
-                  src={getCategoryImage(category, index)}
+      <div className="relative mt-8">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-[linear-gradient(90deg,#f6f0e5,rgba(246,240,229,0))]" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-[linear-gradient(270deg,#f6f0e5,rgba(246,240,229,0))]" />
+
+        <div className="category-craft-scroll flex gap-4 overflow-x-auto pb-5">
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  className="h-72 w-72 shrink-0 animate-pulse bg-white"
+                  key={index}
                 />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(24,21,18,0.04),rgba(24,21,18,0.84))]" />
-                <div className="relative flex h-full flex-col justify-end p-5 text-white">
-                  <p className="text-sm font-bold text-[#f1c9a6]">
-                    {category.slug}
-                  </p>
-                  <h3 className="mt-2 text-3xl font-bold">
-                    {category.name}
-                  </h3>
-                  <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/76">
-                    {category.description ??
-                      craftNotes[index % craftNotes.length]}
-                  </p>
-                </div>
-              </a>
-            ))}
+              ))
+            : categories.map((category, index) => (
+                <a
+                  className="group relative h-72 w-72 shrink-0 overflow-hidden bg-[#181512]"
+                  href="#products"
+                  key={category._id}
+                >
+                  <img
+                    alt={`${category.name} category`}
+                    className="absolute inset-0 h-full w-full object-cover opacity-76 transition duration-500 group-hover:scale-105 group-hover:opacity-90"
+                    src={getCategoryImage(category, index)}
+                  />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(24,21,18,0.04),rgba(24,21,18,0.84))]" />
+                  <div className="relative flex h-full flex-col justify-end p-5 text-white">
+                    <p className="text-sm font-bold text-[#f1c9a6]">
+                      {category.slug}
+                    </p>
+                    <h3 className="mt-2 text-3xl font-bold">
+                      {category.name}
+                    </h3>
+                    <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/76">
+                      {category.description ??
+                        craftNotes[index % craftNotes.length]}
+                    </p>
+                  </div>
+                </a>
+              ))}
+        </div>
       </div>
     </section>
   )
