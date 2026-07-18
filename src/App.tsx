@@ -1,7 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import AdminRoute from './components/routes/AdminRoute'
-import CreateCategory from './pages/admin/categories/CreateCategory'
+import CategoryManagement from './pages/admin/categories/CategoryManagement'
+import ProductManagement from './pages/admin/products/ProductManagement'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import Dashboard from './pages/dashboard/Dashboard'
@@ -21,7 +22,15 @@ function App() {
           path="/dashboard/categories"
           element={
             <AdminRoute>
-              <CreateCategory />
+              <CategoryManagement />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/products"
+          element={
+            <AdminRoute>
+              <ProductManagement />
             </AdminRoute>
           }
         />

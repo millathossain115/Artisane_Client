@@ -13,7 +13,7 @@ import {
 export const adminNavItems = [
   { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
   { label: 'Orders', to: '#orders', icon: ClipboardList },
-  { label: 'Products', to: '#products', icon: Boxes },
+  { label: 'Products', to: '/dashboard/products', icon: Boxes },
   { label: 'Categories', to: '/dashboard/categories', icon: FolderTree },
   { label: 'Customers', to: '#customers', icon: UsersRound },
   { label: 'Reviews', to: '#reviews', icon: Star },

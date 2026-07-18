@@ -1,8 +1,7 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import {
   ArrowLeft,
   Globe2,
-  ImagePlus,
   LoaderCircle,
   Save,
   Upload,
@@ -56,17 +55,45 @@ function formatFileSize(size: number) {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function CreateCategory() {
+function CategoryManagement() {
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [description, setDescription] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('')
   const [imageInputKey, setImageInputKey] = useState(0)
+  const [isActive, setIsActive] = useState(true)
   const [isSlugEdited, setIsSlugEdited] = useState(false)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [createCategory, { isLoading }] = useCreateCategoryMutation()
+  const imagePreviewRef = useRef('')
+
+  useEffect(() => {
+    return () => {
+      if (imagePreviewRef.current) {
+        URL.revokeObjectURL(imagePreviewRef.current)
+      }
+    }
+  }, [])
+
+  function clearImagePreview() {
+    if (imagePreviewRef.current) {
+      URL.revokeObjectURL(imagePreviewRef.current)
+      imagePreviewRef.current = ''
+    }
+
+    setImagePreviewUrl('')
+  }
+
+  function setImagePreview(file: File) {
+    clearImagePreview()
+
+    const previewUrl = URL.createObjectURL(file)
+    imagePreviewRef.current = previewUrl
+    setImagePreviewUrl(previewUrl)
+  }
 
   function handleNameChange(value: string) {
     setName(value)
@@ -87,11 +114,13 @@ function CreateCategory() {
 
     if (!file) {
       setImageFile(null)
+      clearImagePreview()
       return
     }
 
     if (!file.type.startsWith('image/')) {
       setImageFile(null)
+      clearImagePreview()
       setImageInputKey((currentKey) => currentKey + 1)
       setError('Only image files are allowed.')
       return
@@ -99,12 +128,14 @@ function CreateCategory() {
 
     if (file.size > MAX_IMAGE_SIZE) {
       setImageFile(null)
+      clearImagePreview()
       setImageInputKey((currentKey) => currentKey + 1)
       setError('Image size must be 5MB or less.')
       return
     }
 
     setImageFile(file)
+    setImagePreview(file)
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -128,6 +159,7 @@ function CreateCategory() {
       await createCategory({
         description: description.trim() || undefined,
         image: imageFile ?? undefined,
+        isActive,
         name: name.trim(),
         slug: slug.trim(),
       }).unwrap()
@@ -138,7 +170,9 @@ function CreateCategory() {
       setSlug('')
       setDescription('')
       setImageFile(null)
+      clearImagePreview()
       setImageInputKey((currentKey) => currentKey + 1)
+      setIsActive(true)
       setIsSlugEdited(false)
     } catch (caughtError) {
       setError(getErrorMessage(caughtError))
@@ -187,14 +221,33 @@ function CreateCategory() {
             </label>
           </div>
 
+          <label className="mt-5 flex items-center justify-between gap-4 border border-black/10 bg-[#f8f3ea] px-4 py-3 text-sm font-bold">
+            <span>
+              <span className="block">Category status</span>
+              <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
+                {isActive ? 'Visible in marketplace' : 'Hidden from marketplace'}
+              </span>
+            </span>
+            <input
+              checked={isActive}
+              className="h-5 w-5 accent-[#181512]"
+              onChange={(event) => setIsActive(event.target.checked)}
+              type="checkbox"
+            />
+          </label>
+
           <label className="mt-5 grid gap-2 text-sm font-bold">
             Category image
             <div className="border border-dashed border-black/20 bg-[#f8f3ea] p-4 transition focus-within:border-[#181512]">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="grid h-12 w-12 shrink-0 place-items-center bg-white text-[#7a3f1d]">
-                    {imageFile ? (
-                      <ImagePlus className="h-5 w-5" />
+                    {imagePreviewUrl ? (
+                      <img
+                        alt=""
+                        className="h-full w-full object-cover"
+                        src={imagePreviewUrl}
+                      />
                     ) : (
                       <Globe2 className="h-5 w-5" />
                     )}
@@ -285,6 +338,10 @@ function CreateCategory() {
               ['slug', slug || 'jewelry'],
               ['description', description || 'Handmade jewelry items'],
               [
+                'status',
+                isActive ? 'Active' : 'Inactive',
+              ],
+              [
                 'image',
                 imageFile
                   ? `${imageFile.name} (${formatFileSize(imageFile.size)})`
@@ -351,4 +408,4 @@ function CreateCategory() {
   )
 }
 
-export default CreateCategory
+export default CategoryManagement

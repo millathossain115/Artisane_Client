@@ -8,7 +8,6 @@ import {
   Menu,
   Package,
   Search,
-  Settings,
   UserRound,
   X,
   type LucideIcon,
@@ -67,6 +66,7 @@ function DashboardLayout({
 
   const displayName = user?.name ?? 'Dashboard User'
   const displayEmail = user?.email ?? 'No email loaded'
+  const isAdmin = user?.role === 'admin'
 
   useEffect(() => {
     if (!location.hash) {
@@ -318,24 +318,17 @@ function DashboardLayout({
                       <UserRound className="h-4 w-4" />
                       My profile
                     </Link>
-                    <Link
-                      className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
-                      onClick={() => setIsProfileOpen(false)}
-                      role="menuitem"
-                      to="/dashboard#orders"
-                    >
-                      <Package className="h-4 w-4" />
-                      My orders
-                    </Link>
-                    <Link
-                      className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
-                      onClick={() => setIsProfileOpen(false)}
-                      role="menuitem"
-                      to="/dashboard#settings"
-                    >
-                      <Settings className="h-4 w-4" />
-                      Account settings
-                    </Link>
+                    {!isAdmin && (
+                      <Link
+                        className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
+                        onClick={() => setIsProfileOpen(false)}
+                        role="menuitem"
+                        to="/dashboard#orders"
+                      >
+                        <Package className="h-4 w-4" />
+                        My orders
+                      </Link>
+                    )}
                     <button
                       className="mt-2 flex w-full items-center gap-3 border-t border-black/10 px-3 py-3 text-left text-sm font-bold text-[#7a3f1d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
                       onClick={handleLogout}

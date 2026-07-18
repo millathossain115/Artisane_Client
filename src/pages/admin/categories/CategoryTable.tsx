@@ -1,14 +1,15 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
+  Eye,
+  EyeOff,
   FolderTree,
   Globe2,
   LoaderCircle,
   Pencil,
   Save,
   Search,
-  SlidersHorizontal,
   Trash2,
   Upload,
 } from 'lucide-react'
@@ -27,10 +28,10 @@ type CategoryEditForm = {
   slug: string
 }
 
-type ImageFilter = 'all' | 'with-image' | 'without-image'
 type SortFilter = 'newest' | 'oldest' | 'name-asc' | 'name-desc'
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20]
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024
 
 function formatDate(value?: string) {
   if (!value) {
@@ -85,37 +86,50 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback
 }
 
-function getCategoryTime(value?: string) {
-  if (!value) {
-    return 0
+function formatFileSize(size: number) {
+  if (size < 1024 * 1024) {
+    return `${Math.ceil(size / 1024)} KB`
   }
 
-  const date = new Date(value)
-
-  return Number.isNaN(date.getTime()) ? 0 : date.getTime()
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function categoryMatchesSearch(category: Category, searchTerm: string) {
-  const query = searchTerm.trim().toLowerCase()
+function isCategoryActive(category: Category) {
+  return category.isActive ?? !category.isDeleted
+}
 
-  if (!query) {
-    return true
+function getSortParams(sortFilter: SortFilter) {
+  if (sortFilter === 'oldest') {
+    return { sortBy: 'createdAt' as const, sortOrder: 'asc' as const }
   }
 
-  return [
-    category.name,
-    category.slug,
-    category.description ?? '',
-    category._id,
-  ].some((value) => value.toLowerCase().includes(query))
+  if (sortFilter === 'name-asc') {
+    return { sortBy: 'name' as const, sortOrder: 'asc' as const }
+  }
+
+  if (sortFilter === 'name-desc') {
+    return { sortBy: 'name' as const, sortOrder: 'desc' as const }
+  }
+
+  return { sortBy: 'createdAt' as const, sortOrder: 'desc' as const }
 }
 
 function CategoryTable() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [sortFilter, setSortFilter] = useState<SortFilter>('newest')
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
+  const [currentPage, setCurrentPage] = useState(1)
+  const sortParams = getSortParams(sortFilter)
   const {
-    data: categories = [],
+    data: categoryList,
     isError: hasCategoriesError,
     isLoading: isCategoriesLoading,
-  } = useGetCategoriesQuery()
+  } = useGetCategoriesQuery({
+    limit: pageSize,
+    page: currentPage,
+    searchTerm: searchTerm.trim() || undefined,
+    ...sortParams,
+  })
   const [updateCategory, { isLoading: isUpdating }] =
     useUpdateCategoryMutation()
   const [deleteCategory, { isLoading: isDeleting }] =
@@ -130,59 +144,78 @@ function CategoryTable() {
     slug: '',
   })
   const [editImageFile, setEditImageFile] = useState<File | null>(null)
+  const [editImagePreviewUrl, setEditImagePreviewUrl] = useState('')
   const [editImageInputKey, setEditImageInputKey] = useState(0)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [imageFilter, setImageFilter] = useState<ImageFilter>('all')
-  const [sortFilter, setSortFilter] = useState<SortFilter>('newest')
-  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
-  const [currentPage, setCurrentPage] = useState(1)
+  const editImagePreviewRef = useRef('')
+  const categories = categoryList?.data ?? []
+  const categoryMeta = categoryList?.meta
+  const totalCategories = categoryMeta?.total ?? categories.length
+  const totalPages = Math.max(1, categoryMeta?.totalPage ?? 1)
+  const safeCurrentPage = Math.min(categoryMeta?.page ?? currentPage, totalPages)
+  const resultStart = totalCategories
+    ? (safeCurrentPage - 1) * (categoryMeta?.limit ?? pageSize) + 1
+    : 0
+  const resultEnd = Math.min(
+    resultStart + (categoryMeta?.limit ?? pageSize) - 1,
+    totalCategories,
+  )
 
-  const filteredCategories = useMemo(() => {
-    return categories
-      .filter((category) => categoryMatchesSearch(category, searchTerm))
-      .filter((category) => {
-        if (imageFilter === 'with-image') {
-          return Boolean(category.image)
-        }
+  useEffect(() => {
+    return () => {
+      if (editImagePreviewRef.current) {
+        URL.revokeObjectURL(editImagePreviewRef.current)
+      }
+    }
+  }, [])
 
-        if (imageFilter === 'without-image') {
-          return !category.image
-        }
+  function clearEditImagePreview() {
+    if (editImagePreviewRef.current) {
+      URL.revokeObjectURL(editImagePreviewRef.current)
+      editImagePreviewRef.current = ''
+    }
 
-        return true
-      })
-      .sort((firstCategory, secondCategory) => {
-        if (sortFilter === 'oldest') {
-          return (
-            getCategoryTime(firstCategory.createdAt) -
-            getCategoryTime(secondCategory.createdAt)
-          )
-        }
+    setEditImagePreviewUrl('')
+  }
 
-        if (sortFilter === 'name-asc') {
-          return firstCategory.name.localeCompare(secondCategory.name)
-        }
+  function setEditImagePreview(file: File) {
+    clearEditImagePreview()
 
-        if (sortFilter === 'name-desc') {
-          return secondCategory.name.localeCompare(firstCategory.name)
-        }
+    const previewUrl = URL.createObjectURL(file)
+    editImagePreviewRef.current = previewUrl
+    setEditImagePreviewUrl(previewUrl)
+  }
 
-        return (
-          getCategoryTime(secondCategory.createdAt) -
-          getCategoryTime(firstCategory.createdAt)
-        )
-      })
-  }, [categories, imageFilter, searchTerm, sortFilter])
+  function handleEditImageChange(file: File | undefined) {
+    setStatus('')
+    setError('')
 
-  const totalPages = Math.max(1, Math.ceil(filteredCategories.length / pageSize))
-  const safeCurrentPage = Math.min(currentPage, totalPages)
-  const pageStartIndex = (safeCurrentPage - 1) * pageSize
-  const pageEndIndex = pageStartIndex + pageSize
-  const visibleCategories = filteredCategories.slice(pageStartIndex, pageEndIndex)
-  const resultStart = filteredCategories.length ? pageStartIndex + 1 : 0
-  const resultEnd = Math.min(pageEndIndex, filteredCategories.length)
+    if (!file) {
+      setEditImageFile(null)
+      clearEditImagePreview()
+      return
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setEditImageFile(null)
+      clearEditImagePreview()
+      setEditImageInputKey((currentKey) => currentKey + 1)
+      setError('Only image files are allowed.')
+      return
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      setEditImageFile(null)
+      clearEditImagePreview()
+      setEditImageInputKey((currentKey) => currentKey + 1)
+      setError('Image size must be 5MB or less.')
+      return
+    }
+
+    setEditImageFile(file)
+    setEditImagePreview(file)
+  }
 
   function openEditModal(category: Category) {
     setStatus('')
@@ -194,7 +227,14 @@ function CategoryTable() {
       slug: category.slug,
     })
     setEditImageFile(null)
+    clearEditImagePreview()
     setEditImageInputKey((currentKey) => currentKey + 1)
+  }
+
+  function closeEditModal() {
+    setCategoryToEdit(null)
+    setEditImageFile(null)
+    clearEditImagePreview()
   }
 
   function updateEditField(field: keyof CategoryEditForm, value: string) {
@@ -226,9 +266,29 @@ function CategoryTable() {
       }).unwrap()
 
       setStatus('Category updated successfully.')
-      setCategoryToEdit(null)
+      closeEditModal()
     } catch (caughtError) {
       setError(getErrorMessage(caughtError, 'Failed to update category.'))
+    }
+  }
+
+  async function handleToggleCategoryStatus(category: Category) {
+    setStatus('')
+    setError('')
+
+    const nextStatus = !isCategoryActive(category)
+
+    try {
+      await updateCategory({
+        id: category._id,
+        isActive: nextStatus,
+      }).unwrap()
+
+      setStatus(`Category marked ${nextStatus ? 'active' : 'inactive'}.`)
+    } catch (caughtError) {
+      setError(
+        getErrorMessage(caughtError, 'Failed to update category status.'),
+      )
     }
   }
 
@@ -244,6 +304,9 @@ function CategoryTable() {
       await deleteCategory(categoryToDelete._id).unwrap()
       setStatus('Category deleted successfully.')
       setCategoryToDelete(null)
+      setCurrentPage((page) =>
+        categories.length === 1 ? Math.max(1, page - 1) : page,
+      )
     } catch (caughtError) {
       setError(getErrorMessage(caughtError, 'Failed to delete category.'))
     }
@@ -307,26 +370,7 @@ function CategoryTable() {
           </span>
         </label>
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          <label className="grid gap-2 text-sm font-bold">
-            Image
-            <span className="relative">
-              <SlidersHorizontal className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6b5f53]" />
-              <select
-                className="min-h-12 w-full border border-black/10 bg-white pl-10 pr-8 text-sm font-bold outline-none transition focus:border-[#181512]"
-                onChange={(event) => {
-                  setImageFilter(event.target.value as ImageFilter)
-                  setCurrentPage(1)
-                }}
-                value={imageFilter}
-              >
-                <option value="all">All</option>
-                <option value="with-image">With image</option>
-                <option value="without-image">No image</option>
-              </select>
-            </span>
-          </label>
-
+        <div className="grid gap-3 sm:grid-cols-2">
           <label className="grid gap-2 text-sm font-bold">
             Sort
             <select
@@ -365,7 +409,7 @@ function CategoryTable() {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[880px] border-collapse text-left text-sm">
+        <table className="w-full min-w-[980px] border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
               <th className="px-5 py-3">Category</th>
@@ -373,13 +417,15 @@ function CategoryTable() {
               <th className="px-5 py-3">Description</th>
               <th className="px-5 py-3">Created</th>
               <th className="px-5 py-3">Updated</th>
+              <th className="px-5 py-3">Status</th>
               <th className="px-5 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {visibleCategories.length ? (
-              visibleCategories.map((category) => {
+            {categories.length ? (
+              categories.map((category) => {
                 const imageUrl = getCategoryImageUrl(category)
+                const categoryIsActive = isCategoryActive(category)
 
                 return (
                   <tr
@@ -424,6 +470,25 @@ function CategoryTable() {
                       {formatDate(category.updatedAt)}
                     </td>
                     <td className="px-5 py-4">
+                      <button
+                        className={`inline-flex min-h-9 items-center gap-2 border px-3 text-xs font-bold transition ${
+                          categoryIsActive
+                            ? 'border-[#1f7a4d]/20 bg-[#effaf3] text-[#1f6b43] hover:border-[#1f6b43]'
+                            : 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d] hover:border-[#8f3f1d]'
+                        } disabled:cursor-not-allowed disabled:opacity-60`}
+                        disabled={isUpdating}
+                        onClick={() => handleToggleCategoryStatus(category)}
+                        type="button"
+                      >
+                        {categoryIsActive ? (
+                          <Eye className="h-4 w-4" />
+                        ) : (
+                          <EyeOff className="h-4 w-4" />
+                        )}
+                        {categoryIsActive ? 'Active' : 'Inactive'}
+                      </button>
+                    </td>
+                    <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
                         <button
                           className="inline-flex h-9 w-9 items-center justify-center border border-black/10 text-[#181512] transition hover:border-[#181512] hover:bg-white"
@@ -454,9 +519,9 @@ function CategoryTable() {
               <tr className="border-t border-black/10">
                 <td
                   className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
-                  colSpan={6}
+                  colSpan={7}
                 >
-                  {categories.length
+                  {totalCategories
                     ? 'No categories match the current filters.'
                     : 'No categories found.'}
                 </td>
@@ -468,8 +533,7 @@ function CategoryTable() {
 
       <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
         <p className="text-sm font-semibold text-[#6b5f53]">
-          Showing {resultStart}-{resultEnd} of {filteredCategories.length}{' '}
-          categories.
+          Showing {resultStart}-{resultEnd} of {totalCategories} categories.
         </p>
 
         <div className="flex items-center gap-2">
@@ -559,15 +623,29 @@ function CategoryTable() {
                 <div className="border border-dashed border-black/20 bg-[#f8f3ea] p-4">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex min-w-0 items-center gap-3">
-                      <span className="grid h-12 w-12 shrink-0 place-items-center bg-white text-[#7a3f1d]">
-                        <Globe2 className="h-5 w-5" />
+                      <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden bg-white text-[#7a3f1d]">
+                        {editImagePreviewUrl ||
+                        getCategoryImageUrl(categoryToEdit) ? (
+                          <img
+                            alt=""
+                            className="h-full w-full object-cover"
+                            src={
+                              editImagePreviewUrl ||
+                              getCategoryImageUrl(categoryToEdit)
+                            }
+                          />
+                        ) : (
+                          <Globe2 className="h-5 w-5" />
+                        )}
                       </span>
                       <span className="min-w-0">
                         <span className="block truncate font-bold">
                           {editImageFile?.name ?? 'Keep current image'}
                         </span>
                         <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
-                          Upload only when changing category image.
+                          {editImageFile
+                            ? `${editImageFile.type} - ${formatFileSize(editImageFile.size)}`
+                            : 'Upload only when changing category image.'}
                         </span>
                       </span>
                     </div>
@@ -580,7 +658,7 @@ function CategoryTable() {
                         className="absolute inset-0 cursor-pointer opacity-0"
                         key={editImageInputKey}
                         onChange={(event) =>
-                          setEditImageFile(event.target.files?.[0] ?? null)
+                          handleEditImageChange(event.target.files?.[0])
                         }
                         type="file"
                       />
@@ -593,7 +671,7 @@ function CategoryTable() {
                 <button
                   className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
                   disabled={isUpdating}
-                  onClick={() => setCategoryToEdit(null)}
+                  onClick={closeEditModal}
                   type="button"
                 >
                   Cancel

@@ -6,7 +6,6 @@ import {
   Menu,
   Package,
   Search,
-  Settings,
   ShoppingBag,
   UserRound,
 } from 'lucide-react'
@@ -146,22 +145,17 @@ function Navbar() {
                       <UserRound className="h-4 w-4" />
                       My profile
                     </Link>
-                    <a
-                      className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
-                      href="#"
-                      role="menuitem"
-                    >
-                      <Package className="h-4 w-4" />
-                      My orders
-                    </a>
-                    <a
-                      className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
-                      href="#"
-                      role="menuitem"
-                    >
-                      <Settings className="h-4 w-4" />
-                      Account settings
-                    </a>
+                    {user.role !== 'admin' && (
+                      <Link
+                        className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
+                        onClick={() => setIsProfileOpen(false)}
+                        role="menuitem"
+                        to="/dashboard#orders"
+                      >
+                        <Package className="h-4 w-4" />
+                        My orders
+                      </Link>
+                    )}
                     <button
                       className="mt-2 flex w-full items-center gap-3 border-t border-black/10 px-3 py-3 text-left text-sm font-bold text-[#7a3f1d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
                       onClick={handleLogout}

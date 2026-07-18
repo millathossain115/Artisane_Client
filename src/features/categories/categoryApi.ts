@@ -4,6 +4,7 @@ type ApiResponse<T> = {
   success: boolean
   message: string
   data?: T
+  meta?: CategoryListMeta
   errorSources?: { path: string; message: string }[]
 }
 
@@ -13,6 +14,8 @@ export type Category = {
   slug: string
   description?: string
   image?: string
+  isActive?: boolean
+  isDeleted?: boolean
   createdAt?: string
   updatedAt?: string
 }
@@ -22,10 +25,33 @@ export type CategoryPayload = {
   slug: string
   description?: string
   image?: File
+  isActive?: boolean
 }
 
 export type UpdateCategoryPayload = Partial<CategoryPayload> & {
   id: string
+}
+
+export type CategoryListMeta = {
+  limit: number
+  page: number
+  total: number
+  totalPage: number
+}
+
+export type CategoryListResult = {
+  data: Category[]
+  meta: CategoryListMeta
+}
+
+export type CategoryQueryParams = {
+  hasImage?: boolean
+  limit?: number
+  page?: number
+  searchTerm?: string
+  slug?: string
+  sortBy?: 'createdAt' | 'name' | 'slug' | 'updatedAt'
+  sortOrder?: 'asc' | 'desc'
 }
 
 function createCategoryFormData(payload: Partial<CategoryPayload>) {
@@ -47,7 +73,49 @@ function createCategoryFormData(payload: Partial<CategoryPayload>) {
     formData.append('image', payload.image)
   }
 
+  if (payload.isActive !== undefined) {
+    formData.append('isActive', String(payload.isActive))
+  }
+
   return formData
+}
+
+function createCategoryParams(params?: CategoryQueryParams) {
+  if (!params) {
+    return undefined
+  }
+
+  const searchParams: Record<string, boolean | number | string> = {}
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== '') {
+      searchParams[key] = value
+    }
+  })
+
+  return searchParams
+}
+
+function createCategoryListResult(
+  response: ApiResponse<Category[]>,
+  params?: CategoryQueryParams,
+): CategoryListResult {
+  const data = response.data ?? []
+  const page = params?.page ?? 1
+  const limit = params?.limit ?? data.length
+  const total = response.meta?.total ?? data.length
+  const totalPage =
+    response.meta?.totalPage ?? Math.max(1, Math.ceil(total / (limit || 1)))
+
+  return {
+    data,
+    meta: {
+      limit: response.meta?.limit ?? limit,
+      page: response.meta?.page ?? page,
+      total,
+      totalPage,
+    },
+  }
 }
 
 export const categoryApi = baseApi.injectEndpoints({
@@ -69,11 +137,17 @@ export const categoryApi = baseApi.injectEndpoints({
         url: `/categories/${id}`,
       }),
     }),
-    getCategories: builder.query<Category[], void>({
+    getCategories: builder.query<CategoryListResult, CategoryQueryParams | void>({
       providesTags: ['Category'],
-      query: () => '/categories',
-      transformResponse: (response: ApiResponse<Category[]>) =>
-        response.data ?? [],
+      query: (params) => ({
+        params: createCategoryParams(params ?? undefined),
+        url: '/categories',
+      }),
+      transformResponse: (
+        response: ApiResponse<Category[]>,
+        _meta,
+        params,
+      ) => createCategoryListResult(response, params ?? undefined),
     }),
     getCategoryById: builder.query<Category | null, string>({
       providesTags: (_result, _error, id) => [{ id, type: 'Category' }],

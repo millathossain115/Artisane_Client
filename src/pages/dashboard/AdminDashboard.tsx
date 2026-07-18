@@ -230,13 +230,14 @@ function AdminDashboard() {
     isLoading: isStatsLoading,
   } = useGetAdminStatsQuery()
   const {
-    data: categories = [],
+    data: categoryList,
     isError: hasCategoriesError,
     isLoading: isCategoriesLoading,
-  } = useGetCategoriesQuery()
+  } = useGetCategoriesQuery({ limit: 5, page: 1 })
   const statsError = hasStatsError ? 'Failed to load admin stats' : ''
   const metrics = getMetrics(adminStats)
-  const previewCategories = categories.slice(0, 5)
+  const previewCategories = categoryList?.data ?? []
+  const totalCategories = categoryList?.meta.total ?? previewCategories.length
 
   return (
     <DashboardLayout
@@ -395,7 +396,7 @@ function AdminDashboard() {
         <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm font-semibold text-[#6b5f53]">
             Showing {formatCount(previewCategories.length, '0')} of{' '}
-            {formatCount(categories.length, '0')} categories.
+            {formatCount(totalCategories, '0')} categories.
           </p>
           <Link
             className="inline-flex min-h-10 items-center justify-center gap-2 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
@@ -570,7 +571,7 @@ function AdminDashboard() {
         {[
           [
             'Catalog health',
-            `${formatCount(categories.length, '0')} active categories`,
+            `${formatCount(totalCategories, '0')} active categories`,
             'Audit empty or duplicate collections.',
           ],
           [
