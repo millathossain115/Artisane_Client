@@ -5,6 +5,7 @@ import CreateCategory from './pages/admin/categories/CreateCategory'
 import ManageCategories from './pages/admin/categories/ManageCategories'
 import CreateProduct from './pages/admin/products/CreateProduct'
 import ManageProducts from './pages/admin/products/ManageProducts'
+import ManageUsers from './pages/admin/users/ManageUsers'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import Dashboard from './pages/dashboard/Dashboard'
@@ -49,6 +50,14 @@ function App() {
           element={
             <AdminRoute>
               <CreateProduct />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/users"
+          element={
+            <AdminRoute>
+              <ManageUsers />
             </AdminRoute>
           }
         />

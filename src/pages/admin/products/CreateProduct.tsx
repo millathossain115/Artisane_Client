@@ -7,6 +7,7 @@ import {
   Save,
   Trash2,
   Upload,
+  X,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -71,6 +72,8 @@ function CreateProduct() {
   const [imageInputKey, setImageInputKey] = useState(0)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
+  const [isCategoryLoadErrorDismissed, setIsCategoryLoadErrorDismissed] =
+    useState(false)
   const [showCreateConfirm, setShowCreateConfirm] = useState(false)
   const [createProduct, { isLoading: isCreating }] = useCreateProductMutation()
   const imagePreviewRef = useRef<string[]>([])
@@ -417,19 +420,37 @@ function CreateProduct() {
             </div>
           </label>
 
-          {(status || error || hasCategoriesError) && (
-            <p
+          {(status ||
+            error ||
+            (hasCategoriesError && !isCategoryLoadErrorDismissed)) && (
+            <div
               className={`mt-5 border px-4 py-3 text-sm font-semibold ${
-                error || hasCategoriesError
+                error || (hasCategoriesError && !isCategoryLoadErrorDismissed)
                   ? 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d]'
                   : 'border-[#1f7a4d]/20 bg-[#effaf3] text-[#1f6b43]'
               }`}
             >
-              {error ||
-                (hasCategoriesError
-                  ? 'Failed to load categories for product form.'
-                  : status)}
-            </p>
+              <div className="flex items-center justify-between gap-3">
+                <span>
+                  {error ||
+                    (hasCategoriesError && !isCategoryLoadErrorDismissed
+                      ? 'Failed to load categories for product form.'
+                      : status)}
+                </span>
+                <button
+                  aria-label="Close message"
+                  className="grid h-8 w-8 shrink-0 place-items-center border border-current/20 transition hover:bg-white/45"
+                  onClick={() => {
+                    setStatus('')
+                    setError('')
+                    setIsCategoryLoadErrorDismissed(true)
+                  }}
+                  type="button"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
           )}
 
           <div className="mt-6 flex flex-wrap items-center gap-3">

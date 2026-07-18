@@ -5,6 +5,7 @@ import {
   LoaderCircle,
   Save,
   Upload,
+  X,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -271,15 +272,28 @@ function CreateCategory() {
           </label>
 
           {(status || error) && (
-            <p
+            <div
               className={`mt-5 border px-4 py-3 text-sm font-semibold ${
                 error
                   ? 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d]'
                   : 'border-[#1f7a4d]/20 bg-[#effaf3] text-[#1f6b43]'
               }`}
             >
-              {error || status}
-            </p>
+              <div className="flex items-center justify-between gap-3">
+                <span>{error || status}</span>
+                <button
+                  aria-label="Close message"
+                  className="grid h-8 w-8 shrink-0 place-items-center border border-current/20 transition hover:bg-white/45"
+                  onClick={() => {
+                    setStatus('')
+                    setError('')
+                  }}
+                  type="button"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
           )}
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
