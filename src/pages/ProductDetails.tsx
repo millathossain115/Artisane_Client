@@ -163,7 +163,7 @@ function RecentShelfCard({ product }: { product: RecentProduct }) {
 
   return (
     <Link
-      className="group block overflow-hidden border border-black/10 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(24,21,18,0.12)]"
+      className="group block overflow-hidden border border-white/10 bg-white text-[#181512] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(0,0,0,0.24)]"
       to={`/products/${product.id}`}
     >
       <div className="aspect-[4/5] overflow-hidden bg-[#e4d8c8]">
@@ -213,7 +213,7 @@ function ProductDetails() {
     { skip: !categoryId },
   )
   const { data: mayLikeProductList } = useGetProductsQuery({
-    limit: 8,
+    limit: 24,
     page: 1,
   })
   const [selectedImage, setSelectedImage] = useState({
@@ -239,8 +239,14 @@ function ProductDetails() {
       : productImages[0]
   const similarProducts =
     similarProductList?.data.filter((item) => item._id !== product?._id) ?? []
+  const similarProductIds = new Set(similarProducts.map((item) => item._id))
   const mayLikeProducts =
-    mayLikeProductList?.data.filter((item) => item._id !== product?._id) ?? []
+    mayLikeProductList?.data.filter(
+      (item) =>
+        item._id !== product?._id &&
+        getCategoryId(item) !== categoryId &&
+        !similarProductIds.has(item._id),
+    ) ?? []
   const isOutOfStock = !product || product.stock <= 0
   const quantity =
     quantitySelection.productId === product?._id ? quantitySelection.value : 1
@@ -318,7 +324,7 @@ function ProductDetails() {
             <div className="mt-8 grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
               <div>
                 <div className="overflow-hidden bg-white">
-                  <div className="aspect-[4/3] bg-[#e4d8c8]">
+                  <div className="relative aspect-[4/3] bg-[#e4d8c8]">
                     {mainImage ? (
                       <img
                         alt={product.name}
@@ -330,35 +336,52 @@ function ProductDetails() {
                         <ImageOff className="h-10 w-10" />
                       </div>
                     )}
+
                   </div>
                 </div>
 
-                {productImages.length > 1 ? (
-                  <div className="mt-4 grid grid-cols-5 gap-3">
-                    {productImages.slice(0, 5).map((image) => (
-                      <button
-                        aria-label={`View ${product.name} image`}
-                        className={`aspect-square overflow-hidden border bg-white transition ${
-                          mainImage === image
-                            ? 'border-[#181512]'
-                            : 'border-black/10 hover:border-[#7a3f1d]'
-                        }`}
-                        key={image}
-                        onClick={() =>
-                          setSelectedImage({
-                            productId: product._id,
-                            value: image,
-                          })
-                        }
-                        type="button"
-                      >
-                        <img
-                          alt=""
-                          className="h-full w-full object-cover"
-                          src={image}
-                        />
-                      </button>
-                    ))}
+                {productImages.length > 0 ? (
+                  <div className="mt-4 border border-black/10 bg-white p-3 sm:p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#7a3f1d]">
+                        View images
+                      </p>
+                      <p className="text-xs font-bold text-[#6b5f53]">
+                        {productImages.findIndex((image) => image === mainImage) + 1}
+                        /{productImages.length}
+                      </p>
+                    </div>
+                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1 sm:gap-3">
+                      {productImages.map((image, index) => (
+                        <button
+                          aria-label={`View ${product.name} image ${index + 1}`}
+                          className={`relative h-16 w-16 shrink-0 overflow-hidden border-2 bg-white transition sm:h-20 sm:w-20 ${
+                            mainImage === image
+                              ? 'border-[#181512]'
+                              : 'border-black/10 hover:border-[#7a3f1d]'
+                          }`}
+                          key={image}
+                          onClick={() =>
+                            setSelectedImage({
+                              productId: product._id,
+                              value: image,
+                            })
+                          }
+                          type="button"
+                        >
+                          <img
+                            alt=""
+                            className="h-full w-full object-cover"
+                            src={image}
+                          />
+                          {mainImage === image ? (
+                            <span className="absolute inset-x-0 bottom-0 bg-[#181512] py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-white">
+                              Viewing
+                            </span>
+                          ) : null}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ) : null}
               </div>
