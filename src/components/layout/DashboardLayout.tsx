@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import {
   Bell,
   Brush,
@@ -7,7 +7,7 @@ import {
   Search,
   type LucideIcon,
 } from 'lucide-react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import {
   clearAuthSession,
@@ -52,12 +52,32 @@ function DashboardLayout({
   title,
   workspaceLabel = 'Marketplace studio',
 }: DashboardLayoutProps) {
+  const location = useLocation()
   const navigate = useNavigate()
   const user = getStoredUser() as AuthUser | null
+
+  useEffect(() => {
+    if (!location.hash) {
+      return
+    }
+
+    document
+      .getElementById(location.hash.slice(1))
+      ?.scrollIntoView({ block: 'start' })
+  }, [location.hash])
 
   function handleLogout() {
     clearAuthSession()
     navigate('/login')
+  }
+
+  function getSidebarItemClass(isActive: boolean) {
+    const baseClass =
+      'flex items-center gap-3 px-4 py-3 text-sm font-bold transition'
+
+    return isActive
+      ? `${baseClass} bg-white text-[#181512] hover:bg-white hover:text-[#181512]`
+      : `${baseClass} text-white/70 hover:bg-white/10 hover:text-white`
   }
 
   return (
@@ -81,26 +101,17 @@ function DashboardLayout({
           {sidebarItems.map((item) => {
             const Icon = item.icon
             const isAnchor = item.to.startsWith('#')
+            const isActive = isAnchor
+              ? location.pathname === '/dashboard' && location.hash === item.to
+              : location.pathname === item.to && !location.hash
+            const to = isAnchor ? `/dashboard${item.to}` : item.to
+            const className = getSidebarItemClass(isActive)
 
-            const className =
-              'flex items-center gap-3 px-4 py-3 text-sm font-bold text-white/70 transition hover:bg-white/10 hover:text-white'
-
-            return isAnchor ? (
-              <a className={className} href={item.to} key={item.label}>
+            return (
+              <Link className={className} key={item.label} to={to}>
                 <Icon className="h-4 w-4" />
                 {item.label}
-              </a>
-            ) : (
-              <NavLink
-                className={({ isActive }) =>
-                  `${className} ${isActive ? 'bg-white text-[#181512] hover:bg-white hover:text-[#181512]' : ''}`
-                }
-                key={item.label}
-                to={item.to}
-              >
-                <Icon className="h-4 w-4" />
-                {item.label}
-              </NavLink>
+              </Link>
             )
           })}
         </nav>

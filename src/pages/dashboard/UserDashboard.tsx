@@ -16,6 +16,11 @@ import {
 
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { getStoredUser } from '../../features/auth/authApi'
+import {
+  type DashboardOrder,
+  type UserDashboardStats,
+  useGetUserStatsQuery,
+} from '../../features/dashboard/dashboardApi'
 
 const userNavItems = [
   { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
@@ -25,57 +30,6 @@ const userNavItems = [
   { label: 'Reviews', to: '#reviews', icon: Star },
   { label: 'Support', to: '#support', icon: HelpCircle },
   { label: 'Settings', to: '#settings', icon: Settings },
-]
-
-const userMetrics = [
-  {
-    label: 'Active orders',
-    value: '3',
-    detail: '1 arriving this week',
-    icon: ShoppingBag,
-  },
-  {
-    label: 'Saved artworks',
-    value: '18',
-    detail: '4 pieces on limited stock',
-    icon: Heart,
-  },
-  {
-    label: 'Reviews due',
-    value: '2',
-    detail: 'Share feedback after delivery',
-    icon: Star,
-  },
-  {
-    label: 'Profile status',
-    value: '82%',
-    detail: 'Add address and phone backup',
-    icon: ShieldCheck,
-  },
-]
-
-const userOrders = [
-  {
-    id: '#AR-1039',
-    item: 'Watercolor Monsoon Study',
-    status: 'In transit',
-    total: '$92',
-    eta: 'Jul 22',
-  },
-  {
-    id: '#AR-1032',
-    item: 'Studio Brush Set',
-    status: 'Packed',
-    total: '$48',
-    eta: 'Jul 24',
-  },
-  {
-    id: '#AR-1018',
-    item: 'Ceramic Ink Bowl',
-    status: 'Delivered',
-    total: '$36',
-    eta: 'Review due',
-  },
 ]
 
 const wishlist = [
@@ -102,8 +56,127 @@ const supportItems = [
   'Artist message waiting for reply',
 ]
 
+function formatCount(value: number | null | undefined, fallback = '0') {
+  if (value === null || value === undefined) {
+    return fallback
+  }
+
+  return new Intl.NumberFormat('en-US').format(value)
+}
+
+function formatCurrency(value: number | null | undefined, fallback = '$0') {
+  if (value === null || value === undefined) {
+    return fallback
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    maximumFractionDigits: 0,
+    style: 'currency',
+  }).format(value)
+}
+
+function formatDate(value?: string) {
+  if (!value) {
+    return 'Recent'
+  }
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Recent'
+  }
+
+  return date.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+  })
+}
+
+function formatStatus(value?: string) {
+  if (!value) {
+    return 'Pending'
+  }
+
+  return value
+    .split('_')
+    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+    .join(' ')
+}
+
+function formatOrderId(id: string) {
+  return `#${id.slice(-6).toUpperCase()}`
+}
+
+function getPrimaryOrderItem(order: DashboardOrder) {
+  const firstItem = order.items?.[0]
+
+  if (!firstItem) {
+    return 'Order items'
+  }
+
+  const itemName = firstItem.productName ?? 'Order item'
+  const extraItems = (order.items?.length ?? 0) - 1
+
+  return extraItems > 0 ? `${itemName} +${extraItems} more` : itemName
+}
+
+function getStatusCount(stats: UserDashboardStats | null, status: string) {
+  return (
+    stats?.orderStatusSummary.find((item) => item._id === status)?.count ?? 0
+  )
+}
+
+function getUserMetrics(stats: UserDashboardStats | null) {
+  const pendingOrders = getStatusCount(stats, 'pending')
+  const shippedOrders = getStatusCount(stats, 'shipped')
+
+  return [
+    {
+      label: 'Total orders',
+      value: formatCount(stats?.totalOrders),
+      detail:
+        stats && stats.deliveredOrders > 0
+          ? `${formatCount(stats.deliveredOrders)} delivered`
+          : 'Start your first order',
+      icon: ShoppingBag,
+    },
+    {
+      label: 'Active orders',
+      value: formatCount(stats?.activeOrders),
+      detail:
+        shippedOrders > 0
+          ? `${formatCount(shippedOrders)} shipped`
+          : `${formatCount(pendingOrders)} pending`,
+      icon: Truck,
+    },
+    {
+      label: 'Order value',
+      value: formatCurrency(stats?.totalOrderValue),
+      detail: `${formatCount(stats?.cancelledOrders)} cancelled orders`,
+      icon: PackageCheck,
+    },
+    {
+      label: 'Reviews',
+      value: formatCount(stats?.totalReviews),
+      detail:
+        stats && stats.averageRating > 0
+          ? `${stats.averageRating.toFixed(1)} average rating`
+          : 'Share feedback after delivery',
+      icon: Star,
+    },
+  ]
+}
+
 function UserDashboard() {
   const user = getStoredUser()
+  const {
+    data: userStats = null,
+    isError: hasStatsError,
+    isLoading: isStatsLoading,
+  } = useGetUserStatsQuery()
+  const statsError = hasStatsError ? 'Failed to load your dashboard stats' : ''
+  const userMetrics = getUserMetrics(userStats)
 
   return (
     <DashboardLayout
@@ -119,6 +192,20 @@ function UserDashboard() {
       title={`Welcome${user?.name ? `, ${user.name.split(' ')[0]}` : ''}`}
       workspaceLabel="Collector account"
     >
+      {(isStatsLoading || statsError) && (
+        <div
+          className={`mb-4 border px-4 py-3 text-sm font-semibold ${
+            statsError
+              ? 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d]'
+              : 'border-black/10 bg-white text-[#6b5f53]'
+          }`}
+        >
+          {statsError
+            ? `${statsError}. Showing saved account sections.`
+            : 'Loading your dashboard stats...'}
+        </div>
+      )}
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {userMetrics.map((metric) => {
           const Icon = metric.icon
@@ -169,26 +256,45 @@ function UserDashboard() {
                   <th className="px-5 py-3">Artwork</th>
                   <th className="px-5 py-3">Status</th>
                   <th className="px-5 py-3">Total</th>
-                  <th className="px-5 py-3">ETA</th>
+                  <th className="px-5 py-3">Placed</th>
                 </tr>
               </thead>
               <tbody>
-                {userOrders.map((order) => (
-                  <tr
-                    className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
-                    key={order.id}
-                  >
-                    <td className="px-5 py-4 font-bold">{order.id}</td>
-                    <td className="px-5 py-4 text-[#6b5f53]">{order.item}</td>
-                    <td className="px-5 py-4">
-                      <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
-                        {order.status}
-                      </span>
+                {userStats?.recentOrders.length ? (
+                  userStats.recentOrders.map((order) => (
+                    <tr
+                      className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
+                      key={order._id}
+                    >
+                      <td className="px-5 py-4 font-bold">
+                        {formatOrderId(order._id)}
+                      </td>
+                      <td className="px-5 py-4 text-[#6b5f53]">
+                        {getPrimaryOrderItem(order)}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
+                          {formatStatus(order.orderStatus)}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 font-bold">
+                        {formatCurrency(order.totalPrice)}
+                      </td>
+                      <td className="px-5 py-4 text-[#6b5f53]">
+                        {formatDate(order.createdAt)}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr className="border-t border-black/10">
+                    <td
+                      className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
+                      colSpan={5}
+                    >
+                      No orders yet.
                     </td>
-                    <td className="px-5 py-4 font-bold">{order.total}</td>
-                    <td className="px-5 py-4 text-[#6b5f53]">{order.eta}</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -276,42 +382,41 @@ function UserDashboard() {
         </div>
 
         <div className="border border-black/10 bg-white p-5" id="reviews">
-          <h2 className="text-2xl font-bold">Reviews and delivery</h2>
+          <h2 className="text-2xl font-bold">Recent reviews</h2>
           <p className="mt-1 text-sm text-[#6b5f53]">
-            Keep purchases updated after they arrive.
+            Feedback you shared after recent purchases.
           </p>
           <div className="mt-5 space-y-4">
-            {[
-              {
-                title: 'Order arriving soon',
-                detail: 'Watercolor Monsoon Study is in transit.',
-                icon: Truck,
-              },
-              {
-                title: 'Review requested',
-                detail: 'Ceramic Ink Bowl is ready for feedback.',
-                icon: Star,
-              },
-              {
-                title: 'Purchase protected',
-                detail: 'Buyer protection is active on all open orders.',
-                icon: PackageCheck,
-              },
-            ].map((item) => {
-              const Icon = item.icon
-
-              return (
-                <div className="flex gap-4" key={item.title}>
+            {userStats?.recentReviews.length ? (
+              userStats.recentReviews.map((review) => (
+                <div className="flex gap-4" key={review._id}>
                   <span className="grid h-10 w-10 shrink-0 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
-                    <Icon className="h-5 w-5" />
+                    <Star className="h-5 w-5" />
                   </span>
                   <div>
-                    <p className="font-bold">{item.title}</p>
-                    <p className="mt-1 text-sm text-[#6b5f53]">{item.detail}</p>
+                    <p className="font-bold">
+                      {review.product?.name ?? 'Product review'}
+                    </p>
+                    <p className="mt-1 text-sm text-[#6b5f53]">
+                      {formatCount(review.rating)} stars
+                      {review.comment ? ` - ${review.comment}` : ''}
+                    </p>
                   </div>
                 </div>
-              )
-            })}
+              ))
+            ) : (
+              <div className="flex gap-4">
+                <span className="grid h-10 w-10 shrink-0 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
+                  <ShieldCheck className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="font-bold">No reviews yet</p>
+                  <p className="mt-1 text-sm text-[#6b5f53]">
+                    Your product feedback will appear here.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
