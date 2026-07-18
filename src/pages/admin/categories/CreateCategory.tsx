@@ -11,7 +11,6 @@ import { Link } from 'react-router-dom'
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import { useCreateCategoryMutation } from '../../../features/categories/categoryApi'
 import { adminNavItems } from '../../dashboard/adminNavItems'
-import CategoryTable from './CategoryTable'
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024
 
@@ -55,7 +54,7 @@ function formatFileSize(size: number) {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function CategoryManagement() {
+function CreateCategory() {
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [description, setDescription] = useState('')
@@ -181,13 +180,12 @@ function CategoryManagement() {
 
   return (
     <DashboardLayout
-      actions={[{ label: 'Back to dashboard', to: '/dashboard' }]}
+      actions={[{ label: 'Manage categories', to: '/dashboard/categories' }]}
       eyebrow="Category management"
       helperText="Create clean category records before assigning products to marketplace sections."
-      searchPlaceholder="Search categories, products, orders"
       sidebarItems={adminNavItems}
-      subtitle="Create category records and review all live marketplace categories from one page."
-      title="Category management"
+      subtitle="Create clean category records before assigning products to marketplace sections."
+      title="Create category"
       workspaceLabel="Marketplace studio"
     >
       <div className="grid gap-6 xl:grid-cols-[1fr_0.42fr]">
@@ -403,9 +401,8 @@ function CategoryManagement() {
         </div>
       )}
 
-      <CategoryTable />
     </DashboardLayout>
   )
 }
 
-export default CategoryManagement
+export default CreateCategory

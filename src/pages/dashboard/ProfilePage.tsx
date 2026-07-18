@@ -200,7 +200,6 @@ function ProfilePage() {
           ? 'Keep admin contact details current for marketplace operations.'
           : 'Keep contact and address details ready for faster checkout.'
       }
-      searchPlaceholder="Search profile, address, orders"
       sidebarItems={sidebarItems}
       subtitle={
         isAdminProfile

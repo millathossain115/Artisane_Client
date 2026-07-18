@@ -1,8 +1,10 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import AdminRoute from './components/routes/AdminRoute'
-import CategoryManagement from './pages/admin/categories/CategoryManagement'
-import ProductManagement from './pages/admin/products/ProductManagement'
+import CreateCategory from './pages/admin/categories/CreateCategory'
+import ManageCategories from './pages/admin/categories/ManageCategories'
+import CreateProduct from './pages/admin/products/CreateProduct'
+import ManageProducts from './pages/admin/products/ManageProducts'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import Dashboard from './pages/dashboard/Dashboard'
@@ -22,7 +24,15 @@ function App() {
           path="/dashboard/categories"
           element={
             <AdminRoute>
-              <CategoryManagement />
+              <ManageCategories />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/categories/create"
+          element={
+            <AdminRoute>
+              <CreateCategory />
             </AdminRoute>
           }
         />
@@ -30,13 +40,25 @@ function App() {
           path="/dashboard/products"
           element={
             <AdminRoute>
-              <ProductManagement />
+              <ManageProducts />
             </AdminRoute>
           }
         />
         <Route
-          path="/dashboard/categories/create"
+          path="/dashboard/products/create"
+          element={
+            <AdminRoute>
+              <CreateProduct />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/categories/manage"
           element={<Navigate replace to="/dashboard/categories" />}
+        />
+        <Route
+          path="/dashboard/products/manage"
+          element={<Navigate replace to="/dashboard/products" />}
         />
       </Routes>
     </BrowserRouter>

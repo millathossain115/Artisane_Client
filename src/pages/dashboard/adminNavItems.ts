@@ -13,8 +13,28 @@ import {
 export const adminNavItems = [
   { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
   { label: 'Orders', to: '#orders', icon: ClipboardList },
-  { label: 'Products', to: '/dashboard/products', icon: Boxes },
-  { label: 'Categories', to: '/dashboard/categories', icon: FolderTree },
+  {
+    label: 'Product',
+    items: [
+      { label: 'Create Product', to: '/dashboard/products/create', icon: Boxes },
+      { label: 'Manage Products', to: '/dashboard/products', icon: Boxes },
+    ],
+  },
+  {
+    label: 'Category',
+    items: [
+      {
+        label: 'Create Category',
+        to: '/dashboard/categories/create',
+        icon: FolderTree,
+      },
+      {
+        label: 'Manage Categories',
+        to: '/dashboard/categories',
+        icon: FolderTree,
+      },
+    ],
+  },
   { label: 'Customers', to: '#customers', icon: UsersRound },
   { label: 'Reviews', to: '#reviews', icon: Star },
   { label: 'Messages', to: '#messages', icon: MessageSquareText },

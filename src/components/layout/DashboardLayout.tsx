@@ -7,7 +7,6 @@ import {
   LogOut,
   Menu,
   Package,
-  Search,
   UserRound,
   X,
   type LucideIcon,
@@ -20,11 +19,18 @@ import {
   type AuthUser,
 } from '../../features/auth/authApi'
 
-type SidebarItem = {
+type SidebarLinkItem = {
   label: string
   to: string
   icon: LucideIcon
 }
+
+type SidebarGroupItem = {
+  label: string
+  items: SidebarLinkItem[]
+}
+
+type SidebarItem = SidebarGroupItem | SidebarLinkItem
 
 type DashboardAction = {
   label: string
@@ -41,7 +47,6 @@ type DashboardLayoutProps = {
   eyebrow?: string
   helperTitle?: string
   helperText?: string
-  searchPlaceholder?: string
   workspaceLabel?: string
 }
 
@@ -51,7 +56,6 @@ function DashboardLayout({
   eyebrow = 'Control room',
   helperText,
   helperTitle = 'Today',
-  searchPlaceholder = 'Search dashboard',
   sidebarItems,
   subtitle,
   title,
@@ -120,6 +124,34 @@ function DashboardLayout({
       : `${baseClass} text-white/70 hover:bg-white/10 hover:text-white`
   }
 
+  function isSidebarGroup(item: SidebarItem): item is SidebarGroupItem {
+    return 'items' in item
+  }
+
+  function renderSidebarLink(item: SidebarLinkItem, isNested = false) {
+    const Icon = item.icon
+    const isAnchor = item.to.startsWith('#')
+    const isActive = isAnchor
+      ? location.pathname === '/dashboard' && location.hash === item.to
+      : location.pathname === item.to && !location.hash
+    const to = isAnchor ? `/dashboard${item.to}` : item.to
+    const className = `${getSidebarItemClass(isActive)} ${
+      isNested ? 'pl-7' : ''
+    }`
+
+    return (
+      <Link
+        className={className}
+        key={item.label}
+        onClick={() => setIsSidebarOpen(false)}
+        to={to}
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="truncate">{item.label}</span>
+      </Link>
+    )
+  }
+
   function renderSidebarContent(showCloseButton = false) {
     return (
       <>
@@ -154,24 +186,24 @@ function DashboardLayout({
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-5">
           {sidebarItems.map((item) => {
-            const Icon = item.icon
-            const isAnchor = item.to.startsWith('#')
-            const isActive = isAnchor
-              ? location.pathname === '/dashboard' && location.hash === item.to
-              : location.pathname === item.to && !location.hash
-            const to = isAnchor ? `/dashboard${item.to}` : item.to
-            const className = getSidebarItemClass(isActive)
+            if (!isSidebarGroup(item)) {
+              return renderSidebarLink(item)
+            }
 
             return (
-              <Link
-                className={className}
+              <div
+                className="pt-3 first:pt-0"
                 key={item.label}
-                onClick={() => setIsSidebarOpen(false)}
-                to={to}
               >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className="truncate">{item.label}</span>
-              </Link>
+                <p className="px-4 pb-2 text-xs font-bold uppercase text-[#f1c9a6]">
+                  {item.label}
+                </p>
+                <div className="space-y-1">
+                  {item.items.map((childItem) =>
+                    renderSidebarLink(childItem, true),
+                  )}
+                </div>
+              </div>
             )
           })}
         </nav>
@@ -241,18 +273,6 @@ function DashboardLayout({
                 Artisane
               </span>
             </Link>
-
-            <form
-              className="hidden min-w-64 max-w-lg flex-1 items-center gap-2 border border-black/10 bg-white px-3 py-2 md:flex"
-              onSubmit={(event) => event.preventDefault()}
-            >
-              <Search className="h-5 w-5 text-[#766a5e]" />
-              <input
-                className="w-full bg-transparent text-sm outline-none placeholder:text-[#8a7d71]"
-                placeholder={searchPlaceholder}
-                type="search"
-              />
-            </form>
 
             <div className="ml-auto flex items-center gap-2">
               <button

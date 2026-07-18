@@ -242,7 +242,6 @@ function AdminDashboard() {
   return (
     <DashboardLayout
       helperText="Review pending orders and low-stock handmade pieces before publishing new drops."
-      searchPlaceholder="Search orders, products, customers"
       sidebarItems={adminNavItems}
       subtitle="Monitor sales, orders, inventory, reviews, and marketplace tasks from one focused workspace."
       title="Admin dashboard"

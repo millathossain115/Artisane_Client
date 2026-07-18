@@ -6,7 +6,6 @@ import DashboardLayout from '../../../components/layout/DashboardLayout'
 import { useGetCategoriesQuery } from '../../../features/categories/categoryApi'
 import { useCreateProductMutation } from '../../../features/products/productApi'
 import { adminNavItems } from '../../dashboard/adminNavItems'
-import ProductTable from './ProductTable'
 
 function createSlug(value: string) {
   return value
@@ -47,7 +46,7 @@ function parseImageUrls(value: string) {
     .filter(Boolean)
 }
 
-function ProductManagement() {
+function CreateProduct() {
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [description, setDescription] = useState('')
@@ -146,13 +145,12 @@ function ProductManagement() {
 
   return (
     <DashboardLayout
-      actions={[{ label: 'Back to dashboard', to: '/dashboard' }]}
+      actions={[{ label: 'Manage products', to: '/dashboard/products' }]}
       eyebrow="Product management"
       helperText="Create products with valid category references before publishing them to the marketplace."
-      searchPlaceholder="Search products, categories, orders"
       sidebarItems={adminNavItems}
-      subtitle="Create product records and review all marketplace products from one page."
-      title="Product management"
+      subtitle="Create product records and assign each product to a real category id."
+      title="Create product"
       workspaceLabel="Marketplace studio"
     >
       <div className="grid gap-6 xl:grid-cols-[1fr_0.42fr]">
@@ -339,9 +337,8 @@ function ProductManagement() {
         </aside>
       </div>
 
-      <ProductTable />
     </DashboardLayout>
   )
 }
 
-export default ProductManagement
+export default CreateProduct

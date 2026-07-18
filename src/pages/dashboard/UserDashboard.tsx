@@ -172,7 +172,6 @@ function UserDashboard() {
       ]}
       eyebrow="My account"
       helperText="Track orders, finish profile details, and keep an eye on saved artwork before it sells."
-      searchPlaceholder="Search orders, saved pieces, support"
       sidebarItems={userNavItems}
       subtitle="Manage your orders, saved artwork, reviews, messages, and account details."
       title={`Welcome${user?.name ? `, ${user.name.split(' ')[0]}` : ''}`}
