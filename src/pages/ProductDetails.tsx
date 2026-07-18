@@ -21,7 +21,7 @@ import {
   useGetProductByIdQuery,
   useGetProductsQuery,
 } from '../features/products/productApi'
-import { useAppDispatch } from '../redux/hooks'
+import { useAppDispatch, useAppSelector } from '../redux/hooks'
 
 type RecentProduct = {
   brand?: string
@@ -194,6 +194,7 @@ function RecentShelfCard({ product }: { product: RecentProduct }) {
 
 function ProductDetails() {
   const dispatch = useAppDispatch()
+  const cartItems = useAppSelector((state) => state.cart.items)
   const { id } = useParams<{ id: string }>()
   const {
     data: product,
@@ -272,9 +273,13 @@ function ProductDetails() {
       return
     }
 
+    const isAlreadyInCart = cartItems.some((item) => item.id === product._id)
+
     dispatch(addToCart(createCartItem(product, safeQuantity)))
     setStatus({
-      message: `${product.name} added to cart.`,
+      message: isAlreadyInCart
+        ? `${product.name} is already in your cart.`
+        : `${product.name} added to cart.`,
       productId: product._id,
     })
   }

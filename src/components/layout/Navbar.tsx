@@ -18,6 +18,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from '../../config/api'
 import {
   clearCart,
+  clearCartFeedback,
   decreaseCartItem,
   increaseCartItem,
   removeFromCart,
@@ -59,6 +60,7 @@ function Navbar() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const cartItems = useAppSelector((state) => state.cart.items)
+  const cartFeedback = useAppSelector((state) => state.cart.feedback)
   const [user, setUser] = useState<AuthUser | null>(() => getStoredUser())
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
@@ -86,6 +88,20 @@ function Navbar() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!cartFeedback) {
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      dispatch(clearCartFeedback())
+    }, 2600)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [cartFeedback, dispatch])
+
   function handleLogout() {
     clearAuthSession()
     setUser(null)
@@ -97,7 +113,8 @@ function Navbar() {
   const displayEmail = user?.email ?? 'Login to view account'
 
   return (
-    <header className="sticky top-0 z-50 border-b border-black/10 bg-[#f8f3ea]/95 shadow-[0_10px_30px_rgba(24,21,18,0.06)] backdrop-blur">
+    <>
+      <header className="sticky top-0 z-50 border-b border-black/10 bg-[#f8f3ea]/95 shadow-[0_10px_30px_rgba(24,21,18,0.06)] backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <button
           className="grid h-10 w-10 place-items-center border border-black/10 bg-white/70 text-[#181512] transition hover:bg-white lg:hidden"
@@ -265,19 +282,20 @@ function Navbar() {
           />
         </form>
       </div>
+      </header>
 
       {isCartOpen ? (
-        <div className="fixed inset-0 z-[80]" role="presentation">
+        <div className="fixed inset-0 z-[100]" role="presentation">
           <button
             aria-label="Close cart"
-            className="absolute inset-0 h-full w-full bg-[#181512]/55"
+            className="absolute inset-0 h-full w-full bg-[#181512]/65"
             onClick={() => setIsCartOpen(false)}
             type="button"
           />
 
           <aside
             aria-label="Shopping cart"
-            className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
+            className="absolute right-0 top-0 flex h-[100dvh] w-full max-w-md flex-col bg-white shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
           >
             <div className="flex items-center justify-between border-b border-black/10 px-5 py-4">
               <div>
@@ -421,7 +439,33 @@ function Navbar() {
           </aside>
         </div>
       ) : null}
-    </header>
+
+      {cartFeedback ? (
+        <div className="fixed right-4 top-24 z-[110] w-[calc(100vw-2rem)] max-w-sm border border-black/10 bg-white shadow-[0_22px_44px_rgba(24,21,18,0.18)]">
+          <div
+            className={`border-l-4 px-4 py-3 ${
+              cartFeedback.type === 'warning'
+                ? 'border-[#c85f2f]'
+                : 'border-[#1f6b43]'
+            }`}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-sm font-bold text-[#181512]">
+                {cartFeedback.message}
+              </p>
+              <button
+                aria-label="Close cart message"
+                className="grid h-7 w-7 shrink-0 place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+                onClick={() => dispatch(clearCartFeedback())}
+                type="button"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
   )
 }
 

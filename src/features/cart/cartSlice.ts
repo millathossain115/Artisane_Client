@@ -16,6 +16,11 @@ export type CartItem = {
 }
 
 export type CartState = {
+  feedback: {
+    id: number
+    message: string
+    type: 'success' | 'warning'
+  } | null
   items: CartItem[]
 }
 
@@ -64,32 +69,43 @@ export function createCartItem(product: Product, quantity = 1): CartItem {
 
 export function loadCartState(): CartState {
   if (typeof window === 'undefined') {
-    return { items: [] }
+    return { feedback: null, items: [] }
   }
 
   try {
     const storedCart = window.localStorage.getItem(CART_STORAGE_KEY)
 
     if (!storedCart) {
-      return { items: [] }
+      return { feedback: null, items: [] }
     }
 
     const parsedCart = JSON.parse(storedCart) as CartState
 
     if (!Array.isArray(parsedCart.items)) {
-      return { items: [] }
+      return { feedback: null, items: [] }
     }
 
-    return {
-      items: parsedCart.items
-        .filter((item) => item.id && item.name && item.stock > 0)
-        .map((item) => ({
+    const itemsById = new Map<string, CartItem>()
+
+    parsedCart.items
+      .filter((item) => item.id && item.name && item.stock > 0)
+      .forEach((item) => {
+        if (itemsById.has(item.id)) {
+          return
+        }
+
+        itemsById.set(item.id, {
           ...item,
           quantity: clampQuantity(item.quantity, item.stock),
-        })),
+        })
+      })
+
+    return {
+      feedback: null,
+      items: Array.from(itemsById.values()),
     }
   } catch {
-    return { items: [] }
+    return { feedback: null, items: [] }
   }
 }
 
@@ -98,7 +114,10 @@ export function saveCartState(cart: CartState) {
     return
   }
 
-  window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart))
+  window.localStorage.setItem(
+    CART_STORAGE_KEY,
+    JSON.stringify({ items: cart.items }),
+  )
 }
 
 const initialState: CartState = loadCartState()
@@ -111,6 +130,11 @@ const cartSlice = createSlice({
       const incomingItem = action.payload
 
       if (incomingItem.stock <= 0) {
+        state.feedback = {
+          id: Date.now(),
+          message: `${incomingItem.name} is out of stock.`,
+          type: 'warning',
+        }
         return
       }
 
@@ -119,10 +143,11 @@ const cartSlice = createSlice({
       )
 
       if (existingItem) {
-        existingItem.quantity = clampQuantity(
-          existingItem.quantity + incomingItem.quantity,
-          existingItem.stock,
-        )
+        state.feedback = {
+          id: Date.now(),
+          message: `${existingItem.name} is already in your cart.`,
+          type: 'warning',
+        }
         return
       }
 
@@ -130,9 +155,17 @@ const cartSlice = createSlice({
         ...incomingItem,
         quantity: clampQuantity(incomingItem.quantity, incomingItem.stock),
       })
+      state.feedback = {
+        id: Date.now(),
+        message: `${incomingItem.name} added to cart.`,
+        type: 'success',
+      }
     },
     clearCart: (state) => {
       state.items = []
+    },
+    clearCartFeedback: (state) => {
+      state.feedback = null
     },
     decreaseCartItem: (state, action: PayloadAction<string>) => {
       const item = state.items.find((cartItem) => cartItem.id === action.payload)
@@ -175,6 +208,7 @@ const cartSlice = createSlice({
 export const {
   addToCart,
   clearCart,
+  clearCartFeedback,
   decreaseCartItem,
   increaseCartItem,
   removeFromCart,
