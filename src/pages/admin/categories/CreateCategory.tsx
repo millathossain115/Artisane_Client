@@ -62,7 +62,6 @@ function CreateCategory() {
   const [imagePreviewUrl, setImagePreviewUrl] = useState('')
   const [imageInputKey, setImageInputKey] = useState(0)
   const [isActive, setIsActive] = useState(true)
-  const [isSlugEdited, setIsSlugEdited] = useState(false)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
@@ -96,14 +95,6 @@ function CreateCategory() {
 
   function handleNameChange(value: string) {
     setName(value)
-
-    if (!isSlugEdited) {
-      setSlug(createSlug(value))
-    }
-  }
-
-  function handleSlugChange(value: string) {
-    setIsSlugEdited(true)
     setSlug(createSlug(value))
   }
 
@@ -172,7 +163,6 @@ function CreateCategory() {
       clearImagePreview()
       setImageInputKey((currentKey) => currentKey + 1)
       setIsActive(true)
-      setIsSlugEdited(false)
     } catch (caughtError) {
       setError(getErrorMessage(caughtError))
     }
@@ -193,7 +183,7 @@ function CreateCategory() {
           className="border border-black/10 bg-white p-5"
           onSubmit={handleSubmit}
         >
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5">
             <label className="grid gap-2 text-sm font-bold">
               Category name
               <input
@@ -204,18 +194,9 @@ function CreateCategory() {
                 type="text"
                 value={name}
               />
-            </label>
-
-            <label className="grid gap-2 text-sm font-bold">
-              Slug
-              <input
-                className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
-                onChange={(event) => handleSlugChange(event.target.value)}
-                placeholder="jewelry"
-                required
-                type="text"
-                value={slug}
-              />
+              <span className="text-xs font-semibold text-[#6b5f53]">
+                Slug: {slug || 'jewelry'}
+              </span>
             </label>
           </div>
 
@@ -326,32 +307,40 @@ function CreateCategory() {
         </form>
 
         <aside className="border border-black/10 bg-[#181512] p-5 text-white">
-          <h2 className="text-2xl font-bold">Category payload</h2>
+          <h2 className="text-2xl font-bold">Category preview</h2>
           <p className="mt-2 text-sm leading-6 text-white/65">
-            The submitted request matches the backend category create body.
+            {isActive ? 'Visible in marketplace' : 'Hidden from marketplace'}
           </p>
-          <dl className="mt-5 space-y-4 text-sm">
-            {[
-              ['name', name || 'Jewelry'],
-              ['slug', slug || 'jewelry'],
-              ['description', description || 'Handmade jewelry items'],
-              [
-                'status',
-                isActive ? 'Active' : 'Inactive',
-              ],
-              [
-                'image',
-                imageFile
-                  ? `${imageFile.name} (${formatFileSize(imageFile.size)})`
-                  : 'Default global icon',
-              ],
-            ].map(([key, value]) => (
-              <div className="border-t border-white/10 pt-3" key={key}>
-                <dt className="font-bold text-[#f1c9a6]">{key}</dt>
-                <dd className="mt-1 break-words text-white/75">{value}</dd>
-              </div>
-            ))}
-          </dl>
+
+          {imagePreviewUrl ? (
+            <img
+              alt=""
+              className="mt-5 aspect-video w-full object-cover"
+              src={imagePreviewUrl}
+            />
+          ) : (
+            <div className="mt-5 grid aspect-video w-full place-items-center bg-white/10 text-white/55">
+              <Globe2 className="h-8 w-8" />
+            </div>
+          )}
+
+          <div className="mt-5 border-t border-white/10 pt-5">
+            <p className="text-xs font-bold uppercase text-[#f1c9a6]">
+              Category
+            </p>
+            <h3 className="mt-2 text-3xl font-bold">{name || 'Jewelry'}</h3>
+            <p className="mt-2 text-sm font-semibold text-white/65">
+              {slug || 'jewelry'}
+            </p>
+          </div>
+
+          <p className="mt-5 text-sm leading-6 text-white/75">
+            {description || 'Handmade jewelry items'}
+          </p>
+
+          <p className="mt-5 text-xs font-bold uppercase text-[#f1c9a6]">
+            {imageFile ? imageFile.name : 'Default global icon'}
+          </p>
         </aside>
       </div>
 

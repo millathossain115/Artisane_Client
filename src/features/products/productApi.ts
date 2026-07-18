@@ -27,12 +27,16 @@ export type Product = {
 export type ProductPayload = {
   name: string
   slug: string
-  description: string
+  description?: string
   price: number
   stock: number
   category: string
   brand?: string
-  images?: string[]
+  images?: File[]
+}
+
+export type UpdateProductPayload = Partial<ProductPayload> & {
+  id: string
 }
 
 export type ProductListMeta = {
@@ -55,7 +59,7 @@ export type ProductQueryParams = {
   sortOrder?: 'asc' | 'desc'
 }
 
-function createProductParams(params?: ProductQueryParams) {
+function createProductParams(params?: ProductQueryParams | void) {
   if (!params) {
     return undefined
   }
@@ -73,11 +77,11 @@ function createProductParams(params?: ProductQueryParams) {
 
 function createProductListResult(
   response: ApiResponse<Product[]>,
-  params?: ProductQueryParams,
+  params?: ProductQueryParams | void,
 ): ProductListResult {
   const data = response.data ?? []
-  const page = params?.page ?? 1
-  const limit = params?.limit ?? data.length
+  const page = (params && params.page) ?? 1
+  const limit = (params && params.limit) ?? data.length
   const total = response.meta?.total ?? data.length
   const totalPage =
     response.meta?.totalPage ?? Math.max(1, Math.ceil(total / (limit || 1)))
@@ -93,12 +97,50 @@ function createProductListResult(
   }
 }
 
+function createProductFormData(payload: Partial<ProductPayload>) {
+  const formData = new FormData()
+
+  if (payload.name !== undefined) {
+    formData.append('name', payload.name)
+  }
+
+  if (payload.slug !== undefined) {
+    formData.append('slug', payload.slug)
+  }
+
+  if (payload.description !== undefined) {
+    formData.append('description', payload.description)
+  }
+
+  if (payload.price !== undefined) {
+    formData.append('price', String(payload.price))
+  }
+
+  if (payload.stock !== undefined) {
+    formData.append('stock', String(payload.stock))
+  }
+
+  if (payload.category !== undefined) {
+    formData.append('category', payload.category)
+  }
+
+  if (payload.brand !== undefined) {
+    formData.append('brand', payload.brand)
+  }
+
+  payload.images?.forEach((image) => {
+    formData.append('images', image)
+  })
+
+  return formData
+}
+
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     createProduct: builder.mutation<Product | null, ProductPayload>({
       invalidatesTags: ['Product', 'Dashboard'],
       query: (payload) => ({
-        body: payload,
+        body: createProductFormData(payload),
         method: 'POST',
         url: '/products/create-product',
       }),
@@ -117,7 +159,25 @@ export const productApi = baseApi.injectEndpoints({
         params,
       ) => createProductListResult(response, params ?? undefined),
     }),
+    updateProduct: builder.mutation<Product | null, UpdateProductPayload>({
+      invalidatesTags: (_result, _error, { id }) => [
+        'Product',
+        'Dashboard',
+        { id, type: 'Product' },
+      ],
+      query: ({ id, ...payload }) => ({
+        body: createProductFormData(payload),
+        method: 'PATCH',
+        url: `/products/${id}`,
+      }),
+      transformResponse: (response: ApiResponse<Product>) =>
+        response.data ?? null,
+    }),
   }),
 })
 
-export const { useCreateProductMutation, useGetProductsQuery } = productApi
+export const {
+  useCreateProductMutation,
+  useGetProductsQuery,
+  useUpdateProductMutation,
+} = productApi
