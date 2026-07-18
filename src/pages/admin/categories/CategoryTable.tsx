@@ -1,10 +1,14 @@
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import {
+  ChevronLeft,
+  ChevronRight,
   FolderTree,
   Globe2,
   LoaderCircle,
   Pencil,
   Save,
+  Search,
+  SlidersHorizontal,
   Trash2,
   Upload,
 } from 'lucide-react'
@@ -22,6 +26,11 @@ type CategoryEditForm = {
   name: string
   slug: string
 }
+
+type ImageFilter = 'all' | 'with-image' | 'without-image'
+type SortFilter = 'newest' | 'oldest' | 'name-asc' | 'name-desc'
+
+const PAGE_SIZE_OPTIONS = [5, 10, 20]
 
 function formatDate(value?: string) {
   if (!value) {
@@ -76,6 +85,31 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback
 }
 
+function getCategoryTime(value?: string) {
+  if (!value) {
+    return 0
+  }
+
+  const date = new Date(value)
+
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime()
+}
+
+function categoryMatchesSearch(category: Category, searchTerm: string) {
+  const query = searchTerm.trim().toLowerCase()
+
+  if (!query) {
+    return true
+  }
+
+  return [
+    category.name,
+    category.slug,
+    category.description ?? '',
+    category._id,
+  ].some((value) => value.toLowerCase().includes(query))
+}
+
 function CategoryTable() {
   const {
     data: categories = [],
@@ -99,6 +133,56 @@ function CategoryTable() {
   const [editImageInputKey, setEditImageInputKey] = useState(0)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [imageFilter, setImageFilter] = useState<ImageFilter>('all')
+  const [sortFilter, setSortFilter] = useState<SortFilter>('newest')
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const filteredCategories = useMemo(() => {
+    return categories
+      .filter((category) => categoryMatchesSearch(category, searchTerm))
+      .filter((category) => {
+        if (imageFilter === 'with-image') {
+          return Boolean(category.image)
+        }
+
+        if (imageFilter === 'without-image') {
+          return !category.image
+        }
+
+        return true
+      })
+      .sort((firstCategory, secondCategory) => {
+        if (sortFilter === 'oldest') {
+          return (
+            getCategoryTime(firstCategory.createdAt) -
+            getCategoryTime(secondCategory.createdAt)
+          )
+        }
+
+        if (sortFilter === 'name-asc') {
+          return firstCategory.name.localeCompare(secondCategory.name)
+        }
+
+        if (sortFilter === 'name-desc') {
+          return secondCategory.name.localeCompare(firstCategory.name)
+        }
+
+        return (
+          getCategoryTime(secondCategory.createdAt) -
+          getCategoryTime(firstCategory.createdAt)
+        )
+      })
+  }, [categories, imageFilter, searchTerm, sortFilter])
+
+  const totalPages = Math.max(1, Math.ceil(filteredCategories.length / pageSize))
+  const safeCurrentPage = Math.min(currentPage, totalPages)
+  const pageStartIndex = (safeCurrentPage - 1) * pageSize
+  const pageEndIndex = pageStartIndex + pageSize
+  const visibleCategories = filteredCategories.slice(pageStartIndex, pageEndIndex)
+  const resultStart = filteredCategories.length ? pageStartIndex + 1 : 0
+  const resultEnd = Math.min(pageEndIndex, filteredCategories.length)
 
   function openEditModal(category: Category) {
     setStatus('')
@@ -205,6 +289,81 @@ function CategoryTable() {
         </div>
       )}
 
+      <div className="grid gap-3 border-b border-black/10 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+        <label className="grid gap-2 text-sm font-bold">
+          Search categories
+          <span className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6b5f53]" />
+            <input
+              className="min-h-12 w-full border border-black/10 pl-10 pr-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+              onChange={(event) => {
+                setSearchTerm(event.target.value)
+                setCurrentPage(1)
+              }}
+              placeholder="Name, slug, description, or ID"
+              type="search"
+              value={searchTerm}
+            />
+          </span>
+        </label>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="grid gap-2 text-sm font-bold">
+            Image
+            <span className="relative">
+              <SlidersHorizontal className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6b5f53]" />
+              <select
+                className="min-h-12 w-full border border-black/10 bg-white pl-10 pr-8 text-sm font-bold outline-none transition focus:border-[#181512]"
+                onChange={(event) => {
+                  setImageFilter(event.target.value as ImageFilter)
+                  setCurrentPage(1)
+                }}
+                value={imageFilter}
+              >
+                <option value="all">All</option>
+                <option value="with-image">With image</option>
+                <option value="without-image">No image</option>
+              </select>
+            </span>
+          </label>
+
+          <label className="grid gap-2 text-sm font-bold">
+            Sort
+            <select
+              className="min-h-12 w-full border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+              onChange={(event) => {
+                setSortFilter(event.target.value as SortFilter)
+                setCurrentPage(1)
+              }}
+              value={sortFilter}
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="name-asc">A to Z</option>
+              <option value="name-desc">Z to A</option>
+            </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-bold">
+            Rows
+            <select
+              className="min-h-12 w-full border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+              onChange={(event) => {
+                setPageSize(Number(event.target.value))
+                setCurrentPage(1)
+              }}
+              value={pageSize}
+            >
+              {PAGE_SIZE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="w-full min-w-[880px] border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
@@ -218,8 +377,8 @@ function CategoryTable() {
             </tr>
           </thead>
           <tbody>
-            {categories.length ? (
-              categories.map((category) => {
+            {visibleCategories.length ? (
+              visibleCategories.map((category) => {
                 const imageUrl = getCategoryImageUrl(category)
 
                 return (
@@ -297,12 +456,47 @@ function CategoryTable() {
                   className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
                   colSpan={6}
                 >
-                  No categories found.
+                  {categories.length
+                    ? 'No categories match the current filters.'
+                    : 'No categories found.'}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
+        <p className="text-sm font-semibold text-[#6b5f53]">
+          Showing {resultStart}-{resultEnd} of {filteredCategories.length}{' '}
+          categories.
+        </p>
+
+        <div className="flex items-center gap-2">
+          <button
+            aria-label="Previous page"
+            className="inline-flex h-10 w-10 items-center justify-center border border-black/10 text-[#181512] transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+            disabled={safeCurrentPage === 1}
+            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+            type="button"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <span className="min-w-24 text-center text-sm font-bold">
+            Page {safeCurrentPage} of {totalPages}
+          </span>
+          <button
+            aria-label="Next page"
+            className="inline-flex h-10 w-10 items-center justify-center border border-black/10 text-[#181512] transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+            disabled={safeCurrentPage === totalPages}
+            onClick={() =>
+              setCurrentPage((page) => Math.min(totalPages, page + 1))
+            }
+            type="button"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {categoryToEdit && (

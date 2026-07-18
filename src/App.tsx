@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import AdminRoute from './components/routes/AdminRoute'
 import CreateCategory from './pages/admin/categories/CreateCategory'
@@ -18,12 +18,16 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/profile" element={<ProfilePage />} />
         <Route
-          path="/dashboard/categories/create"
+          path="/dashboard/categories"
           element={
             <AdminRoute>
               <CreateCategory />
             </AdminRoute>
           }
+        />
+        <Route
+          path="/dashboard/categories/create"
+          element={<Navigate replace to="/dashboard/categories" />}
         />
       </Routes>
     </BrowserRouter>

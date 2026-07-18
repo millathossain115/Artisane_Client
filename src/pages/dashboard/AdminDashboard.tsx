@@ -399,7 +399,7 @@ function AdminDashboard() {
           </p>
           <Link
             className="inline-flex min-h-10 items-center justify-center gap-2 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
-            to="/dashboard/categories/create"
+            to="/dashboard/categories"
           >
             View all categories
             <ArrowUpRight className="h-4 w-4" />
