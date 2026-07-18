@@ -222,3 +222,51 @@ type OrderStatus =
 - UI stack: Tailwind + shadcn/ui.
 - Client stays separate from server repo as `Artisane_Client`.
 - Payments, image upload, wishlist, coupons, and refresh-token flow are v2 after core app works.
+
+
+api list
+--------------------
+Base URL:
+http://localhost:5000/api/v1
+Auth
+POST  /auth/register
+POST  /auth/login
+GET   /auth/me              admin/user
+PATCH /auth/me              admin/user
+Dashboard
+GET /dashboard/admin-stats  admin
+GET /dashboard/my-stats     admin/user
+Users
+POST   /users/create-user   admin
+GET    /users               admin
+GET    /users/:id           admin
+DELETE /users/:id           admin
+Categories
+POST   /categories/create-category  admin
+GET    /categories
+GET    /categories/:id
+PATCH  /categories/:id              admin
+DELETE /categories/:id              admin
+Products
+POST   /products/create-product  admin
+GET    /products
+GET    /products/:id
+PATCH  /products/:id             admin
+DELETE /products/:id             admin
+Orders
+POST   /orders/create-order  admin/user
+GET    /orders/my-orders     admin/user
+GET    /orders               admin
+GET    /orders/:id           admin
+PATCH  /orders/:id/status    admin
+PATCH  /orders/:id/cancel    admin/user
+DELETE /orders/:id           admin
+Reviews
+POST   /reviews/create-review       admin/user
+GET    /reviews
+GET    /reviews/product/:productId
+GET    /reviews/:id
+PATCH  /reviews/:id                 admin/user
+DELETE /reviews/:id                 admin/user
+For protected routes, send:
+Authorization: Bearer YOUR_ACCESS_TOKEN

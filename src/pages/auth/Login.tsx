@@ -6,6 +6,19 @@ import { Link, useNavigate } from 'react-router-dom'
 import artistImage from '../../assets/artist-optimized.jpg'
 import { login, saveAuthSession } from '../../features/auth/authApi'
 
+const demoAccounts = [
+  {
+    email: 'userdemo111@gmail.com',
+    label: 'Login as user',
+    password: 'user111',
+  },
+  {
+    email: 'admindemo111@gmail.com',
+    label: 'Login as admin',
+    password: 'admin111',
+  },
+]
+
 function Login() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
@@ -15,24 +28,28 @@ function Login() {
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function loginWithCredentials(credentials: {
+    email: string
+    password: string
+  }) {
     setStatus('')
     setError('')
     setIsSubmitting(true)
 
     try {
-      const response = await login({ email, password })
+      const response = await login(credentials)
 
       if (!response.data) {
         throw new Error('Login succeeded but no auth data was returned.')
       }
 
-      saveAuthSession(response.data)
+      const authData = response.data
+
+      saveAuthSession(authData)
       setStatus(response.message)
 
       window.setTimeout(() => {
-        navigate('/')
+        navigate(authData.user.role === 'admin' ? '/dashboard' : '/')
       }, 500)
     } catch (caughtError) {
       setError(
@@ -43,6 +60,20 @@ function Login() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    await loginWithCredentials({ email, password })
+  }
+
+  async function handleDemoLogin(credentials: {
+    email: string
+    password: string
+  }) {
+    setEmail(credentials.email)
+    setPassword(credentials.password)
+    await loginWithCredentials(credentials)
   }
 
   return (
@@ -96,6 +127,25 @@ function Login() {
           </div>
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+            <div className="grid gap-2 border border-black/10 bg-white p-3">
+              <p className="text-xs font-bold uppercase text-[#7a3f1d]">
+                Development login
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {demoAccounts.map((account) => (
+                  <button
+                    className="min-h-11 border border-black/10 px-3 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={isSubmitting}
+                    key={account.email}
+                    onClick={() => handleDemoLogin(account)}
+                    type="button"
+                  >
+                    {account.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <label className="block">
               <span className="text-sm font-bold">Email address</span>
               <span className="mt-2 flex items-center gap-3 border border-black/10 bg-white px-4 py-3 transition focus-within:border-[#181512]">

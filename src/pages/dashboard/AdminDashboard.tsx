@@ -3,6 +3,8 @@ import {
   ArrowUpRight,
   CheckCircle2,
   DollarSign,
+  FolderTree,
+  ImageOff,
   Package,
   Palette,
   Star,
@@ -12,6 +14,11 @@ import {
 import { Link } from 'react-router-dom'
 
 import DashboardLayout from '../../components/layout/DashboardLayout'
+import { API_BASE_URL } from '../../config/api'
+import {
+  type Category,
+  useGetCategoriesQuery,
+} from '../../features/categories/categoryApi'
 import {
   type AdminDashboardStats,
   useGetAdminStatsQuery,
@@ -119,6 +126,36 @@ function formatGrowth(value: number | null, fallback: string) {
   return `${value > 0 ? '+' : ''}${value}% this month`
 }
 
+function formatDate(value?: string) {
+  if (!value) {
+    return 'Not set'
+  }
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Not set'
+  }
+
+  return date.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+function getCategoryImageUrl(category: Category) {
+  if (!category.image) {
+    return ''
+  }
+
+  if (category.image.startsWith('http')) {
+    return category.image
+  }
+
+  return `${API_BASE_URL.replace('/api/v1', '')}${category.image}`
+}
+
 function getMetrics(stats: AdminDashboardStats | null) {
   const revenue = readStat(stats, [
     'revenue',
@@ -192,19 +229,17 @@ function AdminDashboard() {
     isError: hasStatsError,
     isLoading: isStatsLoading,
   } = useGetAdminStatsQuery()
+  const {
+    data: categories = [],
+    isError: hasCategoriesError,
+    isLoading: isCategoriesLoading,
+  } = useGetCategoriesQuery()
   const statsError = hasStatsError ? 'Failed to load admin stats' : ''
   const metrics = getMetrics(adminStats)
+  const previewCategories = categories.slice(0, 5)
 
   return (
     <DashboardLayout
-      actions={[
-        { label: 'Export' },
-        {
-          label: 'Add category',
-          to: '/dashboard/categories/create',
-          variant: 'primary',
-        },
-      ]}
       helperText="Review pending orders and low-stock handmade pieces before publishing new drops."
       searchPlaceholder="Search orders, products, customers"
       sidebarItems={adminNavItems}
@@ -248,6 +283,128 @@ function AdminDashboard() {
             </article>
           )
         })}
+      </section>
+
+      <section
+        className="mt-6 border border-black/10 bg-white"
+        id="categories"
+      >
+        <div className="flex flex-col gap-4 border-b border-black/10 p-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
+              <FolderTree className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 className="text-2xl font-bold">Current categories</h2>
+              <p className="mt-1 text-sm text-[#6b5f53]">
+                Live category records from the marketplace database.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {(isCategoriesLoading || hasCategoriesError) && (
+          <div
+            className={`border-b border-black/10 px-5 py-3 text-sm font-semibold ${
+              hasCategoriesError
+                ? 'bg-[#fff5ef] text-[#8f3f1d]'
+                : 'bg-[#f8f3ea] text-[#6b5f53]'
+            }`}
+          >
+            {hasCategoriesError
+              ? 'Failed to load categories.'
+              : 'Loading categories...'}
+          </div>
+        )}
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+            <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
+              <tr>
+                <th className="px-5 py-3">Category</th>
+                <th className="px-5 py-3">Slug</th>
+                <th className="px-5 py-3">Description</th>
+                <th className="px-5 py-3">Created</th>
+                <th className="px-5 py-3">Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              {previewCategories.length ? (
+                previewCategories.map((category) => {
+                  const imageUrl = getCategoryImageUrl(category)
+
+                  return (
+                    <tr
+                      className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
+                      key={category._id}
+                    >
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]">
+                            {imageUrl ? (
+                              <img
+                                alt=""
+                                className="h-full w-full object-cover"
+                                src={imageUrl}
+                              />
+                            ) : (
+                              <ImageOff className="h-5 w-5" />
+                            )}
+                          </span>
+                          <span>
+                            <span className="block font-bold">
+                              {category.name}
+                            </span>
+                            <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
+                              {category._id.slice(-8).toUpperCase()}
+                            </span>
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 font-semibold text-[#7a3f1d]">
+                        {category.slug}
+                      </td>
+                      <td className="max-w-xs px-5 py-4 text-[#6b5f53]">
+                        <span className="line-clamp-2">
+                          {category.description || 'No description added.'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-[#6b5f53]">
+                        {formatDate(category.createdAt)}
+                      </td>
+                      <td className="px-5 py-4 text-[#6b5f53]">
+                        {formatDate(category.updatedAt)}
+                      </td>
+                    </tr>
+                  )
+                })
+              ) : (
+                <tr className="border-t border-black/10">
+                  <td
+                    className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
+                    colSpan={5}
+                  >
+                    No categories found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-semibold text-[#6b5f53]">
+            Showing {formatCount(previewCategories.length, '0')} of{' '}
+            {formatCount(categories.length, '0')} categories.
+          </p>
+          <Link
+            className="inline-flex min-h-10 items-center justify-center gap-2 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+            to="/dashboard/categories/create"
+          >
+            View all categories
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
       </section>
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.5fr_0.9fr]">
@@ -342,30 +499,18 @@ function AdminDashboard() {
             <div className="mt-4 grid gap-2">
               {[
                 { label: 'Create product' },
-                { label: 'Add category', to: '/dashboard/categories/create' },
                 { label: 'Review refunds' },
                 { label: 'Publish collection' },
-              ].map((action) =>
-                action.to ? (
-                  <Link
-                    className="flex items-center justify-between border border-black/10 px-4 py-3 text-left text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
-                    key={action.label}
-                    to={action.to}
-                  >
-                    {action.label}
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Link>
-                ) : (
-                  <button
-                    className="flex items-center justify-between border border-black/10 px-4 py-3 text-left text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
-                    key={action.label}
-                    type="button"
-                  >
-                    {action.label}
-                    <ArrowUpRight className="h-4 w-4" />
-                  </button>
-                ),
-              )}
+              ].map((action) => (
+                <button
+                  className="flex items-center justify-between border border-black/10 px-4 py-3 text-left text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+                  key={action.label}
+                  type="button"
+                >
+                  {action.label}
+                  <ArrowUpRight className="h-4 w-4" />
+                </button>
+              ))}
             </div>
           </section>
         </aside>
@@ -424,8 +569,8 @@ function AdminDashboard() {
       <section className="mt-6 grid gap-6 md:grid-cols-3">
         {[
           [
-            'Categories',
-            '18 active categories',
+            'Catalog health',
+            `${formatCount(categories.length, '0')} active categories`,
             'Audit empty or duplicate collections.',
           ],
           [

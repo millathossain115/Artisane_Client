@@ -1,10 +1,18 @@
 import { useState, type FormEvent } from 'react'
-import { ArrowLeft, ImagePlus, LoaderCircle, Save, Upload } from 'lucide-react'
+import {
+  ArrowLeft,
+  Globe2,
+  ImagePlus,
+  LoaderCircle,
+  Save,
+  Upload,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import { useCreateCategoryMutation } from '../../../features/categories/categoryApi'
 import { adminNavItems } from '../../dashboard/adminNavItems'
+import CategoryTable from './CategoryTable'
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024
 
@@ -57,6 +65,7 @@ function CreateCategory() {
   const [isSlugEdited, setIsSlugEdited] = useState(false)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [createCategory, { isLoading }] = useCreateCategoryMutation()
 
   function handleNameChange(value: string) {
@@ -98,13 +107,20 @@ function CreateCategory() {
     setImageFile(file)
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setStatus('')
     setError('')
+    setIsConfirmOpen(true)
+  }
 
-    if (!imageFile) {
-      setError('Please choose a category image.')
+  async function handleConfirmCreate() {
+    setStatus('')
+    setError('')
+
+    if (!name.trim() || !slug.trim()) {
+      setError('Category name and slug are required.')
+      setIsConfirmOpen(false)
       return
     }
 
@@ -117,6 +133,7 @@ function CreateCategory() {
       }).unwrap()
 
       setStatus('Category created successfully.')
+      setIsConfirmOpen(false)
       setName('')
       setSlug('')
       setDescription('')
@@ -135,8 +152,8 @@ function CreateCategory() {
       helperText="Create clean category records before assigning products to marketplace sections."
       searchPlaceholder="Search categories, products, orders"
       sidebarItems={adminNavItems}
-      subtitle="Add a marketplace category with a searchable slug, optional description, and uploaded image."
-      title="Create category"
+      subtitle="Create category records and review all live marketplace categories from one page."
+      title="Category management"
       workspaceLabel="Marketplace studio"
     >
       <div className="grid gap-6 xl:grid-cols-[1fr_0.42fr]">
@@ -176,7 +193,11 @@ function CreateCategory() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="grid h-12 w-12 shrink-0 place-items-center bg-white text-[#7a3f1d]">
-                    <ImagePlus className="h-5 w-5" />
+                    {imageFile ? (
+                      <ImagePlus className="h-5 w-5" />
+                    ) : (
+                      <Globe2 className="h-5 w-5" />
+                    )}
                   </span>
                   <span className="min-w-0">
                     <span className="block truncate font-bold">
@@ -185,7 +206,7 @@ function CreateCategory() {
                     <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
                       {imageFile
                         ? `${imageFile.type} - ${formatFileSize(imageFile.size)}`
-                        : 'PNG, JPG, WEBP, or GIF up to 5MB'}
+                        : 'Optional. Default global icon will be used.'}
                     </span>
                   </span>
                 </div>
@@ -267,7 +288,7 @@ function CreateCategory() {
                 'image',
                 imageFile
                   ? `${imageFile.name} (${formatFileSize(imageFile.size)})`
-                  : 'No file selected',
+                  : 'Default global icon',
               ],
             ].map(([key, value]) => (
               <div className="border-t border-white/10 pt-3" key={key}>
@@ -278,6 +299,54 @@ function CreateCategory() {
           </dl>
         </aside>
       </div>
+
+      {isConfirmOpen && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-[#181512]/55 px-4"
+          role="presentation"
+        >
+          <div
+            aria-modal="true"
+            className="w-full max-w-md border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
+            role="dialog"
+          >
+            <p className="text-sm font-bold text-[#7a3f1d]">Confirm category</p>
+            <h2 className="mt-2 text-2xl font-bold">Create this category?</h2>
+            <p className="mt-3 text-sm leading-6 text-[#6b5f53]">
+              This will add a new category to the marketplace database.
+              {!imageFile
+                ? ' No image is attached, so the default global icon will be shown.'
+                : ''}
+            </p>
+
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button
+                className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
+                disabled={isLoading}
+                onClick={() => setIsConfirmOpen(false)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isLoading}
+                onClick={handleConfirmCreate}
+                type="button"
+              >
+                {isLoading ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                {isLoading ? 'Creating...' : 'Confirm create'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <CategoryTable />
     </DashboardLayout>
   )
 }
