@@ -21,7 +21,6 @@ import {
   useDeleteOrderMutation,
   useGetAllOrdersQuery,
   useGetOrderByIdQuery,
-  useUpdateOrderStatusMutation,
 } from '../../../features/orders/orderApi'
 import { formatPrice, getAssetUrl } from '../../../utils/productDisplay'
 import {
@@ -99,10 +98,6 @@ function ManageOrders() {
     'all' | PaymentStatus
   >('all')
   const [selectedOrderId, setSelectedOrderId] = useState('')
-  const [draftOrderStatus, setDraftOrderStatus] =
-    useState<OrderStatus>('pending')
-  const [draftPaymentStatus, setDraftPaymentStatus] =
-    useState<PaymentStatus>('unpaid')
   const [confirmTarget, setConfirmTarget] = useState<{
     order: Order
     type: 'cancel' | 'delete'
@@ -120,18 +115,23 @@ function ManageOrders() {
     useGetOrderByIdQuery(selectedOrderId, {
       skip: !selectedOrderId,
     })
-  const [updateOrderStatus, { isLoading: isUpdatingStatus }] =
-    useUpdateOrderStatusMutation()
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation()
   const [deleteOrder, { isLoading: isDeleting }] = useDeleteOrderMutation()
 
   const orders = useMemo(() => orderList?.data ?? [], [orderList?.data])
   const meta = orderList?.meta
   const selectedOrder = useMemo(
-    () =>
-      orderDetail ??
-      orders.find((order) => order._id === selectedOrderId) ??
-      null,
+    () => {
+      if (!selectedOrderId) {
+        return null
+      }
+
+      return (
+        orderDetail ??
+        orders.find((order) => order._id === selectedOrderId) ??
+        null
+      )
+    },
     [orderDetail, orders, selectedOrderId],
   )
   const visibleOrders = orders.filter(
@@ -142,30 +142,6 @@ function ManageOrders() {
       (paymentStatusFilter === 'all' ||
         order.paymentStatus === paymentStatusFilter),
   )
-
-  async function handleUpdateStatus() {
-    if (!selectedOrder) {
-      return
-    }
-
-    try {
-      await updateOrderStatus({
-        id: selectedOrder._id,
-        orderStatus: draftOrderStatus,
-        paymentStatus: draftPaymentStatus,
-      }).unwrap()
-      setMessage({
-        text: `${formatOrderId(selectedOrder._id)} updated.`,
-        type: 'success',
-      })
-      setSelectedOrderId('')
-    } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(error, 'Failed to update order.'),
-        type: 'error',
-      })
-    }
-  }
 
   async function confirmOrderAction() {
     if (!confirmTarget) {
@@ -362,13 +338,7 @@ function ManageOrders() {
                         <button
                           aria-label={`View ${formatOrderId(order._id)}`}
                           className="grid h-9 w-9 place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-white"
-                          onClick={() => {
-                            setDraftOrderStatus(order.orderStatus ?? 'pending')
-                            setDraftPaymentStatus(
-                              order.paymentStatus ?? 'unpaid',
-                            )
-                            setSelectedOrderId(order._id)
-                          }}
+                          onClick={() => setSelectedOrderId(order._id)}
                           type="button"
                         >
                           <Eye className="h-4 w-4" />
@@ -438,8 +408,17 @@ function ManageOrders() {
       </section>
 
       {selectedOrder ? (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-[#181512]/60 px-4 py-6">
-          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]">
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-[#181512]/60 px-4 py-6"
+          onClick={() => setSelectedOrderId('')}
+          role="presentation"
+        >
+          <div
+            aria-modal="true"
+            className="max-h-[90vh] w-full max-w-4xl overflow-y-auto border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+          >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7a3f1d]">
@@ -465,39 +444,19 @@ function ManageOrders() {
             </div>
 
             <div className="mt-5 grid gap-4 border-y border-black/10 py-4 md:grid-cols-2">
-              <label className="grid gap-2">
-                <span className="text-sm font-bold">Order status</span>
-                <select
-                  className="min-h-11 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
-                  onChange={(event) =>
-                    setDraftOrderStatus(event.target.value as OrderStatus)
-                  }
-                  value={draftOrderStatus}
-                >
-                  {orderStatusOptions.map((status) => (
-                    <option key={status} value={status}>
-                      {formatOrderStatus(status)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div>
+                <p className="text-sm font-bold">Order status</p>
+                <p className="mt-2 inline-flex min-h-11 items-center bg-[#f1dfc8] px-3 text-sm font-bold text-[#7a3f1d]">
+                  {formatOrderStatus(selectedOrder.orderStatus)}
+                </p>
+              </div>
 
-              <label className="grid gap-2">
-                <span className="text-sm font-bold">Payment status</span>
-                <select
-                  className="min-h-11 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
-                  onChange={(event) =>
-                    setDraftPaymentStatus(event.target.value as PaymentStatus)
-                  }
-                  value={draftPaymentStatus}
-                >
-                  {paymentStatusOptions.map((status) => (
-                    <option key={status} value={status}>
-                      {formatOrderStatus(status)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div>
+                <p className="text-sm font-bold">Payment status</p>
+                <p className="mt-2 inline-flex min-h-11 items-center bg-[#effaf3] px-3 text-sm font-bold text-[#1f6b43]">
+                  {formatOrderStatus(selectedOrder.paymentStatus)}
+                </p>
+              </div>
             </div>
 
             <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
@@ -555,14 +514,6 @@ function ManageOrders() {
               <p className="text-xl font-bold">
                 Total {formatPrice(selectedOrder.totalPrice ?? 0)}
               </p>
-              <button
-                className="min-h-11 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={isUpdatingStatus}
-                onClick={handleUpdateStatus}
-                type="button"
-              >
-                {isUpdatingStatus ? 'Updating...' : 'Update status'}
-              </button>
             </div>
           </div>
         </div>
