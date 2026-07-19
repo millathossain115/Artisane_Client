@@ -78,7 +78,7 @@ export const dashboardApi = baseApi.injectEndpoints({
       transformResponse: (response: ApiResponse<AdminDashboardStats>) =>
         response.data ?? null,
     }),
-    getUserStats: builder.query<UserDashboardStats | null, void>({
+    getMyDashboardStats: builder.query<UserDashboardStats | null, void>({
       providesTags: ['Dashboard'],
       query: () => ({
         method: 'GET',
@@ -90,4 +90,5 @@ export const dashboardApi = baseApi.injectEndpoints({
   }),
 })
 
-export const { useGetAdminStatsQuery, useGetUserStatsQuery } = dashboardApi
+export const { useGetAdminStatsQuery, useGetMyDashboardStatsQuery } =
+  dashboardApi

@@ -5,6 +5,7 @@ import type {
   DashboardOrder,
   UserDashboardStats,
 } from '../../../features/dashboard/dashboardApi'
+import type { Order } from '../../../features/orders/orderApi'
 import {
   formatCurrency,
   formatDate,
@@ -13,10 +14,13 @@ import {
 } from '../dashboardFormat'
 
 type UserOrdersSectionProps = {
+  orders: Order[]
   stats: UserDashboardStats | null
 }
 
-function getPrimaryOrderItem(order: DashboardOrder) {
+const RECENT_ORDER_LIMIT = 6
+
+function getPrimaryOrderItem(order: DashboardOrder | Order) {
   const firstItem = order.items?.[0]
 
   if (!firstItem) {
@@ -29,14 +33,18 @@ function getPrimaryOrderItem(order: DashboardOrder) {
   return extraItems > 0 ? `${itemName} +${extraItems} more` : itemName
 }
 
-function UserOrdersSection({ stats }: UserOrdersSectionProps) {
+function UserOrdersSection({ orders, stats }: UserOrdersSectionProps) {
+  const recentOrders = (
+    orders.length ? orders : (stats?.recentOrders ?? [])
+  ).slice(0, RECENT_ORDER_LIMIT)
+
   return (
     <div className="border border-black/10 bg-white" id="orders">
       <div className="flex items-center justify-between gap-4 border-b border-black/10 p-5">
         <div>
           <h2 className="text-2xl font-bold">My orders</h2>
           <p className="mt-1 text-sm text-[#6b5f53]">
-            Current delivery status and recent purchases.
+            Latest {RECENT_ORDER_LIMIT} orders for your account.
           </p>
         </div>
         <Link
@@ -60,8 +68,8 @@ function UserOrdersSection({ stats }: UserOrdersSectionProps) {
             </tr>
           </thead>
           <tbody>
-            {stats?.recentOrders.length ? (
-              stats.recentOrders.map((order) => (
+            {recentOrders.length ? (
+              recentOrders.map((order) => (
                 <tr
                   className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
                   key={order._id}

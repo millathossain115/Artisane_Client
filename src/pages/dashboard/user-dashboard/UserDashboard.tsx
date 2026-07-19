@@ -2,7 +2,8 @@ import { useState } from 'react'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import { getStoredUser } from '../../../features/auth/authApi'
-import { useGetUserStatsQuery } from '../../../features/dashboard/dashboardApi'
+import { useGetMyDashboardStatsQuery } from '../../../features/dashboard/dashboardApi'
+import { useGetMyOrdersQuery } from '../../../features/orders/orderApi'
 import DashboardMetricGrid from '../DashboardMetricGrid'
 import DashboardNotice from '../DashboardNotice'
 import UserAccountOverview from './UserAccountOverview'
@@ -18,7 +19,12 @@ function UserDashboard() {
     data: userStats = null,
     isError: hasStatsError,
     isLoading: isStatsLoading,
-  } = useGetUserStatsQuery()
+  } = useGetMyDashboardStatsQuery()
+  const { data: myOrderList } = useGetMyOrdersQuery({ limit: 100, page: 1 })
+  const myOrders = myOrderList?.data ?? []
+  const shouldShowStatsNotice =
+    (isStatsLoading || (hasStatsError && myOrders.length === 0)) &&
+    !isNoticeDismissed
 
   return (
     <DashboardLayout
@@ -41,11 +47,13 @@ function UserDashboard() {
         }
         loadingText="Loading your dashboard stats..."
         onClose={() => setIsNoticeDismissed(true)}
-        show={(isStatsLoading || hasStatsError) && !isNoticeDismissed}
+        show={shouldShowStatsNotice}
       />
 
-      <DashboardMetricGrid metrics={getUserMetrics(userStats)} />
-      <UserAccountOverview stats={userStats} />
+      <DashboardMetricGrid
+        metrics={getUserMetrics(userStats, myOrders, myOrderList?.meta.total)}
+      />
+      <UserAccountOverview orders={myOrders} stats={userStats} />
       <UserWishlistReviewsSection stats={userStats} />
       <UserSummaryTiles />
     </DashboardLayout>
