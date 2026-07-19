@@ -17,7 +17,7 @@ export const wishlist = [
 ]
 
 export const supportItems = [
-  'Shipping question answered 2 hours ago',
-  'Refund request draft saved',
-  'Artist message waiting for reply',
+  { label: 'Shipping & returns', to: '/shipping-returns' },
+  { label: 'FAQ', to: '/faq' },
+  { label: 'Contact support', to: 'mailto:support@artisane.com' },
 ]

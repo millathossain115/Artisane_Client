@@ -16,6 +16,7 @@ export type Category = {
   image?: string
   isActive?: boolean
   isDeleted?: boolean
+  productCount?: number
   createdAt?: string
   updatedAt?: string
 }

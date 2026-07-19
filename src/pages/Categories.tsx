@@ -125,6 +125,12 @@ function Categories() {
                         <h2 className="line-clamp-2 text-base font-bold sm:text-xl">
                           {category.name}
                         </h2>
+                        <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-[#7a3f1d]">
+                          {category.productCount ?? 0}{' '}
+                          {(category.productCount ?? 0) === 1
+                            ? 'product'
+                            : 'products'}
+                        </p>
                       </div>
                     </Link>
                   )
