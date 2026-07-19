@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import type { Category } from '../../features/categories/categoryApi'
 import { getAssetUrl } from '../../utils/productDisplay'
@@ -16,6 +17,10 @@ function getCategoryImage(category: Category, index: number) {
     getAssetUrl(category.image) ??
     categoryFallbackImages[index % categoryFallbackImages.length]
   )
+}
+
+function getCategoryUrl(categoryId: string) {
+  return `/products?category=${encodeURIComponent(categoryId)}`
 }
 
 function HomeCategories({
@@ -86,9 +91,7 @@ function HomeCategories({
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7a3f1d]">
             Categories
           </p>
-          <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
-            Shop by craft
-          </h2>
+          <h2 className="mt-3 text-3xl font-bold sm:text-4xl">Shop by craft</h2>
         </div>
         <a
           className="inline-flex items-center gap-2 text-sm font-bold text-[#181512]"
@@ -131,10 +134,10 @@ function HomeCategories({
                 />
               ))
             : categories.map((category, index) => (
-                <a
+                <Link
                   className="group relative h-72 w-72 shrink-0 overflow-hidden bg-[#181512]"
-                  href="#products"
                   key={category._id}
+                  to={getCategoryUrl(category._id)}
                 >
                   <img
                     alt={`${category.name} category`}
@@ -146,15 +149,13 @@ function HomeCategories({
                     <p className="text-sm font-bold text-[#f1c9a6]">
                       {category.slug}
                     </p>
-                    <h3 className="mt-2 text-3xl font-bold">
-                      {category.name}
-                    </h3>
+                    <h3 className="mt-2 text-3xl font-bold">{category.name}</h3>
                     <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/76">
                       {category.description ??
                         craftNotes[index % craftNotes.length]}
                     </p>
                   </div>
-                </a>
+                </Link>
               ))}
         </div>
 
