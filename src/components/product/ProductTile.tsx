@@ -126,7 +126,7 @@ function ProductTile({
           </div>
         )}
 
-        <div className="absolute left-3 top-3 bg-white px-3 py-1 text-xs font-bold text-[#7a3f1d]">
+        <div className="absolute left-1.5 top-1.5 bg-white px-1.5 py-0.5 text-[10px] font-bold text-[#7a3f1d] sm:left-3 sm:top-3 sm:px-3 sm:py-1 sm:text-xs">
           {getProductBadge(product)}
         </div>
         {!isAdmin ? (
@@ -137,13 +137,13 @@ function ProductTile({
                 : `Add ${product.name} to wishlist`
             }
             aria-pressed={isWishlisted}
-            className="absolute right-3 top-3 grid h-10 w-10 place-items-center bg-white text-[#181512] transition hover:bg-[#181512] hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
+            className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center bg-white text-[#181512] transition hover:bg-[#181512] hover:text-white disabled:cursor-not-allowed disabled:opacity-70 sm:right-3 sm:top-3 sm:h-10 sm:w-10"
             disabled={isWishlistLoading}
             onClick={handleWishlistClick}
             type="button"
           >
             <Heart
-              className={`h-4 w-4 ${
+              className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
                 isWishlisted ? 'fill-[#8f3f1d] text-[#8f3f1d]' : ''
               }`}
             />
@@ -151,48 +151,55 @@ function ProductTile({
         ) : null}
       </div>
 
-      <div className={variant === 'compact' ? 'p-3' : 'p-4'}>
-        <div className="flex items-center justify-between gap-3 text-xs font-semibold text-[#7a3f1d]">
+      <div className={variant === 'compact' ? 'p-2 sm:p-3' : 'p-2 sm:p-4'}>
+        <div className="flex items-center justify-between gap-1 text-[10px] font-semibold text-[#7a3f1d] sm:gap-3 sm:text-xs">
           <span className="truncate">{getCategoryName(product.category)}</span>
           <span className="inline-flex shrink-0 items-center gap-1 text-[#4f463d]">
             <Star className="h-3.5 w-3.5 fill-[#c85f2f] text-[#c85f2f]" />
-            New
+            <span className="hidden sm:inline">New</span>
           </span>
         </div>
 
         <h3
-          className={`mt-3 line-clamp-2 font-bold leading-snug ${
-            variant === 'compact' ? 'min-h-10 text-base' : 'min-h-12 text-lg'
+          className={`mt-2 line-clamp-2 font-bold leading-snug sm:mt-3 ${
+            variant === 'compact'
+              ? 'min-h-8 text-xs sm:min-h-10 sm:text-base'
+              : 'min-h-8 text-xs sm:min-h-12 sm:text-lg'
           }`}
         >
           {product.name}
         </h3>
-        <p className="mt-1 truncate text-sm text-[#6b5f53]">
+        <p className="mt-1 truncate text-[11px] text-[#6b5f53] sm:text-sm">
           {product.brand ?? 'Artisane Studio'}
         </p>
 
-        <div className="mt-4 flex items-end justify-between gap-3">
+        <div className="mt-2 flex items-end justify-between gap-2 sm:mt-4 sm:gap-3">
           <div>
-            <span className="text-xl font-bold">
+            <span className="text-sm font-bold sm:text-xl">
               {formatPrice(product.price)}
             </span>
-            <p className="mt-1 text-xs font-semibold text-[#8a7d71]">
+            <p className="mt-1 hidden text-xs font-semibold text-[#8a7d71] sm:block">
               {product.stock} in stock
             </p>
           </div>
         </div>
 
         {!isAdmin ? (
-          <div className="mt-4">
+          <div className="mt-2 sm:mt-4">
             <button
               aria-label={`Add ${product.name} to cart`}
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 bg-[#181512] px-3 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-h-9 w-full items-center justify-center gap-1 bg-[#181512] px-2 text-xs font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-11 sm:gap-2 sm:px-3 sm:text-sm"
               disabled={product.stock <= 0}
               onClick={handleAddToCart}
               type="button"
             >
-              <ShoppingBag className="h-4 w-4" />
-              {product.stock <= 0 ? 'Out of stock' : 'Add to cart'}
+              <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="sm:hidden">
+                {product.stock <= 0 ? 'Out' : 'Add'}
+              </span>
+              <span className="hidden sm:inline">
+                {product.stock <= 0 ? 'Out of stock' : 'Add to cart'}
+              </span>
             </button>
           </div>
         ) : null}

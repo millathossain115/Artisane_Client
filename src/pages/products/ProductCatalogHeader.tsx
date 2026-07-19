@@ -3,6 +3,7 @@ import { X } from 'lucide-react'
 import { SORT_LABELS, SORT_VALUES, type SortOption } from './productCatalog'
 
 type ProductCatalogHeaderProps = {
+  categoryName?: string
   hasActiveFilters: boolean
   onClearFilters: () => void
   onSortChange: (sortOption: SortOption) => void
@@ -14,6 +15,7 @@ type ProductCatalogHeaderProps = {
 }
 
 function ProductCatalogHeader({
+  categoryName,
   hasActiveFilters,
   onClearFilters,
   onSortChange,
@@ -23,6 +25,10 @@ function ProductCatalogHeader({
   sortOption,
   totalProducts,
 }: ProductCatalogHeaderProps) {
+  const title = searchTerm
+    ? `Search: ${searchTerm}`
+    : (categoryName ?? 'All products')
+
   return (
     <section className="border-b border-black/10 pb-6">
       <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7a3f1d]">
@@ -30,9 +36,7 @@ function ProductCatalogHeader({
       </p>
       <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-4xl font-bold sm:text-5xl">
-            {searchTerm ? `Search: ${searchTerm}` : 'All products'}
-          </h1>
+          <h1 className="text-4xl font-bold sm:text-5xl">{title}</h1>
           <p className="mt-3 text-sm font-semibold text-[#6b5f53]">
             Showing {resultStart}-{resultEnd} of {totalProducts} products.
           </p>

@@ -40,11 +40,11 @@ function FeaturedProducts({
         </div>
       ) : null}
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-8 grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
         {isLoading
           ? Array.from({ length: 8 }).map((_, index) => (
               <div
-                className="h-[472px] animate-pulse bg-white"
+                className="h-52 animate-pulse bg-white sm:h-[472px]"
                 key={index}
               />
             ))

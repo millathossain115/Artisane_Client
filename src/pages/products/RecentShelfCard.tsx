@@ -29,14 +29,16 @@ function RecentShelfCard({ product }: RecentShelfCardProps) {
           </div>
         )}
       </div>
-      <div className="p-4">
-        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#7a3f1d]">
+      <div className="p-2 sm:p-4">
+        <p className="truncate text-[10px] font-bold uppercase tracking-[0.08em] text-[#7a3f1d] sm:text-xs sm:tracking-[0.12em]">
           {product.categoryName}
         </p>
-        <h3 className="mt-2 line-clamp-2 min-h-10 text-base font-bold leading-snug">
+        <h3 className="mt-2 line-clamp-2 min-h-8 text-xs font-bold leading-snug sm:min-h-10 sm:text-base">
           {product.name}
         </h3>
-        <p className="mt-3 text-lg font-bold">{formatPrice(product.price)}</p>
+        <p className="mt-2 text-sm font-bold sm:mt-3 sm:text-lg">
+          {formatPrice(product.price)}
+        </p>
       </div>
     </Link>
   )

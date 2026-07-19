@@ -23,16 +23,15 @@ function LatestProducts({ isLoading, products }: LatestProductsProps) {
             </h2>
           </div>
           <p className="max-w-sm text-sm leading-6 text-white/64">
-            A denser product wall for quick scanning on desktop and clean
-            two-column browsing on mobile.
+            A denser product wall for quick scanning across every screen.
           </p>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {isLoading
             ? Array.from({ length: 8 }).map((_, index) => (
                 <div
-                  className="h-[438px] animate-pulse bg-white/10"
+                  className="h-52 animate-pulse bg-white/10 sm:h-[438px]"
                   key={index}
                 />
               ))

@@ -16,10 +16,8 @@ function RecentlyViewedSection({ products }: RecentlyViewedSectionProps) {
         <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#f1c9a6]">
           Recently viewed
         </p>
-        <h2 className="mt-3 text-3xl font-bold">
-          Pick up where you left off
-        </h2>
-        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <h2 className="mt-3 text-3xl font-bold">Pick up where you left off</h2>
+        <div className="mt-6 grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
           {products.slice(0, 4).map((item) => (
             <RecentShelfCard key={item.id} product={item} />
           ))}
