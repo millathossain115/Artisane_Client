@@ -18,12 +18,14 @@ import WishlistPage from './pages/dashboard/user-dashboard/WishlistPage'
 import Home from './pages/Home'
 import PaymentResult from './pages/payment/PaymentResult'
 import ProductDetails from './pages/ProductDetails'
+import Products from './pages/Products'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetails />} />
         <Route
           path="/payment/success"

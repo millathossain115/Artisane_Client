@@ -13,6 +13,7 @@ import {
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import {
   type Order,
+  type OrderStatus,
   useCancelOrderMutation,
   useGetMyOrdersQuery,
 } from '../../features/orders/orderApi'
@@ -27,6 +28,15 @@ import {
   getOrderPrimaryItem,
 } from '../../utils/orderDisplay'
 import { userNavItems } from './user-dashboard/userNavItems'
+
+const orderStatusOptions: OrderStatus[] = [
+  'pending',
+  'confirmed',
+  'processing',
+  'shipped',
+  'delivered',
+  'cancelled',
+]
 
 function getApiErrorMessage(error: unknown, fallback: string) {
   const apiError = error as {
@@ -47,19 +57,31 @@ function getApiErrorMessage(error: unknown, fallback: string) {
 
 function MyOrdersPage() {
   const [page, setPage] = useState(1)
+  const [orderStatusFilter, setOrderStatusFilter] = useState<
+    'all' | OrderStatus
+  >('all')
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [cancelTarget, setCancelTarget] = useState<Order | null>(null)
   const [message, setMessage] = useState<{
     text: string
     type: 'error' | 'success'
   } | null>(null)
-  const { data: orderList, isError, isLoading } = useGetMyOrdersQuery({
+  const {
+    data: orderList,
+    isError,
+    isLoading,
+  } = useGetMyOrdersQuery({
     limit: 10,
     page,
+    status: orderStatusFilter === 'all' ? undefined : orderStatusFilter,
   })
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation()
 
   const orders = orderList?.data ?? []
+  const visibleOrders = orders.filter(
+    (order) =>
+      orderStatusFilter === 'all' || order.orderStatus === orderStatusFilter,
+  )
   const meta = orderList?.meta
 
   async function confirmCancelOrder() {
@@ -118,16 +140,37 @@ function MyOrdersPage() {
       ) : null}
 
       <section className="border border-black/10 bg-white">
-        <div className="flex items-center gap-3 border-b border-black/10 p-5">
-          <span className="grid h-10 w-10 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
-            <Package className="h-5 w-5" />
-          </span>
-          <div>
-            <h2 className="text-2xl font-bold">Order history</h2>
-            <p className="mt-1 text-sm text-[#6b5f53]">
-              {meta?.total ?? orders.length} orders found.
-            </p>
+        <div className="flex flex-col gap-4 border-b border-black/10 p-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
+              <Package className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 className="text-2xl font-bold">Order history</h2>
+              <p className="mt-1 text-sm text-[#6b5f53]">
+                {meta?.total ?? orders.length} orders found.
+              </p>
+            </div>
           </div>
+
+          <label className="grid gap-2 sm:w-72">
+            <span className="text-sm font-bold">Order status</span>
+            <select
+              className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+              onChange={(event) => {
+                setOrderStatusFilter(event.target.value as 'all' | OrderStatus)
+                setPage(1)
+              }}
+              value={orderStatusFilter}
+            >
+              <option value="all">All orders</option>
+              {orderStatusOptions.map((status) => (
+                <option key={status} value={status}>
+                  {formatOrderStatus(status)}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         {isError ? (
@@ -158,8 +201,8 @@ function MyOrdersPage() {
                     </td>
                   </tr>
                 ))
-              ) : orders.length ? (
-                orders.map((order) => (
+              ) : visibleOrders.length ? (
+                visibleOrders.map((order) => (
                   <tr
                     className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
                     key={order._id}
@@ -215,7 +258,7 @@ function MyOrdersPage() {
                     className="px-5 py-8 text-center font-semibold text-[#6b5f53]"
                     colSpan={7}
                   >
-                    No orders yet.
+                    No orders found.
                   </td>
                 </tr>
               )}

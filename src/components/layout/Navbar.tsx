@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import {
   ChevronDown,
   LayoutDashboard,
@@ -11,6 +11,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom'
 
 import CartButton from '../cart/CartButton'
+import { useGetProductsQuery } from '../../features/products/productApi'
 import { syncCartForCurrentUser } from '../../features/cart/cartSlice'
 import {
   clearAuthSession,
@@ -18,6 +19,11 @@ import {
   type AuthUser,
 } from '../../features/auth/authApi'
 import { useAppDispatch } from '../../redux/hooks'
+import {
+  formatPrice,
+  getProductCategoryName,
+  getProductImage,
+} from '../../utils/productDisplay'
 
 const categoryItems = [
   'Painting',
@@ -34,8 +40,24 @@ function Navbar() {
   const navigate = useNavigate()
   const [user, setUser] = useState<AuthUser | null>(() => getStoredUser())
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [searchValue, setSearchValue] = useState('')
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement | null>(null)
+  const desktopSearchRef = useRef<HTMLDivElement | null>(null)
+  const mobileSearchRef = useRef<HTMLDivElement | null>(null)
   const isAdmin = user?.role === 'admin'
+  const trimmedSearchValue = searchValue.trim()
+  const shouldFetchSearch = trimmedSearchValue.length >= 2
+  const { data: searchProductList, isFetching: isSearchingProducts } =
+    useGetProductsQuery(
+      {
+        limit: 5,
+        page: 1,
+        searchTerm: trimmedSearchValue,
+      },
+      { skip: !shouldFetchSearch },
+    )
+  const searchProducts = searchProductList?.data ?? []
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -44,6 +66,16 @@ function Navbar() {
         !profileMenuRef.current.contains(event.target as Node)
       ) {
         setIsProfileOpen(false)
+      }
+
+      const clickTarget = event.target as Node
+      const isInsideDesktopSearch =
+        desktopSearchRef.current?.contains(clickTarget)
+      const isInsideMobileSearch =
+        mobileSearchRef.current?.contains(clickTarget)
+
+      if (!isInsideDesktopSearch && !isInsideMobileSearch) {
+        setIsSearchOpen(false)
       }
     }
 
@@ -60,6 +92,30 @@ function Navbar() {
     setUser(null)
     setIsProfileOpen(false)
     navigate('/login')
+  }
+
+  function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    const formData = new FormData(event.currentTarget)
+    const searchTerm = String(formData.get('search') ?? '').trim()
+
+    navigate(
+      searchTerm
+        ? `/products?search=${encodeURIComponent(searchTerm)}`
+        : '/products',
+    )
+    setSearchValue(searchTerm)
+    setIsSearchOpen(false)
+  }
+
+  function handleSearchChange(value: string) {
+    setSearchValue(value)
+    setIsSearchOpen(value.trim().length >= 2)
+  }
+
+  function handleSearchProductClick() {
+    setIsSearchOpen(false)
   }
 
   const displayName = user?.name ?? 'Guest Artist'
@@ -84,17 +140,90 @@ function Navbar() {
             <span className="font-display text-2xl font-bold">Artisane</span>
           </Link>
 
-          <form
-            className="ml-auto hidden min-w-64 max-w-md flex-1 items-center gap-2 border border-black/10 bg-white px-3 py-2 md:flex"
-            onSubmit={(event) => event.preventDefault()}
+          <div
+            className="relative ml-auto hidden min-w-64 max-w-md flex-1 md:block"
+            ref={desktopSearchRef}
           >
-            <Search className="h-5 w-5 text-[#766a5e]" />
-            <input
-              className="w-full bg-transparent text-sm outline-none placeholder:text-[#8a7d71]"
-              placeholder="Search handmade products"
-              type="search"
-            />
-          </form>
+            <form
+              className="flex items-center gap-2 border border-black/10 bg-white px-3 py-2"
+              onSubmit={handleSearchSubmit}
+            >
+              <Search className="h-5 w-5 text-[#766a5e]" />
+              <input
+                className="w-full bg-transparent text-sm outline-none placeholder:text-[#8a7d71]"
+                name="search"
+                onChange={(event) => handleSearchChange(event.target.value)}
+                onFocus={() => setIsSearchOpen(trimmedSearchValue.length >= 2)}
+                placeholder="Search handmade products"
+                type="search"
+                value={searchValue}
+              />
+            </form>
+
+            {isSearchOpen ? (
+              <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 border border-black/10 bg-white shadow-[0_22px_44px_rgba(24,21,18,0.16)]">
+                {isSearchingProducts ? (
+                  <div className="grid gap-3 p-3">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div
+                        className="h-14 animate-pulse bg-[#f8f3ea]"
+                        key={index}
+                      />
+                    ))}
+                  </div>
+                ) : searchProducts.length ? (
+                  <div className="py-2">
+                    {searchProducts.map((product) => {
+                      const imageUrl = getProductImage(product)
+
+                      return (
+                        <Link
+                          className="grid grid-cols-[52px_1fr_auto] items-center gap-3 px-3 py-2 transition hover:bg-[#f8f3ea]"
+                          key={product._id}
+                          onClick={handleSearchProductClick}
+                          to={`/products/${product._id}`}
+                        >
+                          <span className="grid h-12 w-12 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]">
+                            {imageUrl ? (
+                              <img
+                                alt={product.name}
+                                className="h-full w-full object-cover"
+                                src={imageUrl}
+                              />
+                            ) : (
+                              <Search className="h-4 w-4" />
+                            )}
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-bold">
+                              {product.name}
+                            </span>
+                            <span className="mt-1 block truncate text-xs font-semibold text-[#6b5f53]">
+                              {getProductCategoryName(product)}
+                            </span>
+                          </span>
+                          <span className="text-xs font-bold text-[#7a3f1d]">
+                            {formatPrice(product.price)}
+                          </span>
+                        </Link>
+                      )
+                    })}
+                    <Link
+                      className="mt-1 block border-t border-black/10 px-3 py-3 text-center text-xs font-bold text-[#7a3f1d] transition hover:bg-[#f8f3ea]"
+                      onClick={handleSearchProductClick}
+                      to={`/products?search=${encodeURIComponent(trimmedSearchValue)}`}
+                    >
+                      View all results
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="p-4 text-sm font-semibold text-[#6b5f53]">
+                    No quick results found.
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
 
           <div className="ml-auto flex items-center gap-2 md:ml-0">
             <div className="relative" ref={profileMenuRef}>
@@ -213,17 +342,87 @@ function Navbar() {
         </div>
 
         <div className="border-t border-black/10 px-4 py-3 md:hidden">
-          <form
-            className="mx-auto flex max-w-7xl items-center gap-2 border border-black/10 bg-white px-3 py-2"
-            onSubmit={(event) => event.preventDefault()}
-          >
-            <Search className="h-5 w-5 text-[#766a5e]" />
-            <input
-              className="w-full bg-transparent text-sm outline-none placeholder:text-[#8a7d71]"
-              placeholder="Search handmade products"
-              type="search"
-            />
-          </form>
+          <div className="relative mx-auto max-w-7xl" ref={mobileSearchRef}>
+            <form
+              className="flex items-center gap-2 border border-black/10 bg-white px-3 py-2"
+              onSubmit={handleSearchSubmit}
+            >
+              <Search className="h-5 w-5 text-[#766a5e]" />
+              <input
+                className="w-full bg-transparent text-sm outline-none placeholder:text-[#8a7d71]"
+                name="search"
+                onChange={(event) => handleSearchChange(event.target.value)}
+                onFocus={() => setIsSearchOpen(trimmedSearchValue.length >= 2)}
+                placeholder="Search handmade products"
+                type="search"
+                value={searchValue}
+              />
+            </form>
+
+            {isSearchOpen ? (
+              <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 border border-black/10 bg-white shadow-[0_22px_44px_rgba(24,21,18,0.16)]">
+                {isSearchingProducts ? (
+                  <div className="grid gap-3 p-3">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div
+                        className="h-14 animate-pulse bg-[#f8f3ea]"
+                        key={index}
+                      />
+                    ))}
+                  </div>
+                ) : searchProducts.length ? (
+                  <div className="py-2">
+                    {searchProducts.map((product) => {
+                      const imageUrl = getProductImage(product)
+
+                      return (
+                        <Link
+                          className="grid grid-cols-[52px_1fr_auto] items-center gap-3 px-3 py-2 transition hover:bg-[#f8f3ea]"
+                          key={product._id}
+                          onClick={handleSearchProductClick}
+                          to={`/products/${product._id}`}
+                        >
+                          <span className="grid h-12 w-12 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]">
+                            {imageUrl ? (
+                              <img
+                                alt={product.name}
+                                className="h-full w-full object-cover"
+                                src={imageUrl}
+                              />
+                            ) : (
+                              <Search className="h-4 w-4" />
+                            )}
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-bold">
+                              {product.name}
+                            </span>
+                            <span className="mt-1 block truncate text-xs font-semibold text-[#6b5f53]">
+                              {getProductCategoryName(product)}
+                            </span>
+                          </span>
+                          <span className="text-xs font-bold text-[#7a3f1d]">
+                            {formatPrice(product.price)}
+                          </span>
+                        </Link>
+                      )
+                    })}
+                    <Link
+                      className="mt-1 block border-t border-black/10 px-3 py-3 text-center text-xs font-bold text-[#7a3f1d] transition hover:bg-[#f8f3ea]"
+                      onClick={handleSearchProductClick}
+                      to={`/products?search=${encodeURIComponent(trimmedSearchValue)}`}
+                    >
+                      View all results
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="p-4 text-sm font-semibold text-[#6b5f53]">
+                    No quick results found.
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
         </div>
       </header>
     </>
