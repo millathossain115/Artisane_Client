@@ -34,6 +34,23 @@ export function formatOrderStatus(value?: string) {
     .join(' ')
 }
 
+export function formatCourierProvider(value?: string) {
+  if (!value) {
+    return 'Courier'
+  }
+
+  switch (value) {
+    case 'pathao':
+      return 'Pathao'
+    case 'redx':
+      return 'RedX'
+    case 'steadfast':
+      return 'Steadfast'
+    default:
+      return formatOrderStatus(value)
+  }
+}
+
 export function getOrderCustomer(order: Order) {
   if (!order.user || typeof order.user === 'string') {
     return 'Customer'
@@ -91,7 +108,45 @@ export function getOrderItemImage(item?: OrderItem) {
 }
 
 export function canCancelOrder(order: Order) {
-  return !['cancelled', 'delivered', 'shipped'].includes(
-    order.orderStatus ?? '',
+  return ['pending', 'confirmed'].includes(order.orderStatus ?? '')
+}
+
+export function hasDeliveryIssue(order: Order) {
+  const status = `${order.courierStatus ?? ''}`.toLowerCase()
+
+  return ['failed', 'cancelled', 'returned', 'rto', 'lost'].some((item) =>
+    status.includes(item),
   )
+}
+
+export function getOrderProgressIndex(order: Order) {
+  if (order.orderStatus === 'cancelled') {
+    return -1
+  }
+
+  if (order.orderStatus === 'delivered') {
+    return 3
+  }
+
+  if (order.orderStatus === 'shipped') {
+    return 2
+  }
+
+  if (order.orderStatus === 'processing') {
+    return 1
+  }
+
+  return 0
+}
+
+export function getDeliveryIssueLabel(order: Order) {
+  if (order.orderStatus === 'cancelled') {
+    return 'Order cancelled'
+  }
+
+  if (hasDeliveryIssue(order)) {
+    return formatOrderStatus(order.courierStatus)
+  }
+
+  return ''
 }

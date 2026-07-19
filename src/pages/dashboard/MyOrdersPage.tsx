@@ -20,9 +20,12 @@ import {
 import { formatPrice, getAssetUrl } from '../../utils/productDisplay'
 import {
   canCancelOrder,
+  formatCourierProvider,
   formatOrderDate,
   formatOrderId,
   formatOrderStatus,
+  getDeliveryIssueLabel,
+  getOrderProgressIndex,
   getOrderItemImage,
   getOrderItemName,
   getOrderPrimaryItem,
@@ -83,6 +86,12 @@ function MyOrdersPage() {
       orderStatusFilter === 'all' || order.orderStatus === orderStatusFilter,
   )
   const meta = orderList?.meta
+  const orderProgressSteps = [
+    { key: 'confirmed', label: 'Confirmed' },
+    { key: 'processing', label: 'Processing' },
+    { key: 'shipped', label: 'Shipped' },
+    { key: 'delivered', label: 'Delivered' },
+  ] as const
 
   async function confirmCancelOrder() {
     if (!cancelTarget) {
@@ -332,6 +341,98 @@ function MyOrdersPage() {
               </p>
             </div>
 
+            <div className="mt-5 border-b border-black/10 pb-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
+                    Delivery tracker
+                  </p>
+                  <p className="mt-1 text-sm text-[#6b5f53]">
+                    Live state from admin and courier.
+                  </p>
+                </div>
+                {getDeliveryIssueLabel(selectedOrder) ? (
+                  <span className="inline-flex min-h-10 items-center bg-[#fff5ef] px-3 text-xs font-bold text-[#8f3f1d]">
+                    {getDeliveryIssueLabel(selectedOrder)}
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {orderProgressSteps.map((step, index) => {
+                  const progressIndex = getOrderProgressIndex(selectedOrder)
+                  const done =
+                    progressIndex >= index &&
+                    selectedOrder.orderStatus !== 'cancelled'
+                  const active =
+                    progressIndex === index &&
+                    selectedOrder.orderStatus !== 'cancelled'
+
+                  return (
+                    <div
+                      className={`border px-4 py-3 text-sm font-bold ${
+                        selectedOrder.orderStatus === 'cancelled'
+                          ? 'border-[#c85f2f]/25 bg-[#fff5ef] text-[#8f3f1d]'
+                          : done
+                            ? 'border-[#1f7a4d]/20 bg-[#effaf3] text-[#1f6b43]'
+                            : 'border-black/10 bg-white text-[#6b5f53]'
+                      }`}
+                      key={step.key}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`grid h-6 w-6 place-items-center border text-xs ${
+                            active
+                              ? 'border-[#181512] bg-[#181512] text-white'
+                              : done
+                                ? 'border-[#1f7a4d] bg-[#1f7a4d] text-white'
+                                : 'border-black/15 bg-white text-[#6b5f53]'
+                          }`}
+                        >
+                          {index + 1}
+                        </span>
+                        <span>{step.label}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {selectedOrder.courierProvider ||
+            selectedOrder.courierOrderId ||
+            selectedOrder.trackingCode ? (
+              <div className="mt-5 grid gap-3 border-b border-black/10 pb-5 text-sm md:grid-cols-2">
+                <p>
+                  <span className="font-bold">Courier:</span>{' '}
+                  {formatCourierProvider(selectedOrder.courierProvider)}
+                </p>
+                <p>
+                  <span className="font-bold">Courier order id:</span>{' '}
+                  {selectedOrder.courierOrderId ?? 'Not set'}
+                </p>
+                <p>
+                  <span className="font-bold">Tracking code:</span>{' '}
+                  {selectedOrder.trackingCode ?? 'Not set'}
+                </p>
+                <p>
+                  <span className="font-bold">Tracking link:</span>{' '}
+                  {selectedOrder.trackingUrl ? (
+                    <a
+                      className="font-bold text-[#7a3f1d] underline"
+                      href={selectedOrder.trackingUrl}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      Open tracking
+                    </a>
+                  ) : (
+                    'Not set'
+                  )}
+                </p>
+              </div>
+            ) : null}
+
             <div className="mt-5 grid gap-3">
               {(selectedOrder.items ?? []).map((item, index) => {
                 const imageUrl = getAssetUrl(getOrderItemImage(item))
@@ -373,7 +474,7 @@ function MyOrdersPage() {
             <h2 className="text-2xl font-bold">Cancel order?</h2>
             <p className="mt-3 text-sm leading-6 text-[#6b5f53]">
               {formatOrderId(cancelTarget._id)} will be cancelled if server
-              allows it.
+              allows it. Cancel ends before shipping starts.
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <button

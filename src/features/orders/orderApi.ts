@@ -113,6 +113,14 @@ export type UpdateOrderStatusPayload = {
   paymentStatus?: PaymentStatus
 }
 
+export type CreateShipmentPayload = {
+  courierOrderId: string
+  courierProvider: CourierProvider
+  id: string
+  trackingCode: string
+  trackingUrl: string
+}
+
 function createOrderParams(params?: OrderQueryParams | void) {
   if (!params) {
     return undefined
@@ -176,6 +184,33 @@ function createOrderResult(
 
 export const orderApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    createShipment: builder.mutation<Order | null, CreateShipmentPayload>({
+      invalidatesTags: (_result, _error, { id }) => [
+        'Order',
+        'Dashboard',
+        { id, type: 'Order' },
+      ],
+      query: ({ id, ...body }) => ({
+        body,
+        method: 'POST',
+        url: `/orders/${id}/shipment`,
+      }),
+      transformResponse: (response: ApiResponse<Order>) =>
+        response.data ?? null,
+    }),
+    syncShipment: builder.mutation<Order | null, string>({
+      invalidatesTags: (_result, _error, id) => [
+        'Order',
+        'Dashboard',
+        { id, type: 'Order' },
+      ],
+      query: (id) => ({
+        method: 'POST',
+        url: `/orders/${id}/shipment/sync`,
+      }),
+      transformResponse: (response: ApiResponse<Order>) =>
+        response.data ?? null,
+    }),
     cancelOrder: builder.mutation<Order | null, string>({
       invalidatesTags: ['Order', 'Dashboard', 'Product'],
       query: (id) => ({
@@ -246,6 +281,8 @@ export const orderApi = baseApi.injectEndpoints({
 })
 
 export const {
+  useCreateShipmentMutation,
+  useSyncShipmentMutation,
   useCancelOrderMutation,
   useCreateOrderMutation,
   useDeleteOrderMutation,

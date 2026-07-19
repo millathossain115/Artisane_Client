@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   AlertCircle,
   CheckCircle2,
@@ -15,16 +15,20 @@ import {
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import {
   type Order,
+  type CourierProvider,
   type OrderStatus,
   type PaymentStatus,
+  useCreateShipmentMutation,
   useCancelOrderMutation,
   useDeleteOrderMutation,
   useGetAllOrdersQuery,
   useGetOrderByIdQuery,
+  useSyncShipmentMutation,
 } from '../../../features/orders/orderApi'
 import { formatPrice, getAssetUrl } from '../../../utils/productDisplay'
 import {
   canCancelOrder,
+  formatCourierProvider,
   formatOrderDate,
   formatOrderId,
   formatOrderStatus,
@@ -106,6 +110,17 @@ function ManageOrders() {
     text: string
     type: 'error' | 'success'
   } | null>(null)
+  const [shipmentForm, setShipmentForm] = useState<{
+    courierOrderId: string
+    courierProvider: CourierProvider
+    trackingCode: string
+    trackingUrl: string
+  }>({
+    courierOrderId: '',
+    courierProvider: 'redx',
+    trackingCode: '',
+    trackingUrl: '',
+  })
 
   const { data: orderList, isError, isLoading } = useGetAllOrdersQuery({
     limit: 10,
@@ -115,6 +130,10 @@ function ManageOrders() {
     useGetOrderByIdQuery(selectedOrderId, {
       skip: !selectedOrderId,
     })
+  const [createShipment, { isLoading: isCreatingShipment }] =
+    useCreateShipmentMutation()
+  const [syncShipment, { isLoading: isSyncingShipment }] =
+    useSyncShipmentMutation()
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation()
   const [deleteOrder, { isLoading: isDeleting }] = useDeleteOrderMutation()
 
@@ -134,6 +153,26 @@ function ManageOrders() {
     },
     [orderDetail, orders, selectedOrderId],
   )
+
+  useEffect(() => {
+    if (!selectedOrder) {
+      setShipmentForm({
+        courierOrderId: '',
+        courierProvider: 'redx',
+        trackingCode: '',
+        trackingUrl: '',
+      })
+      return
+    }
+
+    setShipmentForm({
+      courierOrderId: selectedOrder.courierOrderId ?? '',
+      courierProvider: selectedOrder.courierProvider ?? 'redx',
+      trackingCode: selectedOrder.trackingCode ?? '',
+      trackingUrl: selectedOrder.trackingUrl ?? '',
+    })
+  }, [selectedOrder])
+
   const visibleOrders = orders.filter(
     (order) =>
       matchesSearch(order, searchTerm) &&
@@ -168,6 +207,61 @@ function ManageOrders() {
       })
     }
   }
+
+  async function confirmShipmentAction() {
+    if (!selectedOrder) {
+      return
+    }
+
+    try {
+      await createShipment({
+        courierOrderId: shipmentForm.courierOrderId.trim(),
+        courierProvider: shipmentForm.courierProvider,
+        id: selectedOrder._id,
+        trackingCode: shipmentForm.trackingCode.trim(),
+        trackingUrl: shipmentForm.trackingUrl.trim(),
+      }).unwrap()
+
+      setMessage({
+        text: `${formatOrderId(selectedOrder._id)} shipment created.`,
+        type: 'success',
+      })
+    } catch (error) {
+      setMessage({
+        text: getApiErrorMessage(error, 'Failed to create shipment.'),
+        type: 'error',
+      })
+    }
+  }
+
+  async function confirmShipmentSync() {
+    if (!selectedOrder) {
+      return
+    }
+
+    try {
+      await syncShipment(selectedOrder._id).unwrap()
+
+      setMessage({
+        text: `${formatOrderId(selectedOrder._id)} shipment synced.`,
+        type: 'success',
+      })
+    } catch (error) {
+      setMessage({
+        text: getApiErrorMessage(error, 'Failed to sync shipment.'),
+        type: 'error',
+      })
+    }
+  }
+
+  const shipmentExists = Boolean(
+    selectedOrder?.courierProvider ||
+      selectedOrder?.courierOrderId ||
+      selectedOrder?.trackingCode,
+  )
+  const shipmentActionAllowed =
+    selectedOrder?.orderStatus === 'confirmed' ||
+    selectedOrder?.orderStatus === 'processing'
 
   return (
     <DashboardLayout
@@ -457,6 +551,192 @@ function ManageOrders() {
                   {formatOrderStatus(selectedOrder.paymentStatus)}
                 </p>
               </div>
+
+              <div>
+                <p className="text-sm font-bold">Shipment state</p>
+                <p className="mt-2 inline-flex min-h-11 items-center bg-[#eef3ff] px-3 text-sm font-bold text-[#27408b]">
+                  {shipmentExists
+                    ? `${formatCourierProvider(selectedOrder.courierProvider)} · ${formatOrderStatus(selectedOrder.courierStatus ?? 'shipment_created')}`
+                    : 'Not created yet'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 border-y border-black/10 py-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
+                    Shipment
+                  </p>
+                  <p className="mt-1 text-sm text-[#6b5f53]">
+                    Create courier record and move order to processing.
+                  </p>
+                </div>
+                {shipmentExists ? (
+                  <p className="inline-flex min-h-10 items-center bg-[#eef3ff] px-3 text-xs font-bold text-[#27408b]">
+                    Saved
+                  </p>
+                ) : null}
+              </div>
+
+              {shipmentExists && selectedOrder ? (
+                <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
+                  <p>
+                    <span className="font-bold">Courier:</span>{' '}
+                    {formatCourierProvider(selectedOrder.courierProvider)}
+                  </p>
+                  <p>
+                    <span className="font-bold">Courier order id:</span>{' '}
+                    {selectedOrder.courierOrderId ?? 'Not set'}
+                  </p>
+                  <p>
+                    <span className="font-bold">Tracking code:</span>{' '}
+                    {selectedOrder.trackingCode ?? 'Not set'}
+                  </p>
+                  <p>
+                    <span className="font-bold">Tracking URL:</span>{' '}
+                    {selectedOrder.trackingUrl ? (
+                      <a
+                        className="font-bold text-[#7a3f1d] underline"
+                        href={selectedOrder.trackingUrl}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        Open tracking
+                      </a>
+                    ) : (
+                      'Not set'
+                    )}
+                  </p>
+                  <p>
+                    <span className="font-bold">Created:</span>{' '}
+                    {formatOrderDate(selectedOrder.shipmentCreatedAt)}
+                  </p>
+                  <p>
+                    <span className="font-bold">Last sync:</span>{' '}
+                    {selectedOrder.lastCourierSyncAt
+                      ? formatOrderDate(selectedOrder.lastCourierSyncAt)
+                      : 'Not synced'}
+                  </p>
+                  <div className="md:col-span-2">
+                    <button
+                      className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={isSyncingShipment}
+                      onClick={confirmShipmentSync}
+                      type="button"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      {isSyncingShipment ? 'Syncing...' : 'Sync status'}
+                    </button>
+                  </div>
+                </div>
+              ) : shipmentActionAllowed ? (
+                <div className="mt-4 grid gap-4">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <label className="grid gap-2">
+                      <span className="text-sm font-bold">Courier provider</span>
+                      <select
+                        className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+                        onChange={(event) =>
+                          setShipmentForm((current) => ({
+                            ...current,
+                            courierProvider: event.target.value as CourierProvider,
+                          }))
+                        }
+                        value={shipmentForm.courierProvider}
+                      >
+                        <option value="redx">RedX</option>
+                        <option value="steadfast">Steadfast</option>
+                        <option value="pathao">Pathao</option>
+                      </select>
+                    </label>
+
+                    <label className="grid gap-2">
+                      <span className="text-sm font-bold">Courier order id</span>
+                      <input
+                        className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+                        onChange={(event) =>
+                          setShipmentForm((current) => ({
+                            ...current,
+                            courierOrderId: event.target.value,
+                          }))
+                        }
+                        placeholder="Courier order id"
+                        value={shipmentForm.courierOrderId}
+                      />
+                    </label>
+
+                    <label className="grid gap-2">
+                      <span className="text-sm font-bold">Tracking code</span>
+                      <input
+                        className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+                        onChange={(event) =>
+                          setShipmentForm((current) => ({
+                            ...current,
+                            trackingCode: event.target.value,
+                          }))
+                        }
+                        placeholder="Tracking code"
+                        value={shipmentForm.trackingCode}
+                      />
+                    </label>
+
+                    <label className="grid gap-2">
+                      <span className="text-sm font-bold">Tracking URL</span>
+                      <input
+                        className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+                        onChange={(event) =>
+                          setShipmentForm((current) => ({
+                            ...current,
+                            trackingUrl: event.target.value,
+                          }))
+                        }
+                        placeholder="https://..."
+                        type="url"
+                        value={shipmentForm.trackingUrl}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <button
+                      className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
+                      onClick={() =>
+                        selectedOrder
+                          ? setShipmentForm({
+                              courierOrderId: selectedOrder.courierOrderId ?? '',
+                              courierProvider:
+                                selectedOrder.courierProvider ?? 'redx',
+                              trackingCode: selectedOrder.trackingCode ?? '',
+                              trackingUrl: selectedOrder.trackingUrl ?? '',
+                            })
+                          : null
+                      }
+                      type="button"
+                    >
+                      Reset
+                    </button>
+                    <button
+                      className="min-h-11 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={
+                        isCreatingShipment ||
+                        !shipmentForm.courierOrderId.trim() ||
+                        !shipmentForm.trackingCode.trim() ||
+                        !shipmentForm.trackingUrl.trim() ||
+                        !shipmentForm.courierProvider
+                      }
+                      onClick={confirmShipmentAction}
+                      type="button"
+                    >
+                      {isCreatingShipment ? 'Creating...' : 'Create shipment'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="mt-4 text-sm font-semibold text-[#6b5f53]">
+                  Shipment can be created for confirmed or processing orders.
+                </p>
+              )}
             </div>
 
             <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
