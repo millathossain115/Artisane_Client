@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import AdminRoute from './components/routes/AdminRoute'
 import ProtectedRoute from './components/routes/ProtectedRoute'
+import ScrollToTop from './components/routes/ScrollToTop'
 import CreateCategory from './pages/admin/categories/CreateCategory'
 import ManageCategories from './pages/admin/categories/ManageCategories'
 import ManageOrders from './pages/admin/orders/ManageOrders'
@@ -17,6 +18,7 @@ import MyOrdersPage from './pages/dashboard/MyOrdersPage'
 import ProfilePage from './pages/dashboard/ProfilePage'
 import WishlistPage from './pages/dashboard/user-dashboard/WishlistPage'
 import Home from './pages/Home'
+import InfoPage from './pages/info/InfoPage'
 import NotFound from './pages/NotFound'
 import PaymentResult from './pages/payment/PaymentResult'
 import ProductDetails from './pages/ProductDetails'
@@ -25,11 +27,20 @@ import Products from './pages/Products'
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetails />} />
+        <Route path="/about" element={<InfoPage page="about" />} />
+        <Route path="/faq" element={<InfoPage page="faq" />} />
+        <Route
+          path="/shipping-returns"
+          element={<InfoPage page="shippingReturns" />}
+        />
+        <Route path="/terms" element={<InfoPage page="terms" />} />
+        <Route path="/privacy" element={<InfoPage page="privacy" />} />
         <Route
           path="/payment/success"
           element={<PaymentResult status="success" />}

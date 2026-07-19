@@ -5,21 +5,33 @@ export const SORT_VALUES = [
   'oldest',
   'price-asc',
   'price-desc',
+  'rating-desc',
   'name-asc',
   'name-desc',
 ] as const
-export const DEFAULT_LIMIT = 10
+export const DEFAULT_LIMIT = 12
 export const DEFAULT_PAGE = 1
 export const DEFAULT_SORT = 'newest'
 
 export type SortOption = (typeof SORT_VALUES)[number]
 type SortParams = Pick<ProductQueryParams, 'sortBy' | 'sortOrder'>
 
+export type StockFilter = 'all' | 'in-stock' | 'out-of-stock'
+
+export type ProductFilterState = {
+  brand: string
+  maxPrice: string
+  minPrice: string
+  minRating: string
+  stock: StockFilter
+}
+
 export const SORT_LABELS: Record<SortOption, string> = {
   newest: 'Newest',
   oldest: 'Oldest',
   'price-asc': 'Price low-high',
   'price-desc': 'Price high-low',
+  'rating-desc': 'Top rated',
   'name-asc': 'A-Z',
   'name-desc': 'Z-A',
 }
@@ -53,6 +65,10 @@ export function getSortParams(sortOption: SortOption): SortParams {
 
   if (sortOption === 'price-desc') {
     return { sortBy: 'price', sortOrder: 'desc' }
+  }
+
+  if (sortOption === 'rating-desc') {
+    return { sortBy: 'rating', sortOrder: 'desc' }
   }
 
   if (sortOption === 'name-asc') {

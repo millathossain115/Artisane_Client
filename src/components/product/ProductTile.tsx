@@ -54,6 +54,10 @@ function ProductTile({
   )
   const isWishlistLoading =
     isWishlistFetching || isAddingWishlist || isDeletingWishlist
+  const ratingLabel =
+    product.reviewCount && product.averageRating
+      ? product.averageRating.toFixed(1)
+      : 'New'
 
   function handleOpenProduct() {
     navigate(productUrl)
@@ -156,7 +160,7 @@ function ProductTile({
           <span className="truncate">{getCategoryName(product.category)}</span>
           <span className="inline-flex shrink-0 items-center gap-1 text-[#4f463d]">
             <Star className="h-3.5 w-3.5 fill-[#c85f2f] text-[#c85f2f]" />
-            <span className="hidden sm:inline">New</span>
+            <span className="hidden sm:inline">{ratingLabel}</span>
           </span>
         </div>
 

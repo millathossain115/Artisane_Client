@@ -17,9 +17,11 @@ export type Product = {
   price: number
   stock: number
   category: Category | string
+  averageRating?: number
   brand?: string
   images?: string[]
   isDeleted?: boolean
+  reviewCount?: number
   createdAt?: string
   updatedAt?: string
 }
@@ -52,11 +54,16 @@ export type ProductListResult = {
 }
 
 export type ProductQueryParams = {
+  brand?: string
   category?: string
   limit?: number
+  maxPrice?: number
+  minPrice?: number
+  minRating?: number
   page?: number
   searchTerm?: string
-  sortBy?: 'createdAt' | 'name' | 'price' | 'stock' | 'updatedAt'
+  stock?: 'all' | 'in-stock' | 'out-of-stock'
+  sortBy?: 'createdAt' | 'name' | 'price' | 'rating' | 'stock' | 'updatedAt'
   sortOrder?: 'asc' | 'desc'
 }
 
