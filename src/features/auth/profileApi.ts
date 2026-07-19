@@ -37,6 +37,7 @@ export const profileApi = baseApi.injectEndpoints({
     }),
     updateMyProfile: builder.mutation<UserProfile | null, UpdateProfilePayload>(
       {
+        invalidatesTags: ['Auth', 'Dashboard'],
         query: (body) => ({
           body,
           method: 'PATCH',

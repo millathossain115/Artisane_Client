@@ -92,6 +92,9 @@ function ProfilePage() {
   const [error, setError] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [savedProfileForm, setSavedProfileForm] = useState<ProfileForm | null>(
+    null,
+  )
   const {
     data: profile,
     isError: hasProfileError,
@@ -100,13 +103,13 @@ function ProfilePage() {
   const [updateMyProfile, { isLoading: isSaving }] =
     useUpdateMyProfileMutation()
   const loadedProfileForm = createProfileForm({
-    address: profile?.address ?? '',
-    avatar: profile?.avatar ?? '',
-    city: profile?.city ?? '',
-    email: profile?.email ?? storedUser?.email ?? '',
-    name: profile?.name ?? storedUser?.name ?? '',
-    phone: profile?.phone ?? storedUser?.phone ?? '',
-    postalCode: profile?.postalCode ?? '',
+    address: savedProfileForm?.address ?? profile?.address ?? '',
+    avatar: savedProfileForm?.avatar ?? profile?.avatar ?? '',
+    city: savedProfileForm?.city ?? profile?.city ?? '',
+    email: savedProfileForm?.email ?? profile?.email ?? storedUser?.email ?? '',
+    name: savedProfileForm?.name ?? profile?.name ?? storedUser?.name ?? '',
+    phone: savedProfileForm?.phone ?? profile?.phone ?? storedUser?.phone ?? '',
+    postalCode: savedProfileForm?.postalCode ?? profile?.postalCode ?? '',
   })
   const visibleProfileForm = isEditing ? profileForm : loadedProfileForm
 
@@ -160,7 +163,7 @@ function ProfilePage() {
       const updatedProfile = await updateMyProfile(payload).unwrap()
 
       if (updatedProfile) {
-        setProfileForm({
+        const nextProfileForm = {
           address: updatedProfile.address ?? '',
           avatar: updatedProfile.avatar ?? '',
           city: updatedProfile.city ?? '',
@@ -168,7 +171,10 @@ function ProfilePage() {
           name: updatedProfile.name ?? '',
           phone: updatedProfile.phone ?? '',
           postalCode: updatedProfile.postalCode ?? '',
-        })
+        }
+
+        setProfileForm(nextProfileForm)
+        setSavedProfileForm(nextProfileForm)
       }
 
       setIsEditing(false)
@@ -435,10 +441,7 @@ function ProfilePage() {
                     [
                       MapPin,
                       'Address',
-                      visibleProfileForm.city ||
-                        visibleProfileForm.postalCode ||
-                        visibleProfileForm.address ||
-                        'Not added',
+                      visibleProfileForm.address || 'Not added',
                     ],
                   ]
                 : []),
