@@ -186,7 +186,7 @@ function ProductDetails() {
         message: `${product.name} added to wishlist.`,
         productId: product._id,
       })
-    } catch (error) {
+    } catch {
       setStatus({
         message: 'Wishlist update failed. Please try again.',
         productId: product._id,

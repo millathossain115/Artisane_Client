@@ -96,7 +96,7 @@ function ProductTile({
       }
 
       await addWishlistProduct(product._id).unwrap()
-    } catch (error) {
+    } catch {
       // The product detail page gives fuller feedback; cards stay quiet.
     }
   }

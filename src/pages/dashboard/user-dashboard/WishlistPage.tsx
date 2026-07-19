@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   AlertCircle,
   CheckCircle2,
@@ -85,8 +85,15 @@ function WishlistPage() {
   const [clearMyWishlist, { isLoading: isClearing }] =
     useClearMyWishlistMutation()
 
-  const wishlistItems = wishlistList?.data ?? []
+  const wishlistItems = useMemo(() => wishlistList?.data ?? [], [wishlistList])
   const meta = wishlistList?.meta
+  const visibleWishlistIds = useMemo(
+    () => new Set(wishlistItems.map((item) => item._id)),
+    [wishlistItems],
+  )
+  const visibleSelectedWishlistIds = selectedWishlistIds.filter((id) =>
+    visibleWishlistIds.has(id),
+  )
   const selectableWishlistIds = wishlistItems
     .filter((item) => {
       const product = getWishlistProduct(item)
@@ -94,18 +101,10 @@ function WishlistPage() {
       return product && product.stock > 0
     })
     .map((item) => item._id)
-  const selectedWishlistCount = selectedWishlistIds.length
+  const selectedWishlistCount = visibleSelectedWishlistIds.length
   const areAllWishlistItemsSelected =
     selectableWishlistIds.length > 0 &&
-    selectableWishlistIds.every((id) => selectedWishlistIds.includes(id))
-
-  useEffect(() => {
-    const visibleWishlistIds = new Set(wishlistItems.map((item) => item._id))
-
-    setSelectedWishlistIds((currentIds) =>
-      currentIds.filter((id) => visibleWishlistIds.has(id)),
-    )
-  }, [wishlistItems])
+    selectableWishlistIds.every((id) => visibleSelectedWishlistIds.includes(id))
 
   function getSelectedCartProducts() {
     return wishlistItems.reduce<Product[]>((products, item) => {
@@ -114,7 +113,7 @@ function WishlistPage() {
       if (
         product &&
         product.stock > 0 &&
-        selectedWishlistIds.includes(item._id)
+        visibleSelectedWishlistIds.includes(item._id)
       ) {
         products.push(product)
       }
