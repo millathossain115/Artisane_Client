@@ -1,10 +1,14 @@
+import { useMemo } from 'react'
 import brushLineImage from '../assets/brush-line-optimized.jpg'
 import homeWallArtBanner from '../assets/home-wall-art-banner.jpg'
 import paintTableImage from '../assets/paint-table-optimized.jpg'
 import Footer from '../components/layout/Footer'
 import Navbar from '../components/layout/Navbar'
 import { useGetCategoriesQuery } from '../features/categories/categoryApi'
-import { useGetProductsQuery } from '../features/products/productApi'
+import {
+  type Product,
+  useGetProductsQuery,
+} from '../features/products/productApi'
 import FeaturedProducts from './home/FeaturedProducts'
 import HomeCategories from './home/HomeCategories'
 import HomeHero from './home/HomeHero'
@@ -14,6 +18,19 @@ import HomeStats from './home/HomeStats'
 import KitProducts from './home/KitProducts'
 import LatestProducts from './home/LatestProducts'
 import { getProductImage } from '../utils/productDisplay'
+
+function shuffleProducts(products: Product[]) {
+  const shuffledProducts = [...products]
+
+  for (let index = shuffledProducts.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1))
+    const currentProduct = shuffledProducts[index]
+    shuffledProducts[index] = shuffledProducts[randomIndex]
+    shuffledProducts[randomIndex] = currentProduct
+  }
+
+  return shuffledProducts
+}
 
 function Home() {
   const {
@@ -31,22 +48,25 @@ function Home() {
     isError: hasProductsError,
     isLoading: isProductsLoading,
   } = useGetProductsQuery({
-    limit: 20,
+    limit: 40,
     page: 1,
   })
 
   const categories = (categoryList?.data ?? []).filter(
     (category) => category.isActive !== false,
   )
-  const products = productList?.data ?? []
+  const products = useMemo(() => productList?.data ?? [], [productList?.data])
+  const shuffledProducts = useMemo(() => shuffleProducts(products), [products])
   const totalProducts = productList?.meta.total ?? products.length
   const totalCategories = categoryList?.meta.total ?? categories.length
   const kitCategory =
     categories.find((category) => /kit/i.test(category.name)) ?? categories[0]
-  const featuredProducts = products.slice(0, 8)
-  const latestProducts = products.slice(8, 16)
-  const moreProducts = products.slice(16, 20)
-  const bannerProducts = products.filter((product) => getProductImage(product))
+  const featuredProducts = shuffledProducts.slice(0, 8)
+  const latestProducts = shuffledProducts.slice(8, 16)
+  const moreProducts = shuffledProducts.slice(16, 20)
+  const bannerProducts = shuffledProducts.filter((product) =>
+    getProductImage(product),
+  )
   const firstBannerImage = getProductImage(bannerProducts[1]) ?? paintTableImage
   const secondBannerImage = getProductImage(bannerProducts[2]) ?? brushLineImage
 
