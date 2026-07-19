@@ -10,15 +10,15 @@ import {
 } from 'lucide-react'
 
 import type { Product } from '../../features/products/productApi'
-import {
-  formatPrice,
-  getProductCategoryName,
-} from '../../utils/productDisplay'
+import { formatPrice, getProductCategoryName } from '../../utils/productDisplay'
 
 type ProductPurchasePanelProps = {
   canBuy?: boolean
+  isWishlisted?: boolean
+  isWishlistLoading?: boolean
   isOutOfStock: boolean
   onAddToCart: () => void
+  onToggleWishlist?: () => void
   onUpdateQuantity: (quantity: number) => void
   product: Product
   quantity: number
@@ -27,8 +27,11 @@ type ProductPurchasePanelProps = {
 
 function ProductPurchasePanel({
   canBuy = true,
+  isWishlisted = false,
+  isWishlistLoading = false,
   isOutOfStock,
   onAddToCart,
+  onToggleWishlist,
   onUpdateQuantity,
   product,
   quantity,
@@ -40,9 +43,7 @@ function ProductPurchasePanel({
         <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7a3f1d]">
           {getProductCategoryName(product)}
         </p>
-        <h1 className="mt-3 text-4xl font-bold sm:text-5xl">
-          {product.name}
-        </h1>
+        <h1 className="mt-3 text-4xl font-bold sm:text-5xl">{product.name}</h1>
         <p className="mt-3 text-sm font-semibold text-[#6b5f53]">
           {product.brand ?? 'Artisane Studio'}
         </p>
@@ -88,32 +89,32 @@ function ProductPurchasePanel({
         </div>
 
         {canBuy ? (
-        <div className="mt-6">
-          <p className="text-sm font-bold">Quantity</p>
-          <div className="mt-2 inline-grid grid-cols-[44px_64px_44px] overflow-hidden border border-black/10 bg-white">
-            <button
-              aria-label="Decrease quantity"
-              className="grid h-11 place-items-center transition hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"
-              disabled={quantity <= 1 || isOutOfStock}
-              onClick={() => onUpdateQuantity(quantity - 1)}
-              type="button"
-            >
-              <Minus className="h-4 w-4" />
-            </button>
-            <span className="grid h-11 place-items-center border-x border-black/10 text-sm font-bold">
-              {isOutOfStock ? 0 : quantity}
-            </span>
-            <button
-              aria-label="Increase quantity"
-              className="grid h-11 place-items-center transition hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"
-              disabled={quantity >= product.stock || isOutOfStock}
-              onClick={() => onUpdateQuantity(quantity + 1)}
-              type="button"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
+          <div className="mt-6">
+            <p className="text-sm font-bold">Quantity</p>
+            <div className="mt-2 inline-grid grid-cols-[44px_64px_44px] overflow-hidden border border-black/10 bg-white">
+              <button
+                aria-label="Decrease quantity"
+                className="grid h-11 place-items-center transition hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"
+                disabled={quantity <= 1 || isOutOfStock}
+                onClick={() => onUpdateQuantity(quantity - 1)}
+                type="button"
+              >
+                <Minus className="h-4 w-4" />
+              </button>
+              <span className="grid h-11 place-items-center border-x border-black/10 text-sm font-bold">
+                {isOutOfStock ? 0 : quantity}
+              </span>
+              <button
+                aria-label="Increase quantity"
+                className="grid h-11 place-items-center transition hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"
+                disabled={quantity >= product.stock || isOutOfStock}
+                onClick={() => onUpdateQuantity(quantity + 1)}
+                type="button"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
           </div>
-        </div>
         ) : null}
 
         {statusMessage ? (
@@ -123,38 +124,49 @@ function ProductPurchasePanel({
         ) : null}
 
         {canBuy ? (
-        <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
-          <button
-            className="inline-flex min-h-12 items-center justify-center gap-2 bg-[#181512] px-5 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={isOutOfStock}
-            onClick={onAddToCart}
-            type="button"
-          >
-            <ShoppingBag className="h-4 w-4" />
-            Add to cart
-          </button>
-        </div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
+            <button
+              className="inline-flex min-h-12 items-center justify-center gap-2 bg-[#181512] px-5 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isOutOfStock}
+              onClick={onAddToCart}
+              type="button"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              Add to cart
+            </button>
+            <button
+              aria-label={
+                isWishlisted
+                  ? `Remove ${product.name} from wishlist`
+                  : `Add ${product.name} to wishlist`
+              }
+              aria-pressed={isWishlisted}
+              className="grid h-12 w-full place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-50 sm:w-12"
+              disabled={isWishlistLoading}
+              onClick={onToggleWishlist}
+              type="button"
+            >
+              <Heart
+                className={`h-4 w-4 ${
+                  isWishlisted ? 'fill-[#8f3f1d] text-[#8f3f1d]' : ''
+                }`}
+              />
+            </button>
+          </div>
         ) : (
           <p className="mt-6 bg-[#f8f3ea] px-4 py-3 text-sm font-bold text-[#6b5f53]">
             Admin account can manage products from dashboard. Cart and checkout
             are available for customer accounts only.
           </p>
         )}
-        <button
-          aria-label="Add to wishlist"
-          className="mt-3 grid h-12 w-full place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-[#f8f3ea] sm:w-12"
-          type="button"
-        >
-          <Heart className="h-4 w-4" />
-        </button>
         {canBuy ? (
-        <button
-          className="mt-3 min-h-12 w-full border border-black/10 bg-[#f8f3ea] px-5 text-sm font-bold text-[#6b5f53] disabled:cursor-not-allowed"
-          disabled
-          type="button"
-        >
-          Buy now coming with checkout
-        </button>
+          <button
+            className="mt-3 min-h-12 w-full border border-black/10 bg-[#f8f3ea] px-5 text-sm font-bold text-[#6b5f53] disabled:cursor-not-allowed"
+            disabled
+            type="button"
+          >
+            Buy now coming with checkout
+          </button>
         ) : null}
       </div>
     </aside>

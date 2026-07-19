@@ -3,8 +3,14 @@ import { Heart, ImageOff, ShoppingBag, Star } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { addToCart, createCartItem } from '../../features/cart/cartSlice'
-import { getStoredUser } from '../../features/auth/authApi'
+import { getAccessToken, getStoredUser } from '../../features/auth/authApi'
 import type { Product } from '../../features/products/productApi'
+import {
+  getWishlistProductId,
+  useAddWishlistProductMutation,
+  useDeleteWishlistProductMutation,
+  useGetMyWishlistQuery,
+} from '../../features/wishlists/wishlistApi'
 import { useAppDispatch } from '../../redux/hooks'
 import {
   formatPrice,
@@ -27,9 +33,27 @@ function ProductTile({
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const imageUrl = getProductImage(product)
+  const accessToken = getAccessToken()
   const isAdmin = getStoredUser()?.role === 'admin'
   const isDark = tone === 'dark'
   const productUrl = `/products/${product._id}`
+  const { data: wishlistList, isFetching: isWishlistFetching } =
+    useGetMyWishlistQuery(
+      {
+        limit: 100,
+        page: 1,
+      },
+      { skip: !accessToken || isAdmin },
+    )
+  const [addWishlistProduct, { isLoading: isAddingWishlist }] =
+    useAddWishlistProductMutation()
+  const [deleteWishlistProduct, { isLoading: isDeletingWishlist }] =
+    useDeleteWishlistProductMutation()
+  const isWishlisted = (wishlistList?.data ?? []).some(
+    (item) => getWishlistProductId(item) === product._id,
+  )
+  const isWishlistLoading =
+    isWishlistFetching || isAddingWishlist || isDeletingWishlist
 
   function handleOpenProduct() {
     navigate(productUrl)
@@ -53,8 +77,28 @@ function ProductTile({
     dispatch(addToCart(createCartItem(product)))
   }
 
-  function handleWishlistClick(event: MouseEvent<HTMLButtonElement>) {
+  async function handleWishlistClick(event: MouseEvent<HTMLButtonElement>) {
     event.stopPropagation()
+
+    if (isAdmin || isWishlistLoading) {
+      return
+    }
+
+    if (!accessToken) {
+      navigate('/login')
+      return
+    }
+
+    try {
+      if (isWishlisted) {
+        await deleteWishlistProduct(product._id).unwrap()
+        return
+      }
+
+      await addWishlistProduct(product._id).unwrap()
+    } catch (error) {
+      // The product detail page gives fuller feedback; cards stay quiet.
+    }
   }
 
   return (
@@ -85,14 +129,26 @@ function ProductTile({
         <div className="absolute left-3 top-3 bg-white px-3 py-1 text-xs font-bold text-[#7a3f1d]">
           {getProductBadge(product)}
         </div>
-        <button
-          aria-label={`Add ${product.name} to wishlist`}
-          className="absolute right-3 top-3 grid h-10 w-10 place-items-center bg-white text-[#181512] transition hover:bg-[#181512] hover:text-white"
-          onClick={handleWishlistClick}
-          type="button"
-        >
-          <Heart className="h-4 w-4" />
-        </button>
+        {!isAdmin ? (
+          <button
+            aria-label={
+              isWishlisted
+                ? `Remove ${product.name} from wishlist`
+                : `Add ${product.name} to wishlist`
+            }
+            aria-pressed={isWishlisted}
+            className="absolute right-3 top-3 grid h-10 w-10 place-items-center bg-white text-[#181512] transition hover:bg-[#181512] hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={isWishlistLoading}
+            onClick={handleWishlistClick}
+            type="button"
+          >
+            <Heart
+              className={`h-4 w-4 ${
+                isWishlisted ? 'fill-[#8f3f1d] text-[#8f3f1d]' : ''
+              }`}
+            />
+          </button>
+        ) : null}
       </div>
 
       <div className={variant === 'compact' ? 'p-3' : 'p-4'}>
@@ -127,18 +183,18 @@ function ProductTile({
         </div>
 
         {!isAdmin ? (
-        <div className="mt-4">
-          <button
-            aria-label={`Add ${product.name} to cart`}
-            className="inline-flex min-h-11 w-full items-center justify-center gap-2 bg-[#181512] px-3 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={product.stock <= 0}
-            onClick={handleAddToCart}
-            type="button"
-          >
-            <ShoppingBag className="h-4 w-4" />
-            {product.stock <= 0 ? 'Out of stock' : 'Add to cart'}
-          </button>
-        </div>
+          <div className="mt-4">
+            <button
+              aria-label={`Add ${product.name} to cart`}
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 bg-[#181512] px-3 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={product.stock <= 0}
+              onClick={handleAddToCart}
+              type="button"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              {product.stock <= 0 ? 'Out of stock' : 'Add to cart'}
+            </button>
+          </div>
         ) : null}
       </div>
     </article>

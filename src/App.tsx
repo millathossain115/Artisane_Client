@@ -14,6 +14,7 @@ import Checkout from './pages/checkout/Checkout'
 import Dashboard from './pages/dashboard/Dashboard'
 import MyOrdersPage from './pages/dashboard/MyOrdersPage'
 import ProfilePage from './pages/dashboard/ProfilePage'
+import WishlistPage from './pages/dashboard/user-dashboard/WishlistPage'
 import Home from './pages/Home'
 import PaymentResult from './pages/payment/PaymentResult'
 import ProductDetails from './pages/ProductDetails'
@@ -64,6 +65,14 @@ function App() {
           element={
             <ProtectedRoute>
               <MyOrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/wishlist"
+          element={
+            <ProtectedRoute>
+              <WishlistPage />
             </ProtectedRoute>
           }
         />

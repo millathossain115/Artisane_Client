@@ -1,15 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import Footer from '../components/layout/Footer'
 import Navbar from '../components/layout/Navbar'
 import { addToCart, createCartItem } from '../features/cart/cartSlice'
-import { getStoredUser } from '../features/auth/authApi'
+import { getAccessToken, getStoredUser } from '../features/auth/authApi'
 import {
   useGetProductByIdQuery,
   useGetProductsQuery,
 } from '../features/products/productApi'
+import {
+  getWishlistProductId,
+  useAddWishlistProductMutation,
+  useDeleteWishlistProductMutation,
+  useGetMyWishlistQuery,
+} from '../features/wishlists/wishlistApi'
 import { useAppDispatch, useAppSelector } from '../redux/hooks'
 import {
   getAssetUrl,
@@ -27,6 +33,8 @@ import {
 
 function ProductDetails() {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+  const accessToken = getAccessToken()
   const isAdmin = getStoredUser()?.role === 'admin'
   const cartItems = useAppSelector((state) => state.cart.items)
   const { id } = useParams<{ id: string }>()
@@ -50,6 +58,18 @@ function ProductDetails() {
     limit: 24,
     page: 1,
   })
+  const { data: wishlistList, isFetching: isWishlistFetching } =
+    useGetMyWishlistQuery(
+      {
+        limit: 100,
+        page: 1,
+      },
+      { skip: !accessToken || isAdmin },
+    )
+  const [addWishlistProduct, { isLoading: isAddingWishlist }] =
+    useAddWishlistProductMutation()
+  const [deleteWishlistProduct, { isLoading: isDeletingWishlist }] =
+    useDeleteWishlistProductMutation()
   const [selectedImage, setSelectedImage] = useState({
     productId: '',
     value: '',
@@ -86,8 +106,14 @@ function ProductDetails() {
     quantitySelection.productId === product?._id ? quantitySelection.value : 1
   const safeQuantity = product ? Math.min(quantity, product.stock) : quantity
   const recentProducts = loadRecentProducts(product?._id ?? id)
-  const visibleStatus =
-    status.productId === product?._id ? status.message : ''
+  const visibleStatus = status.productId === product?._id ? status.message : ''
+  const isWishlisted = product
+    ? (wishlistList?.data ?? []).some(
+        (item) => getWishlistProductId(item) === product._id,
+      )
+    : false
+  const isWishlistLoading =
+    isWishlistFetching || isAddingWishlist || isDeletingWishlist
 
   useEffect(() => {
     if (!product) {
@@ -135,6 +161,39 @@ function ProductDetails() {
     })
   }
 
+  async function handleToggleWishlist() {
+    if (!product || isAdmin) {
+      return
+    }
+
+    if (!accessToken) {
+      navigate('/login')
+      return
+    }
+
+    try {
+      if (isWishlisted) {
+        await deleteWishlistProduct(product._id).unwrap()
+        setStatus({
+          message: `${product.name} removed from wishlist.`,
+          productId: product._id,
+        })
+        return
+      }
+
+      await addWishlistProduct(product._id).unwrap()
+      setStatus({
+        message: `${product.name} added to wishlist.`,
+        productId: product._id,
+      })
+    } catch (error) {
+      setStatus({
+        message: 'Wishlist update failed. Please try again.',
+        productId: product._id,
+      })
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#f6f0e5] text-[#181512]">
       <Navbar />
@@ -177,8 +236,11 @@ function ProductDetails() {
 
               <ProductPurchasePanel
                 canBuy={!isAdmin}
+                isWishlisted={isWishlisted}
+                isWishlistLoading={isWishlistLoading}
                 isOutOfStock={isOutOfStock}
                 onAddToCart={handleAddToCart}
+                onToggleWishlist={handleToggleWishlist}
                 onUpdateQuantity={updateQuantity}
                 product={product}
                 quantity={safeQuantity}

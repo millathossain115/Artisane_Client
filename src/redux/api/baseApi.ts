@@ -18,5 +18,13 @@ export const baseApi = createApi({
   }),
   endpoints: () => ({}),
   reducerPath: 'baseApi',
-  tagTypes: ['Auth', 'Category', 'Dashboard', 'Product', 'Order', 'User'],
+  tagTypes: [
+    'Auth',
+    'Category',
+    'Dashboard',
+    'Product',
+    'Order',
+    'User',
+    'Wishlist',
+  ],
 })

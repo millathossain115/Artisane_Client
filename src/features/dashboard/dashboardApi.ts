@@ -1,4 +1,5 @@
 import { baseApi } from '../../redux/api/baseApi'
+import type { WishlistItem } from '../wishlists/wishlistApi'
 
 type ApiResponse<T> = {
   success: boolean
@@ -61,10 +62,12 @@ export type UserDashboardStats = {
   cancelledOrders: number
   totalOrderValue: number
   totalReviews: number
+  totalWishlistItems: number
   averageRating: number
   orderStatusSummary: { _id: string; count: number }[]
   recentOrders: DashboardOrder[]
   recentReviews: DashboardReview[]
+  recentWishlistItems: WishlistItem[]
 }
 
 export const dashboardApi = baseApi.injectEndpoints({

@@ -1,4 +1,4 @@
-import { PackageCheck, ShoppingBag, Star, Truck } from 'lucide-react'
+import { Heart, PackageCheck, ShoppingBag, Truck } from 'lucide-react'
 
 import type { UserDashboardStats } from '../../../features/dashboard/dashboardApi'
 import type { Order } from '../../../features/orders/orderApi'
@@ -73,13 +73,13 @@ export function getUserMetrics(
       icon: PackageCheck,
     },
     {
-      label: 'Reviews',
-      value: formatCount(stats?.totalReviews),
+      label: 'Wishlist',
+      value: formatCount(stats?.totalWishlistItems),
       detail:
-        stats && stats.averageRating > 0
-          ? `${stats.averageRating.toFixed(1)} average rating`
-          : 'Share feedback after delivery',
-      icon: Star,
+        stats && stats.totalWishlistItems > 0
+          ? 'Saved products ready to revisit'
+          : 'Save products before buying',
+      icon: Heart,
     },
   ]
 }
