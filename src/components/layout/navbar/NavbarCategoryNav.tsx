@@ -80,25 +80,20 @@ function NavbarCategoryNav() {
 
   return (
     <div
-      className="relative border-t border-black/10 bg-[#eee2d3]/70"
+      className="relative hidden border-t border-black/10 bg-[#eee2d3]/70 sm:block"
       onMouseLeave={() => setActivePanel('')}
     >
       <nav className="mx-auto flex max-w-7xl gap-2 px-4 py-2 sm:overflow-x-auto sm:px-6 lg:px-8">
-        <button
-          aria-expanded={activePanel === 'all-categories'}
+        <Link
           className="inline-flex shrink-0 items-center gap-1 px-3 py-2 text-sm font-bold text-[#4f463d] transition hover:bg-white hover:text-[#181512]"
-          onClick={() =>
-            setActivePanel((currentPanel) =>
-              currentPanel === 'all-categories' ? '' : 'all-categories',
-            )
-          }
+          onClick={() => setActivePanel('')}
           onFocus={() => setActivePanel('all-categories')}
           onMouseEnter={() => setActivePanel('all-categories')}
-          type="button"
+          to="/categories"
         >
           Categories
           <ChevronDown className="h-4 w-4" />
-        </button>
+        </Link>
 
         {isCategoriesLoading
           ? Array.from({ length: 5 }).map((_, index) => (
@@ -122,7 +117,7 @@ function NavbarCategoryNav() {
       </nav>
 
       {activePanel === 'all-categories' ? (
-        <div className="absolute left-0 right-0 top-full z-40 border-t border-black/10 bg-white shadow-[0_22px_44px_rgba(24,21,18,0.14)]">
+        <div className="absolute left-0 right-0 top-full z-40 hidden border-t border-black/10 bg-white shadow-[0_22px_44px_rgba(24,21,18,0.14)] sm:block">
           <div className="mx-auto grid max-w-7xl grid-cols-2 gap-2 px-4 py-4 sm:gap-4 sm:px-6 lg:grid-cols-4 lg:px-8">
             {categories.length ? (
               categories.map((category) => (
@@ -150,7 +145,7 @@ function NavbarCategoryNav() {
       ) : null}
 
       {activeCategory ? (
-        <div className="absolute left-0 right-0 top-full z-40 border-t border-black/10 bg-white shadow-[0_22px_44px_rgba(24,21,18,0.14)]">
+        <div className="absolute left-0 right-0 top-full z-40 hidden border-t border-black/10 bg-white shadow-[0_22px_44px_rgba(24,21,18,0.14)] sm:block">
           <div className="mx-auto grid max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:px-8">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#7a3f1d]">

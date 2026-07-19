@@ -10,12 +10,14 @@ import ManageProducts from './pages/admin/products/ManageProducts'
 import ManageUsers from './pages/admin/users/ManageUsers'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
+import Categories from './pages/Categories'
 import Checkout from './pages/checkout/Checkout'
 import Dashboard from './pages/dashboard/Dashboard'
 import MyOrdersPage from './pages/dashboard/MyOrdersPage'
 import ProfilePage from './pages/dashboard/ProfilePage'
 import WishlistPage from './pages/dashboard/user-dashboard/WishlistPage'
 import Home from './pages/Home'
+import NotFound from './pages/NotFound'
 import PaymentResult from './pages/payment/PaymentResult'
 import ProductDetails from './pages/ProductDetails'
 import Products from './pages/Products'
@@ -25,6 +27,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/categories" element={<Categories />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetails />} />
         <Route
@@ -134,6 +137,7 @@ function App() {
           path="/dashboard/products/manage"
           element={<Navigate replace to="/dashboard/products" />}
         />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   )
