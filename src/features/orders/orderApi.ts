@@ -11,6 +11,7 @@ type ApiResponse<T> = {
 }
 
 export type PaymentMethod = 'bkash' | 'cod' | 'nagad' | 'rocket' | 'sslcommerz'
+export type CourierProvider = 'redx' | 'steadfast' | 'pathao'
 
 export type OrderStatus =
   | 'cancelled'
@@ -38,6 +39,10 @@ export type Order = {
   _id: string
   contactPhone?: string
   createdAt?: string
+  courierOrderId?: string
+  courierProvider?: CourierProvider
+  courierStatus?: string
+  courierStatusRaw?: unknown
   discount?: number
   items?: OrderItem[]
   notes?: string
@@ -45,10 +50,16 @@ export type Order = {
   paymentMethod?: PaymentMethod
   paymentStatus?: PaymentStatus
   shippingAddress?: string
+  shippedAt?: string
   shippingCharge?: number
+  shipmentCreatedAt?: string
   subtotal?: number
   totalPrice?: number
   updatedAt?: string
+  deliveredAt?: string
+  lastCourierSyncAt?: string
+  trackingCode?: string
+  trackingUrl?: string
   user?: AdminUser | string
 }
 

@@ -1,272 +1,106 @@
-# Artisane Frontend Roadmap
+# Merge Third-Party Delivery Plan Into `PLAN.md`
 
 ## Summary
+Update `PLAN.md` from a frontend-only roadmap into a future development context file for both client and server. Preserve the existing roadmap, API list, and stack notes, then add the new RedX/Steadfast/Pathao delivery fulfillment plan as the current source of truth.
 
-Build separate React client: `D:\2026- PROJECTS\ARTISANE\Artisane_Client`.
+## Required `PLAN.md` Changes
 
-Use recommended stack: Vite React TypeScript, Redux Toolkit + RTK Query, React Router, Tailwind + shadcn/ui, Zod, React Hook Form, lucide-react. Vite official React TypeScript template supports this path, Redux Toolkit is official standard Redux approach, shadcn has Vite setup docs. ([vite.dev](https://vite.dev/guide/?utm_source=openai)) ([redux-toolkit.js.org](https://redux-toolkit.js.org/introduction/getting-started?utm_source=openai)) ([ui.shadcn.com](https://ui.shadcn.com/docs/installation/vite?utm_source=openai))
+- Rename title to:
+  `# Artisane Development Roadmap & Memory Context`
+- Add a short top section:
+  - Client repo: `Artisane_Client`
+  - Server repo: sibling `Artisane_Server`
+  - Current order/payment flow exists
+  - Next major work: third-party delivery fulfillment
+- Update customer features:
+  - My Orders must show fulfillment tracker: `confirmed -> processing -> shipped -> delivered`
+  - Show courier provider, tracking code, tracking link, and delivery issue state when available
+- Update admin features:
+  - Manage orders must support shipment creation
+  - Admin selects courier provider: `redx`, `steadfast`, or `pathao`
+  - Admin can manually sync shipment status
+  - Scheduled server polling keeps statuses updated
 
-Backend fix first: change `GET /api/v1/auth/login` to `POST /api/v1/auth/login`, because login sends JSON body.
+## Fulfillment Context To Add
 
-## Features
+- New orders start as `confirmed`.
+- Admin creates shipment manually after reviewing an order.
+- Delivery is handled by third-party platforms:
+  - RedX
+  - Steadfast
+  - Pathao
+- Server owns a common shipping adapter layer:
+  - `createShipment(order)`
+  - `getShipmentStatus(order)`
+  - `cancelShipment(order)` where supported
+- Server periodically polls courier APIs and maps courier status into Artisane order status.
+- Internal order statuses remain:
+  `confirmed | processing | shipped | delivered | cancelled`
+- Keep `pending` only for backward compatibility with old orders.
 
-Customer:
+## API / Type Contract Updates
 
-- Home, product listing, product details, category filter, price filter, search, sort.
-- Register, login, logout, profile.
-- Cart in Redux + localStorage.
-- Checkout: create order from cart.
-- My orders, cancel order when allowed.
-- Product reviews: create, update, delete own review.
-
-Admin:
-
-- Dashboard stats.
-- Manage categories: create, read, update, delete.
-- Manage products: create, read, update, delete.
-- Manage users: list, create, view, delete.
-- Manage orders: list, view, update status, delete.
-- Manage reviews: list, delete.
-
-UX:
-
-- Responsive layout.
-- Loading skeletons.
-- Empty states.
-- Toasts for success/error.
-- Protected routes by role.
-- Form validation before API call.
-- Central API error handling.
-
-## Folder Structure
-
-```text
-Artisane_Client/
-  src/
-    app/
-      store.ts
-      hooks.ts
-      router.tsx
-    assets/
-    components/
-      common/
-      forms/
-      layout/
-      ui/
-    config/
-      env.ts
-      routes.ts
-    features/
-      auth/
-        authApi.ts
-        authSlice.ts
-        auth.types.ts
-      products/
-        productApi.ts
-        product.types.ts
-      categories/
-        categoryApi.ts
-        category.types.ts
-      cart/
-        cartSlice.ts
-        cart.types.ts
-      orders/
-        orderApi.ts
-        order.types.ts
-      reviews/
-        reviewApi.ts
-        review.types.ts
-      users/
-        userApi.ts
-        user.types.ts
-      dashboard/
-        dashboardApi.ts
-        dashboard.types.ts
-    hooks/
-    lib/
-      api.ts
-      cn.ts
-      storage.ts
-      validators.ts
-    pages/
-      public/
-      auth/
-      customer/
-      admin/
-    providers/
-      AppProvider.tsx
-    styles/
-      index.css
-    types/
-      api.types.ts
-      common.types.ts
-    main.tsx
-```
-
-## Step-by-Step Build Plan
-
-1. Backend readiness:
-   - Fix login route to `POST`.
-   - Confirm CORS allows client origin.
-   - Confirm all APIs pass in Postman.
-   - Add `.env.example` later if missing.
-
-2. Client setup:
-   - Create Vite React TS app.
-   - Add Tailwind + shadcn/ui.
-   - Add Redux Toolkit, React Redux, React Router, React Hook Form, Zod.
-   - Add `.env` with `VITE_API_BASE_URL=http://localhost:5000/api/v1`.
-
-3. App foundation:
-   - Configure router.
-   - Configure Redux store.
-   - Configure RTK Query base API with `Authorization: Bearer <token>`.
-   - Add `authSlice` storing user + accessToken in Redux and localStorage.
-   - Add `ProtectedRoute` and `RoleRoute`.
-
-4. Public pages:
-   - Home page with categories and featured products.
-   - Product list with query params: `page`, `limit`, `searchTerm`, `category`, `minPrice`, `maxPrice`, `sortBy`, `sortOrder`.
-   - Product details with reviews.
-   - Login/register pages.
-
-5. Customer flow:
-   - Cart add/update/remove/clear.
-   - Checkout page creates order.
-   - My orders page.
-   - Cancel order action.
-   - Review create/update/delete.
-
-6. Admin flow:
-   - Admin layout with sidebar.
-   - Dashboard stats page.
-   - Products CRUD.
-   - Categories CRUD.
-   - Users management.
-   - Orders management.
-   - Reviews management.
-
-7. Polish:
-   - Skeleton loading.
-   - Error boundaries.
-   - Toast messages.
-   - Confirm dialogs for delete/cancel.
-   - Pagination component.
-   - Reusable table component.
-   - Mobile nav.
-
-## API/Type Contracts
-
-- Use backend response wrapper:
+Add order shipment fields:
 
 ```ts
-type ApiResponse<T> = {
-  success: boolean
-  message: string
-  data?: T
-  meta?: {
-    page: number
-    limit: number
-    total: number
-    totalPage: number
-  }
-  errorSources?: { path: string; message: string }[]
+type CourierProvider = 'redx' | 'steadfast' | 'pathao'
+
+type Order = {
+  courierProvider?: CourierProvider
+  courierOrderId?: string
+  trackingCode?: string
+  trackingUrl?: string
+  courierStatus?: string
+  courierStatusRaw?: unknown
+  shipmentCreatedAt?: string
+  lastCourierSyncAt?: string
+  shippedAt?: string
+  deliveredAt?: string
 }
 ```
 
-- Auth token source:
+Add planned endpoints:
 
-```text
-response.data.accessToken
+```txt
+POST /api/v1/orders/:id/shipment        admin
+POST /api/v1/orders/:id/shipment/sync   admin
+GET  /api/v1/orders/shipping-providers  admin
 ```
 
-- Auth header:
+Update env context:
 
-```text
-Authorization: Bearer <accessToken>
+```env
+REDX_API_KEY=
+REDX_BASE_URL=
+
+STEADFAST_API_KEY=
+STEADFAST_SECRET_KEY=
+STEADFAST_BASE_URL=
+
+PATHAO_CLIENT_ID=
+PATHAO_CLIENT_SECRET=
+PATHAO_USERNAME=
+PATHAO_PASSWORD=
+PATHAO_BASE_URL=
 ```
 
-- Role values:
+## Test Plan Updates
 
-```ts
-type UserRole = 'admin' | 'user'
-```
-
-- Order status values:
-
-```ts
-type OrderStatus =
-  'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
-```
-
-## Test Plan
-
-- Build: `npm run build`.
-- Lint: `npm run lint`.
-- Manual browser tests:
-  - Register/login/logout.
-  - Reload page keeps user logged in.
-  - User cannot open admin routes.
-  - Product filters update URL and data.
-  - Cart survives reload.
-  - Checkout creates order and reduces stock.
-  - User can view my orders.
-  - Admin can create/update/delete category/product.
-  - Admin can update order status.
-  - API errors show clean toast messages.
+- Customer places COD order; order starts as `confirmed`.
+- Admin creates shipment with selected courier.
+- Order stores courier provider, tracking code, and tracking URL.
+- Courier-created shipment moves order to `processing`.
+- Courier pickup/in-transit maps to `shipped`.
+- Courier delivered maps to `delivered`.
+- Customer My Orders tracker updates from server data.
+- Admin manual sync works.
+- Missing courier credentials show clear admin error.
+- Cancel is blocked once order is shipped.
+- Run server `npm run build`.
+- Run client `npm run build`.
 
 ## Assumptions
-
-- First version uses `Redux + localStorage` token storage because backend returns JWT in JSON and has no cookie refresh flow yet.
-- First version builds full customer + admin app.
-- UI stack: Tailwind + shadcn/ui.
-- Client stays separate from server repo as `Artisane_Client`.
-- Payments, image upload, wishlist, coupons, and refresh-token flow are v2 after core app works.
-
-
-api list
---------------------
-Base URL:
-http://localhost:5000/api/v1
-Auth
-POST  /auth/register
-POST  /auth/login
-GET   /auth/me              admin/user
-PATCH /auth/me              admin/user
-Dashboard
-GET /dashboard/admin-stats  admin
-GET /dashboard/my-stats     admin/user
-Users
-POST   /users/create-user   admin
-GET    /users               admin
-GET    /users/:id           admin
-DELETE /users/:id           admin
-Categories
-POST   /categories/create-category  admin
-GET    /categories
-GET    /categories/:id
-PATCH  /categories/:id              admin
-DELETE /categories/:id              admin
-Products
-POST   /products/create-product  admin
-GET    /products
-GET    /products/:id
-PATCH  /products/:id             admin
-DELETE /products/:id             admin
-Orders
-POST   /orders/create-order  admin/user
-GET    /orders/my-orders     admin/user
-GET    /orders               admin
-GET    /orders/:id           admin
-PATCH  /orders/:id/status    admin
-PATCH  /orders/:id/cancel    admin/user
-DELETE /orders/:id           admin
-Reviews
-POST   /reviews/create-review       admin/user
-GET    /reviews
-GET    /reviews/product/:productId
-GET    /reviews/:id
-PATCH  /reviews/:id                 admin/user
-DELETE /reviews/:id                 admin/user
-For protected routes, send:
-Authorization: Bearer YOUR_ACCESS_TOKEN
+- `PLAN.md` should become the durable memory/context file for future helpers.
+- Do not remove existing roadmap sections; merge and update them.
+- Courier credentials and final production API URLs will come from merchant accounts.
+- Reference pages to keep in `PLAN.md`: RedX developer API `https://redx.com.bd/developer-api/`, Steadfast tracking `https://steadfast.com.bd/tracking`, Pathao merchant/tracking `https://merchant.pathao.com/`.
