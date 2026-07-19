@@ -83,27 +83,33 @@ function NavbarCategoryNav() {
       className="relative border-t border-black/10 bg-[#eee2d3]/70"
       onMouseLeave={() => setActivePanel('')}
     >
-      <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-2 sm:px-6 lg:px-8">
-        <Link
+      <nav className="mx-auto flex max-w-7xl gap-2 px-4 py-2 sm:overflow-x-auto sm:px-6 lg:px-8">
+        <button
+          aria-expanded={activePanel === 'all-categories'}
           className="inline-flex shrink-0 items-center gap-1 px-3 py-2 text-sm font-bold text-[#4f463d] transition hover:bg-white hover:text-[#181512]"
+          onClick={() =>
+            setActivePanel((currentPanel) =>
+              currentPanel === 'all-categories' ? '' : 'all-categories',
+            )
+          }
           onFocus={() => setActivePanel('all-categories')}
           onMouseEnter={() => setActivePanel('all-categories')}
-          to="/products"
+          type="button"
         >
           Categories
           <ChevronDown className="h-4 w-4" />
-        </Link>
+        </button>
 
         {isCategoriesLoading
           ? Array.from({ length: 5 }).map((_, index) => (
               <span
-                className="h-9 w-24 shrink-0 animate-pulse bg-white/70"
+                className="hidden h-9 w-24 shrink-0 animate-pulse bg-white/70 sm:block"
                 key={index}
               />
             ))
           : featuredCategories.map((category) => (
               <Link
-                className="shrink-0 px-3 py-2 text-sm font-bold text-[#4f463d] transition hover:bg-white hover:text-[#181512]"
+                className="hidden shrink-0 px-3 py-2 text-sm font-bold text-[#4f463d] transition hover:bg-white hover:text-[#181512] sm:block"
                 key={category._id}
                 onClick={() => setActivePanel('')}
                 onFocus={() => setActivePanel(category._id)}
@@ -117,11 +123,11 @@ function NavbarCategoryNav() {
 
       {activePanel === 'all-categories' ? (
         <div className="absolute left-0 right-0 top-full z-40 border-t border-black/10 bg-white shadow-[0_22px_44px_rgba(24,21,18,0.14)]">
-          <div className="mx-auto grid max-w-7xl gap-4 px-4 py-5 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-2 px-4 py-4 sm:gap-4 sm:px-6 lg:grid-cols-4 lg:px-8">
             {categories.length ? (
               categories.map((category) => (
                 <Link
-                  className="flex min-h-20 items-center justify-between gap-4 border border-black/10 px-4 py-3 transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+                  className="flex min-h-20 items-center justify-between gap-3 border border-black/10 px-3 py-3 transition hover:border-[#181512] hover:bg-[#f8f3ea] sm:gap-4 sm:px-4"
                   key={category._id}
                   onClick={() => setActivePanel('')}
                   to={getCategoryUrl(category._id)}
