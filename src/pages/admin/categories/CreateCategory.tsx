@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import { useCreateCategoryMutation } from '../../../features/categories/categoryApi'
-import { adminNavItems } from '../../dashboard/adminNavItems'
+import { adminNavItems } from '../adminNavItems'
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024
 

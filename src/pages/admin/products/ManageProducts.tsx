@@ -1,5 +1,5 @@
 import DashboardLayout from '../../../components/layout/DashboardLayout'
-import { adminNavItems } from '../../dashboard/adminNavItems'
+import { adminNavItems } from '../adminNavItems'
 import ProductTable from './ProductTable'
 
 function ManageProducts() {

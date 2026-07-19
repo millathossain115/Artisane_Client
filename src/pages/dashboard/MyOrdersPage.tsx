@@ -26,7 +26,7 @@ import {
   getOrderItemName,
   getOrderPrimaryItem,
 } from '../../utils/orderDisplay'
-import { userNavItems } from './userNavItems'
+import { userNavItems } from './user-dashboard/userNavItems'
 
 function getApiErrorMessage(error: unknown, fallback: string) {
   const apiError = error as {

@@ -16,8 +16,8 @@ import {
   useGetMyProfileQuery,
   useUpdateMyProfileMutation,
 } from '../../features/auth/profileApi'
-import { adminNavItems } from './adminNavItems'
-import { userNavItems } from './userNavItems'
+import { adminNavItems } from '../admin/adminNavItems'
+import { userNavItems } from './user-dashboard/userNavItems'
 
 type ProfileForm = {
   address: string

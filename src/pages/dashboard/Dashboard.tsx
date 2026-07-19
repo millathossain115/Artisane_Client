@@ -1,6 +1,6 @@
 import { getStoredUser } from '../../features/auth/authApi'
-import AdminDashboard from './AdminDashboard'
-import UserDashboard from './UserDashboard'
+import AdminDashboard from './admin-dashboard/AdminDashboard'
+import UserDashboard from './user-dashboard/UserDashboard'
 
 function Dashboard() {
   const user = getStoredUser()

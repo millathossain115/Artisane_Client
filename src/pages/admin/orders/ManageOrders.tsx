@@ -34,7 +34,7 @@ import {
   getOrderItemName,
   getOrderPrimaryItem,
 } from '../../../utils/orderDisplay'
-import { adminNavItems } from '../../dashboard/adminNavItems'
+import { adminNavItems } from '../adminNavItems'
 
 const orderStatusOptions: OrderStatus[] = [
   'pending',
