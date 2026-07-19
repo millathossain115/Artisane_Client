@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
+import CartButton from '../cart/CartButton'
 import {
   clearAuthSession,
   getStoredUser,
@@ -195,10 +196,7 @@ function DashboardLayout({
             }
 
             return (
-              <div
-                className="pt-3 first:pt-0"
-                key={item.label}
-              >
+              <div className="pt-3 first:pt-0" key={item.label}>
                 <p className="px-4 pb-2 text-xs font-bold uppercase text-[#f1c9a6]">
                   {item.label}
                 </p>
@@ -287,6 +285,8 @@ function DashboardLayout({
                 <Bell className="h-5 w-5" />
                 <span className="absolute right-2 top-2 h-2 w-2 bg-[#c85f2f]" />
               </button>
+
+              {!isAdmin ? <CartButton /> : null}
 
               <div className="relative" ref={profileMenuRef}>
                 <button
