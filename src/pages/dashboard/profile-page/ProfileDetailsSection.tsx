@@ -1,4 +1,4 @@
-import { CircleUserRound } from 'lucide-react'
+import { CircleUserRound, Upload } from 'lucide-react'
 
 import { getReadableValue, type ProfileForm } from './profilePageUtils'
 
@@ -20,6 +20,10 @@ function ProfileDetailsSection({
   profileForm,
   readonlyClass,
 }: ProfileDetailsSectionProps) {
+  const avatarLabel =
+    profileForm.avatarFile?.name ||
+    (profileForm.avatar ? 'Current profile photo' : 'No photo selected')
+
   return (
     <section className="border border-black/10 bg-white p-5 transition">
       <div className="flex items-center gap-3 border-b border-black/10 pb-4">
@@ -29,7 +33,7 @@ function ProfileDetailsSection({
         <div>
           <h2 className="text-2xl font-bold">Profile details</h2>
           <p className="mt-1 text-sm text-[#6b5f53]">
-            Name, email, phone, and avatar path from your account.
+            Name, email, phone, and profile photo from your account.
           </p>
         </div>
       </div>
@@ -70,14 +74,32 @@ function ProfileDetailsSection({
           </label>
 
           <label className="grid gap-2 text-sm font-bold">
-            Avatar path
-            <input
-              className={fieldClass}
-              onChange={(event) => onFieldChange('avatar', event.target.value)}
-              placeholder="/uploads/profile.jpg"
-              type="text"
-              value={profileForm.avatar}
-            />
+            Profile photo
+            <span className="flex min-h-12 cursor-pointer items-center justify-between gap-3 border border-black/10 bg-white px-3 text-sm font-medium transition hover:border-[#181512]">
+              <span className="truncate text-[#4f463d]">{avatarLabel}</span>
+              <Upload className="h-4 w-4 shrink-0 text-[#7a3f1d]" />
+              <input
+                accept="image/*"
+                className="sr-only"
+                onChange={(event) => {
+                  const file = event.target.files?.[0] ?? null
+
+                  onFieldChange('avatarFile', file)
+
+                  if (file) {
+                    onFieldChange('avatar', URL.createObjectURL(file))
+                  }
+                }}
+                type="file"
+              />
+            </span>
+            {profileForm.avatar ? (
+              <img
+                alt="Profile preview"
+                className="h-20 w-20 border border-black/10 object-cover"
+                src={profileForm.avatar}
+              />
+            ) : null}
           </label>
         </div>
       ) : (
@@ -86,11 +108,21 @@ function ProfileDetailsSection({
             ['Full name', profileForm.name],
             ['Email address', profileForm.email],
             ['Phone number', profileForm.phone],
-            ['Avatar path', profileForm.avatar],
+            ['Profile photo', profileForm.avatar],
           ].map(([label, value]) => (
             <div className="grid gap-2 text-sm font-bold" key={label}>
               <dt>{label}</dt>
-              <dd className={readonlyClass}>{getReadableValue(value)}</dd>
+              <dd className={readonlyClass}>
+                {label === 'Profile photo' && value ? (
+                  <img
+                    alt="Profile"
+                    className="h-16 w-16 border border-black/10 object-cover"
+                    src={value}
+                  />
+                ) : (
+                  getReadableValue(value)
+                )}
+              </dd>
             </div>
           ))}
         </dl>

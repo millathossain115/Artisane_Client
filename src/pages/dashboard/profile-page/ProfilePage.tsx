@@ -69,6 +69,14 @@ function ProfilePage() {
     saveStoredUser(profile)
   }, [profile])
 
+  useEffect(() => {
+    if (!profileForm.avatar.startsWith('blob:')) {
+      return
+    }
+
+    return () => URL.revokeObjectURL(profileForm.avatar)
+  }, [profileForm.avatar])
+
   function updateField<K extends keyof ProfileForm>(
     field: K,
     value: ProfileForm[K],
@@ -101,9 +109,11 @@ function ProfilePage() {
       return
     }
 
+    const avatar =
+      profileForm.avatarFile ?? (profileForm.avatar.trim() || undefined)
     const payload: UpdateProfilePayload = {
       address: profileForm.address.trim() || undefined,
-      avatar: profileForm.avatar.trim() || undefined,
+      avatar,
       city: profileForm.city.trim() || undefined,
       name: profileForm.name.trim(),
       phone: profileForm.phone.trim() || undefined,
@@ -117,6 +127,7 @@ function ProfilePage() {
         const nextProfileForm = {
           address: updatedProfile.address ?? '',
           avatar: updatedProfile.avatar ?? '',
+          avatarFile: null,
           city: updatedProfile.city ?? '',
           email: updatedProfile.email ?? profileForm.email,
           name: updatedProfile.name ?? '',

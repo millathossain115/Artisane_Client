@@ -1,6 +1,7 @@
 export type ProfileForm = {
   address: string
   avatar: string
+  avatarFile: File | null
   city: string
   email: string
   name: string
@@ -11,6 +12,7 @@ export type ProfileForm = {
 export const emptyProfileForm: ProfileForm = {
   address: '',
   avatar: '',
+  avatarFile: null,
   city: '',
   email: '',
   name: '',
@@ -22,6 +24,7 @@ export function createProfileForm(profile: Partial<ProfileForm>): ProfileForm {
   return {
     address: profile.address ?? '',
     avatar: profile.avatar ?? '',
+    avatarFile: null,
     city: profile.city ?? '',
     email: profile.email ?? '',
     name: profile.name ?? '',

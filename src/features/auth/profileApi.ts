@@ -17,11 +17,39 @@ export type UserProfile = AuthUser & {
 
 export type UpdateProfilePayload = {
   address?: string
-  avatar?: string
+  avatar?: File | string
   city?: string
   name: string
   phone?: string
   postalCode?: string
+}
+
+function createProfileFormData(payload: UpdateProfilePayload) {
+  const formData = new FormData()
+
+  formData.append('name', payload.name)
+
+  if (payload.address !== undefined) {
+    formData.append('address', payload.address)
+  }
+
+  if (payload.avatar !== undefined) {
+    formData.append('avatar', payload.avatar)
+  }
+
+  if (payload.city !== undefined) {
+    formData.append('city', payload.city)
+  }
+
+  if (payload.phone !== undefined) {
+    formData.append('phone', payload.phone)
+  }
+
+  if (payload.postalCode !== undefined) {
+    formData.append('postalCode', payload.postalCode)
+  }
+
+  return formData
 }
 
 export const profileApi = baseApi.injectEndpoints({
@@ -38,8 +66,8 @@ export const profileApi = baseApi.injectEndpoints({
     updateMyProfile: builder.mutation<UserProfile | null, UpdateProfilePayload>(
       {
         invalidatesTags: ['Auth', 'Dashboard'],
-        query: (body) => ({
-          body,
+        query: (payload) => ({
+          body: createProfileFormData(payload),
           method: 'PATCH',
           url: '/auth/me',
         }),
