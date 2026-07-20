@@ -36,7 +36,7 @@ export const adminNavItems = [
     ],
   },
   { label: 'Users', to: '/dashboard/users', icon: UsersRound },
-  { label: 'Reviews', to: '#reviews', icon: Star },
+  { label: 'Reviews', to: '/dashboard/admin/reviews', icon: Star },
   { label: 'Messages', to: '#messages', icon: MessageSquareText },
   { label: 'Analytics', to: '#analytics', icon: BarChart3 },
   { label: 'Settings', to: '#settings', icon: Settings },

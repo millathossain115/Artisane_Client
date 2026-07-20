@@ -24,6 +24,7 @@ export const baseApi = createApi({
     'Dashboard',
     'Product',
     'Order',
+    'Review',
     'User',
     'Wishlist',
   ],

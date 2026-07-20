@@ -20,7 +20,10 @@ function UserDashboard() {
     isError: hasStatsError,
     isLoading: isStatsLoading,
   } = useGetMyDashboardStatsQuery()
-  const { data: myOrderList } = useGetMyOrdersQuery({ limit: 100, page: 1 })
+  const { data: myOrderList } = useGetMyOrdersQuery(
+    { limit: 100, page: 1 },
+    { refetchOnMountOrArgChange: true },
+  )
   const myOrders = myOrderList?.data ?? []
   const shouldShowStatsNotice =
     (isStatsLoading || (hasStatsError && myOrders.length === 0)) &&

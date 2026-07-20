@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from 'react'
 import {
   AlertCircle,
   CheckCircle2,
@@ -12,21 +11,21 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import {
   type Order,
   type OrderStatus,
   type PaymentStatus,
-  useCreateShipmentMutation,
   useCancelOrderMutation,
+  useCreateShipmentMutation,
   useDeleteOrderMutation,
   useGetAllOrdersQuery,
   useGetOrderByIdQuery,
   useSyncShipmentMutation,
   useUpdateOrderStatusMutation,
 } from '../../../features/orders/orderApi'
-import { formatPrice, getAssetUrl } from '../../../utils/productDisplay'
 import {
   canCancelOrder,
   formatCourierProvider,
@@ -40,6 +39,7 @@ import {
   getOrderPrimaryItem,
   getOrderTrackingUrl,
 } from '../../../utils/orderDisplay'
+import { formatPrice, getAssetUrl } from '../../../utils/productDisplay'
 import { adminNavItems } from '../adminNavItems'
 
 const orderStatusOptions: OrderStatus[] = [
@@ -113,9 +113,9 @@ function matchesSearch(order: Order, searchTerm: string) {
 function ManageOrders() {
   const [page, setPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
-  const [orderStatusFilter, setOrderStatusFilter] = useState<'all' | OrderStatus>(
-    'all',
-  )
+  const [orderStatusFilter, setOrderStatusFilter] = useState<
+    'all' | OrderStatus
+  >('all')
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<
     'all' | PaymentStatus
   >('all')
@@ -152,18 +152,25 @@ function ManageOrders() {
     paymentStatus: '',
   })
 
-  const { data: orderList, isError, isLoading } = useGetAllOrdersQuery({
-    limit: 10,
-    page,
-  })
+  const {
+    data: orderList,
+    isError,
+    isLoading,
+    refetch: refetchOrders,
+  } = useGetAllOrdersQuery(
+    {
+      limit: 10,
+      page,
+    },
+    { refetchOnMountOrArgChange: true },
+  )
   const {
     data: orderDetail,
     isFetching: isFetchingOrderDetail,
     refetch: refetchOrderDetail,
-  } =
-    useGetOrderByIdQuery(selectedOrderId, {
-      skip: !selectedOrderId,
-    })
+  } = useGetOrderByIdQuery(selectedOrderId, {
+    skip: !selectedOrderId,
+  })
   const [createShipment, { isLoading: isCreatingShipment }] =
     useCreateShipmentMutation()
   const [syncShipment, { isLoading: isSyncingShipment }] =
@@ -175,20 +182,17 @@ function ManageOrders() {
 
   const orders = useMemo(() => orderList?.data ?? [], [orderList?.data])
   const meta = orderList?.meta
-  const selectedOrder = useMemo(
-    () => {
-      if (!selectedOrderId) {
-        return null
-      }
+  const selectedOrder = useMemo(() => {
+    if (!selectedOrderId) {
+      return null
+    }
 
-      return (
-        orderDetail ??
-        orders.find((order) => order._id === selectedOrderId) ??
-        null
-      )
-    },
-    [orderDetail, orders, selectedOrderId],
-  )
+    return (
+      orderDetail ??
+      orders.find((order) => order._id === selectedOrderId) ??
+      null
+    )
+  }, [orderDetail, orders, selectedOrderId])
 
   function resetFilters() {
     setSearchTerm('')
@@ -254,11 +258,15 @@ function ManageOrders() {
         text: `${formatOrderId(confirmTarget.order._id)} ${confirmTarget.type === 'cancel' ? 'cancelled' : 'deleted'}.`,
         type: 'success',
       })
+      await refetchOrders()
       setConfirmTarget(null)
       setSelectedOrderId('')
     } catch (error) {
       setMessage({
-        text: getApiErrorMessage(error, `Failed to ${confirmTarget.type} order.`),
+        text: getApiErrorMessage(
+          error,
+          `Failed to ${confirmTarget.type} order.`,
+        ),
         type: 'error',
       })
     }
@@ -295,6 +303,7 @@ function ManageOrders() {
         text: `${formatOrderId(selectedOrder._id)} shipment created.`,
         type: 'success',
       })
+      await refetchOrders()
       await refetchOrderDetail()
       setShowShipmentWarning(false)
     } catch (error) {
@@ -317,6 +326,7 @@ function ManageOrders() {
         text: `${formatOrderId(selectedOrder._id)} shipment synced.`,
         type: 'success',
       })
+      await refetchOrders()
       await refetchOrderDetail()
     } catch (error) {
       setMessage({
@@ -346,6 +356,7 @@ function ManageOrders() {
         text: `${formatOrderId(selectedOrder._id)} status updated.`,
         type: 'success',
       })
+      await refetchOrders()
       await refetchOrderDetail()
     } catch (error) {
       setMessage({
@@ -357,8 +368,8 @@ function ManageOrders() {
 
   const shipmentExists = Boolean(
     selectedOrder?.courierProvider ||
-      selectedOrder?.courierOrderId ||
-      selectedOrder?.trackingCode,
+    selectedOrder?.courierOrderId ||
+    selectedOrder?.trackingCode,
   )
   const shipmentActionAllowed =
     selectedOrder?.orderStatus === 'confirmed' ||
@@ -899,7 +910,9 @@ function ManageOrders() {
                     </label>
 
                     <label className="grid gap-2 md:col-span-2">
-                      <span className="text-sm font-bold">Item description</span>
+                      <span className="text-sm font-bold">
+                        Item description
+                      </span>
                       <input
                         className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
                         onChange={(event) =>
@@ -1069,9 +1082,9 @@ function ManageOrders() {
               <div>
                 <h2 className="text-2xl font-bold">Create shipment?</h2>
                 <p className="mt-2 text-sm leading-6 text-[#6b5f53]">
-                  This will send {formatOrderId(selectedOrder._id)} to
-                  Steadfast and move the order to processing. Verify payment,
-                  phone, and address before continuing.
+                  This will send {formatOrderId(selectedOrder._id)} to Steadfast
+                  and move the order to processing. Verify payment, phone, and
+                  address before continuing.
                 </p>
                 {fraudRisk !== 'low' ? (
                   <div className="mt-3 border border-[#c85f2f]/25 bg-[#fff5ef] p-3 text-sm font-semibold text-[#8f3f1d]">

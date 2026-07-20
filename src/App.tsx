@@ -16,7 +16,9 @@ import Checkout from './pages/checkout/Checkout'
 import Dashboard from './pages/dashboard/Dashboard'
 import MyOrdersPage from './pages/dashboard/MyOrdersPage'
 import ProfilePage from './pages/dashboard/profile-page/ProfilePage'
+import UserReviewsPage from './pages/dashboard/reviews/ReviewsPage'
 import WishlistPage from './pages/dashboard/user-dashboard/WishlistPage'
+import AdminReviewsPage from './pages/admin/reviews/ReviewsPage'
 import Home from './pages/Home'
 import InfoPage from './pages/info/InfoPage'
 import NotFound from './pages/NotFound'
@@ -85,6 +87,14 @@ function App() {
           }
         />
         <Route
+          path="/dashboard/reviews"
+          element={
+            <ProtectedRoute>
+              <UserReviewsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/dashboard/wishlist"
           element={
             <ProtectedRoute>
@@ -97,6 +107,14 @@ function App() {
           element={
             <AdminRoute>
               <ManageOrders />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/reviews"
+          element={
+            <AdminRoute>
+              <AdminReviewsPage />
             </AdminRoute>
           }
         />

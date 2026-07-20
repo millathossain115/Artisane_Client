@@ -29,6 +29,8 @@ export type AdminDashboardStats = Record<string, unknown> & {
   totalUsers?: number | string
   newCustomersThisWeek?: number | string
   newUsersThisWeek?: number | string
+  totalReviews?: number | string
+  recentReviews?: DashboardReview[]
 }
 
 export type DashboardOrder = {
@@ -46,9 +48,16 @@ export type DashboardOrder = {
 
 export type DashboardReview = {
   _id: string
+  isHidden?: boolean
   rating?: number
   comment?: string
   createdAt?: string
+  user?: {
+    _id?: string
+    email?: string
+    name?: string
+    role?: string
+  }
   product?: {
     name?: string
     slug?: string

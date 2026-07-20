@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   AlertCircle,
   CheckCircle2,
@@ -90,7 +90,7 @@ function MyOrdersPage() {
   const [orderStatusFilter, setOrderStatusFilter] = useState<
     'all' | OrderStatus
   >('all')
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [selectedOrderId, setSelectedOrderId] = useState('')
   const [cancelTarget, setCancelTarget] = useState<Order | null>(null)
   const [message, setMessage] = useState<{
     text: string
@@ -100,14 +100,21 @@ function MyOrdersPage() {
     data: orderList,
     isError,
     isLoading,
-  } = useGetMyOrdersQuery({
-    limit: 10,
-    page,
-    status: orderStatusFilter === 'all' ? undefined : orderStatusFilter,
-  })
+  } = useGetMyOrdersQuery(
+    {
+      limit: 10,
+      page,
+      status: orderStatusFilter === 'all' ? undefined : orderStatusFilter,
+    },
+    { refetchOnMountOrArgChange: true },
+  )
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation()
 
   const orders = orderList?.data ?? []
+  const selectedOrder = useMemo(
+    () => orders.find((order) => order._id === selectedOrderId) ?? null,
+    [orders, selectedOrderId],
+  )
   const visibleOrders = orders.filter(
     (order) =>
       orderStatusFilter === 'all' || order.orderStatus === orderStatusFilter,
@@ -274,7 +281,7 @@ function MyOrdersPage() {
                         <button
                           aria-label={`View ${formatOrderId(order._id)}`}
                           className="grid h-9 w-9 place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-white"
-                          onClick={() => setSelectedOrder(order)}
+                          onClick={() => setSelectedOrderId(order._id)}
                           type="button"
                         >
                           <Eye className="h-4 w-4" />
@@ -346,7 +353,7 @@ function MyOrdersPage() {
               <button
                 aria-label="Close order details"
                 className="grid h-10 w-10 place-items-center border border-black/10 transition hover:border-[#181512]"
-                onClick={() => setSelectedOrder(null)}
+                onClick={() => setSelectedOrderId('')}
                 type="button"
               >
                 <X className="h-4 w-4" />

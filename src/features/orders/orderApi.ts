@@ -193,6 +193,8 @@ export const orderApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => [
         'Order',
         'Dashboard',
+        'Review',
+        { id: 'LIST', type: 'Order' },
         { id, type: 'Order' },
       ],
       query: ({ id, ...body }) => ({
@@ -207,6 +209,8 @@ export const orderApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, id) => [
         'Order',
         'Dashboard',
+        'Review',
+        { id: 'LIST', type: 'Order' },
         { id, type: 'Order' },
       ],
       query: (id) => ({
@@ -217,7 +221,7 @@ export const orderApi = baseApi.injectEndpoints({
         response.data ?? null,
     }),
     cancelOrder: builder.mutation<Order | null, string>({
-      invalidatesTags: ['Order', 'Dashboard', 'Product'],
+      invalidatesTags: ['Order', 'Dashboard', 'Product', 'Review'],
       query: (id) => ({
         method: 'POST',
         url: `/orders/${id}/cancel`,
@@ -226,7 +230,7 @@ export const orderApi = baseApi.injectEndpoints({
         response.data ?? null,
     }),
     createOrder: builder.mutation<CreateOrderResult | null, CreateOrderPayload>({
-      invalidatesTags: ['Order', 'Dashboard', 'Product'],
+      invalidatesTags: ['Order', 'Dashboard', 'Product', 'Review'],
       query: (body) => ({
         body,
         method: 'POST',
@@ -236,14 +240,19 @@ export const orderApi = baseApi.injectEndpoints({
         createOrderResult(response),
     }),
     deleteOrder: builder.mutation<ApiResponse<null>, string>({
-      invalidatesTags: ['Order', 'Dashboard'],
+      invalidatesTags: ['Order', 'Dashboard', 'Review'],
       query: (id) => ({
         method: 'DELETE',
         url: `/orders/${id}`,
       }),
     }),
     getAllOrders: builder.query<OrderListResult, OrderQueryParams | void>({
-      providesTags: ['Order'],
+      providesTags: (result) => [
+        'Order',
+        { id: 'LIST', type: 'Order' },
+        ...(result?.data.map((order) => ({ id: order._id, type: 'Order' as const })) ??
+          []),
+      ],
       query: (params) => ({
         params: createOrderParams(params ?? undefined),
         url: '/orders',
@@ -252,7 +261,12 @@ export const orderApi = baseApi.injectEndpoints({
         createOrderListResult(response, params ?? undefined),
     }),
     getMyOrders: builder.query<OrderListResult, OrderQueryParams | void>({
-      providesTags: ['Order'],
+      providesTags: (result) => [
+        'Order',
+        { id: 'LIST', type: 'Order' },
+        ...(result?.data.map((order) => ({ id: order._id, type: 'Order' as const })) ??
+          []),
+      ],
       query: (params) => ({
         params: createOrderParams(params ?? undefined),
         url: '/orders/my-orders',
@@ -271,6 +285,8 @@ export const orderApi = baseApi.injectEndpoints({
         invalidatesTags: (_result, _error, { id }) => [
           'Order',
           'Dashboard',
+          'Review',
+          { id: 'LIST', type: 'Order' },
           { id, type: 'Order' },
         ],
         query: ({ id, ...body }) => ({

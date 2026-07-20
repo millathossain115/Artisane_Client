@@ -55,7 +55,7 @@ function AdminDashboard() {
         totalCategories={totalCategories}
       />
       <AdminOperationsSection />
-      <AdminReviewActivitySection />
+      <AdminReviewActivitySection stats={adminStats} />
       <AdminSummaryTiles totalCategories={totalCategories} />
     </DashboardLayout>
   )
