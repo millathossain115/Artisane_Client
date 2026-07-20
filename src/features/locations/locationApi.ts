@@ -9,7 +9,12 @@ type ApiResponse<T> = {
 type LocationRecord = {
   _id?: string
   id?: string
+  district_id?: string
+  district_name?: string
+  zone_id?: string
+  zone_name?: string
   name?: string
+  title?: string
 }
 
 export type LocationOption = {
@@ -24,8 +29,13 @@ function normalizeLocationOptions(data?: LocationRecord[]) {
 
   return data
     .map((item) => ({
-      id: item.id ?? item._id ?? '',
-      name: item.name ?? '',
+      id: item.id ?? item._id ?? item.district_id ?? item.zone_id ?? '',
+      name:
+        item.name ??
+        item.title ??
+        item.district_name ??
+        item.zone_name ??
+        '',
     }))
     .filter((item): item is LocationOption => Boolean(item.id && item.name))
 }

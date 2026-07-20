@@ -198,18 +198,13 @@ function Checkout() {
       const orderResult = await withTimeout(
         createOrder({
           contactPhone: pendingOrder.contactPhone,
-          district_id: pendingOrder.districtId,
-          full_address: pendingOrder.fullAddress,
           items: cartItems.map((item) => ({
             product: item.id,
             quantity: item.quantity,
           })),
           notes: pendingOrder.notes,
           paymentMethod: pendingOrder.paymentMethod,
-          recipient_name: pendingOrder.recipientName,
-          recipient_phone: pendingOrder.recipientPhone,
           shippingAddress: pendingOrder.shippingAddress,
-          zone_id: pendingOrder.zoneId,
         }).unwrap(),
         PAYMENT_REDIRECT_TIMEOUT_MS,
         'Payment gateway did not respond in time. If this order appears in My Orders, do not place it again.',

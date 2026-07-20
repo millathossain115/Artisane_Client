@@ -15,7 +15,6 @@ import {
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import {
   type Order,
-  type CourierProvider,
   type OrderStatus,
   type PaymentStatus,
   useCreateShipmentMutation,
@@ -38,6 +37,7 @@ import {
   getOrderItemImage,
   getOrderItemName,
   getOrderPrimaryItem,
+  getOrderTrackingUrl,
 } from '../../../utils/orderDisplay'
 import { adminNavItems } from '../adminNavItems'
 
@@ -73,6 +73,22 @@ function getApiErrorMessage(error: unknown, fallback: string) {
     apiError.message ??
     fallback
   )
+}
+
+function parseOptionalInteger(value: string, min: number, max: number) {
+  const trimmed = value.trim()
+
+  if (!trimmed) {
+    return undefined
+  }
+
+  const parsed = Number(trimmed)
+
+  if (!Number.isInteger(parsed) || parsed < min || parsed > max) {
+    return null
+  }
+
+  return parsed
 }
 
 function matchesSearch(order: Order, searchTerm: string) {
@@ -111,16 +127,21 @@ function ManageOrders() {
     text: string
     type: 'error' | 'success'
   } | null>(null)
+  const [showShipmentWarning, setShowShipmentWarning] = useState(false)
   const [shipmentForm, setShipmentForm] = useState<{
-    courierOrderId: string
-    courierProvider: CourierProvider
-    trackingCode: string
-    trackingUrl: string
+    alternativePhone: string
+    deliveryType: string
+    itemDescription: string
+    note: string
+    recipientEmail: string
+    totalLot: string
   }>({
-    courierOrderId: '',
-    courierProvider: 'redx',
-    trackingCode: '',
-    trackingUrl: '',
+    alternativePhone: '',
+    deliveryType: '',
+    itemDescription: '',
+    note: '',
+    recipientEmail: '',
+    totalLot: '',
   })
   const [statusForm, setStatusForm] = useState<{
     orderStatus: OrderStatus | ''
@@ -134,7 +155,11 @@ function ManageOrders() {
     limit: 10,
     page,
   })
-  const { data: orderDetail, isFetching: isFetchingOrderDetail } =
+  const {
+    data: orderDetail,
+    isFetching: isFetchingOrderDetail,
+    refetch: refetchOrderDetail,
+  } =
     useGetOrderByIdQuery(selectedOrderId, {
       skip: !selectedOrderId,
     })
@@ -166,11 +191,14 @@ function ManageOrders() {
 
   useEffect(() => {
     if (!selectedOrder) {
+      setShowShipmentWarning(false)
       setShipmentForm({
-        courierOrderId: '',
-        courierProvider: 'redx',
-        trackingCode: '',
-        trackingUrl: '',
+        alternativePhone: '',
+        deliveryType: '',
+        itemDescription: '',
+        note: '',
+        recipientEmail: '',
+        totalLot: '',
       })
       setStatusForm({
         orderStatus: '',
@@ -180,10 +208,12 @@ function ManageOrders() {
     }
 
     setShipmentForm({
-      courierOrderId: selectedOrder.courierOrderId ?? '',
-      courierProvider: selectedOrder.courierProvider ?? 'redx',
-      trackingCode: selectedOrder.trackingCode ?? '',
-      trackingUrl: selectedOrder.trackingUrl ?? '',
+      alternativePhone: '',
+      deliveryType: '',
+      itemDescription: '',
+      note: '',
+      recipientEmail: '',
+      totalLot: '',
     })
     setStatusForm({
       orderStatus: selectedOrder.orderStatus ?? '',
@@ -231,19 +261,34 @@ function ManageOrders() {
       return
     }
 
+    const deliveryType = parseOptionalInteger(shipmentForm.deliveryType, 0, 1)
+    const totalLot = parseOptionalInteger(shipmentForm.totalLot, 1, 9999)
+
+    if (deliveryType === null || totalLot === null) {
+      setMessage({
+        text: 'Delivery type must be 0 or 1 and total lot must be a whole number.',
+        type: 'error',
+      })
+      return
+    }
+
     try {
       await createShipment({
-        courierOrderId: shipmentForm.courierOrderId.trim(),
-        courierProvider: shipmentForm.courierProvider,
+        alternativePhone: shipmentForm.alternativePhone.trim() || undefined,
         id: selectedOrder._id,
-        trackingCode: shipmentForm.trackingCode.trim(),
-        trackingUrl: shipmentForm.trackingUrl.trim(),
+        deliveryType,
+        itemDescription: shipmentForm.itemDescription.trim() || undefined,
+        note: shipmentForm.note.trim() || undefined,
+        recipientEmail: shipmentForm.recipientEmail.trim() || undefined,
+        totalLot,
       }).unwrap()
 
       setMessage({
         text: `${formatOrderId(selectedOrder._id)} shipment created.`,
         type: 'success',
       })
+      await refetchOrderDetail()
+      setShowShipmentWarning(false)
     } catch (error) {
       setMessage({
         text: getApiErrorMessage(error, 'Failed to create shipment.'),
@@ -264,6 +309,7 @@ function ManageOrders() {
         text: `${formatOrderId(selectedOrder._id)} shipment synced.`,
         type: 'success',
       })
+      await refetchOrderDetail()
     } catch (error) {
       setMessage({
         text: getApiErrorMessage(error, 'Failed to sync shipment.'),
@@ -292,6 +338,7 @@ function ManageOrders() {
         text: `${formatOrderId(selectedOrder._id)} status updated.`,
         type: 'success',
       })
+      await refetchOrderDetail()
     } catch (error) {
       setMessage({
         text: getApiErrorMessage(error, 'Failed to update order status.'),
@@ -308,6 +355,11 @@ function ManageOrders() {
   const shipmentActionAllowed =
     selectedOrder?.orderStatus === 'confirmed' ||
     selectedOrder?.orderStatus === 'processing'
+  const selectedOrderTrackingUrl = selectedOrder
+    ? getOrderTrackingUrl(selectedOrder)
+    : ''
+  const fraudRisk = selectedOrder?.fraudRisk ?? 'low'
+  const fraudFlags = selectedOrder?.fraudFlags ?? []
 
   return (
     <DashboardLayout
@@ -576,7 +628,10 @@ function ManageOrders() {
               <button
                 aria-label="Close order detail"
                 className="grid h-10 w-10 place-items-center border border-black/10 transition hover:border-[#181512]"
-                onClick={() => setSelectedOrderId('')}
+                onClick={() => {
+                  setShowShipmentWarning(false)
+                  setSelectedOrderId('')
+                }}
                 type="button"
               >
                 <X className="h-4 w-4" />
@@ -709,10 +764,10 @@ function ManageOrders() {
                   </p>
                   <p>
                     <span className="font-bold">Tracking URL:</span>{' '}
-                    {selectedOrder.trackingUrl ? (
+                    {selectedOrderTrackingUrl ? (
                       <a
                         className="font-bold text-[#7a3f1d] underline"
-                        href={selectedOrder.trackingUrl}
+                        href={selectedOrderTrackingUrl}
                         rel="noreferrer"
                         target="_blank"
                       >
@@ -747,67 +802,106 @@ function ManageOrders() {
               ) : shipmentActionAllowed ? (
                 <div className="mt-4 grid gap-4">
                   <div className="grid gap-3 md:grid-cols-2">
+                    <p className="inline-flex min-h-12 items-center border border-black/10 bg-[#f8f3ea] px-3 text-sm font-bold text-[#7a3f1d] md:col-span-2">
+                      Courier provider: Steadfast
+                    </p>
+
                     <label className="grid gap-2">
-                      <span className="text-sm font-bold">Courier provider</span>
+                      <span className="text-sm font-bold">
+                        Alternative phone
+                      </span>
+                      <input
+                        className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+                        onChange={(event) =>
+                          setShipmentForm((current) => ({
+                            ...current,
+                            alternativePhone: event.target.value,
+                          }))
+                        }
+                        placeholder="01800000000"
+                        type="tel"
+                        value={shipmentForm.alternativePhone}
+                      />
+                    </label>
+
+                    <label className="grid gap-2">
+                      <span className="text-sm font-bold">Delivery type</span>
                       <select
                         className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
                         onChange={(event) =>
                           setShipmentForm((current) => ({
                             ...current,
-                            courierProvider: event.target.value as CourierProvider,
+                            deliveryType: event.target.value,
                           }))
                         }
-                        value={shipmentForm.courierProvider}
+                        value={shipmentForm.deliveryType}
                       >
-                        <option value="redx">RedX</option>
-                        <option value="steadfast">Steadfast</option>
-                        <option value="pathao">Pathao</option>
+                        <option value="">Default</option>
+                        <option value="0">Home delivery</option>
+                        <option value="1">Steadfast hub pickup</option>
                       </select>
                     </label>
 
                     <label className="grid gap-2">
-                      <span className="text-sm font-bold">Courier order id</span>
+                      <span className="text-sm font-bold">Total lot</span>
                       <input
                         className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+                        min={1}
                         onChange={(event) =>
                           setShipmentForm((current) => ({
                             ...current,
-                            courierOrderId: event.target.value,
+                            totalLot: event.target.value,
                           }))
                         }
-                        placeholder="Courier order id"
-                        value={shipmentForm.courierOrderId}
+                        placeholder="1"
+                        type="number"
+                        value={shipmentForm.totalLot}
                       />
                     </label>
 
-                    <label className="grid gap-2">
-                      <span className="text-sm font-bold">Tracking code</span>
+                    <label className="grid gap-2 md:col-span-2">
+                      <span className="text-sm font-bold">Item description</span>
                       <input
                         className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
                         onChange={(event) =>
                           setShipmentForm((current) => ({
                             ...current,
-                            trackingCode: event.target.value,
+                            itemDescription: event.target.value,
                           }))
                         }
-                        placeholder="Tracking code"
-                        value={shipmentForm.trackingCode}
+                        placeholder="Artisane product"
+                        value={shipmentForm.itemDescription}
                       />
                     </label>
 
-                    <label className="grid gap-2">
-                      <span className="text-sm font-bold">Tracking URL</span>
+                    <label className="grid gap-2 md:col-span-2">
+                      <span className="text-sm font-bold">Note</span>
+                      <textarea
+                        className="min-h-24 resize-y border border-black/10 px-3 py-3 text-sm font-medium leading-6 outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+                        onChange={(event) =>
+                          setShipmentForm((current) => ({
+                            ...current,
+                            note: event.target.value,
+                          }))
+                        }
+                        placeholder="Handle carefully"
+                        value={shipmentForm.note}
+                      />
+                    </label>
+
+                    <label className="grid gap-2 md:col-span-2">
+                      <span className="text-sm font-bold">Recipient email</span>
                       <input
                         className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
                         onChange={(event) =>
                           setShipmentForm((current) => ({
                             ...current,
-                            trackingUrl: event.target.value,
+                            recipientEmail: event.target.value,
                           }))
                         }
-                        placeholder="https://..."
-                        type="url"
-                        value={shipmentForm.trackingUrl}
+                        placeholder="customer@example.com"
+                        type="email"
+                        value={shipmentForm.recipientEmail}
                       />
                     </label>
                   </div>
@@ -818,11 +912,12 @@ function ManageOrders() {
                       onClick={() =>
                         selectedOrder
                           ? setShipmentForm({
-                              courierOrderId: selectedOrder.courierOrderId ?? '',
-                              courierProvider:
-                                selectedOrder.courierProvider ?? 'redx',
-                              trackingCode: selectedOrder.trackingCode ?? '',
-                              trackingUrl: selectedOrder.trackingUrl ?? '',
+                              alternativePhone: '',
+                              deliveryType: '',
+                              itemDescription: '',
+                              note: '',
+                              recipientEmail: '',
+                              totalLot: '',
                             })
                           : null
                       }
@@ -832,14 +927,8 @@ function ManageOrders() {
                     </button>
                     <button
                       className="min-h-11 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
-                      disabled={
-                        isCreatingShipment ||
-                        !shipmentForm.courierOrderId.trim() ||
-                        !shipmentForm.trackingCode.trim() ||
-                        !shipmentForm.trackingUrl.trim() ||
-                        !shipmentForm.courierProvider
-                      }
-                      onClick={confirmShipmentAction}
+                      disabled={isCreatingShipment}
+                      onClick={() => setShowShipmentWarning(true)}
                       type="button"
                     >
                       {isCreatingShipment ? 'Creating...' : 'Create shipment'}
@@ -854,6 +943,24 @@ function ManageOrders() {
             </div>
 
             <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
+              {fraudRisk !== 'low' ? (
+                <div className="md:col-span-2 border border-[#c85f2f]/30 bg-[#fff5ef] p-4 text-[#8f3f1d]">
+                  <p className="text-sm font-bold uppercase tracking-[0.14em]">
+                    Fraud check
+                  </p>
+                  <p className="mt-1 text-sm font-semibold">
+                    Risk level: {fraudRisk}
+                  </p>
+                  {fraudFlags.length ? (
+                    <ul className="mt-2 list-disc pl-5 text-sm leading-6">
+                      {fraudFlags.map((flag) => (
+                        <li key={flag}>{flag}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              ) : null}
+
               <p>
                 <span className="font-bold">Customer:</span>{' '}
                 {getOrderCustomer(selectedOrder)}
@@ -908,6 +1015,51 @@ function ManageOrders() {
               <p className="text-xl font-bold">
                 Total {formatPrice(selectedOrder.totalPrice ?? 0)}
               </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showShipmentWarning && selectedOrder ? (
+        <div className="fixed inset-0 z-[60] grid place-items-center bg-[#181512]/70 px-4">
+          <div className="w-full max-w-lg border border-[#c85f2f]/25 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.32)]">
+            <div className="flex items-start gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center bg-[#fff5ef] text-[#8f3f1d]">
+                <AlertCircle className="h-5 w-5" />
+              </span>
+              <div>
+                <h2 className="text-2xl font-bold">Create shipment?</h2>
+                <p className="mt-2 text-sm leading-6 text-[#6b5f53]">
+                  This will send {formatOrderId(selectedOrder._id)} to
+                  Steadfast and move the order to processing. Verify payment,
+                  phone, and address before continuing.
+                </p>
+                {fraudRisk !== 'low' ? (
+                  <div className="mt-3 border border-[#c85f2f]/25 bg-[#fff5ef] p-3 text-sm font-semibold text-[#8f3f1d]">
+                    Fraud risk: {fraudRisk}
+                    {fraudFlags.length ? ` - ${fraudFlags.join(', ')}` : ''}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isCreatingShipment}
+                onClick={() => setShowShipmentWarning(false)}
+                type="button"
+              >
+                Review again
+              </button>
+              <button
+                className="min-h-11 bg-[#8f3f1d] px-4 text-sm font-bold text-white transition hover:bg-[#6f2f15] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isCreatingShipment}
+                onClick={confirmShipmentAction}
+                type="button"
+              >
+                {isCreatingShipment ? 'Creating...' : 'Create shipment'}
+              </button>
             </div>
           </div>
         </div>

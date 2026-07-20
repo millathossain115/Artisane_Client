@@ -44,6 +44,9 @@ export type Order = {
   courierStatus?: string
   courierStatusRaw?: unknown
   discount?: number
+  fraudCheckedAt?: string
+  fraudFlags?: string[]
+  fraudRisk?: 'high' | 'low' | 'medium'
   items?: OrderItem[]
   notes?: string
   orderStatus?: OrderStatus
@@ -69,13 +72,8 @@ export type CreateOrderPayload = {
     product: string
     quantity: number
   }[]
-  district_id?: string
-  full_address?: string
   notes?: string
   paymentMethod: PaymentMethod
-  recipient_name?: string
-  recipient_phone?: string
-  zone_id?: string
   shippingAddress: string
 }
 
@@ -119,11 +117,13 @@ export type UpdateOrderStatusPayload = {
 }
 
 export type CreateShipmentPayload = {
-  courierOrderId: string
-  courierProvider: CourierProvider
+  alternativePhone?: string
+  deliveryType?: number
   id: string
-  trackingCode: string
-  trackingUrl: string
+  itemDescription?: string
+  note?: string
+  recipientEmail?: string
+  totalLot?: number
 }
 
 function createOrderParams(params?: OrderQueryParams | void) {
