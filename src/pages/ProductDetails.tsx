@@ -185,6 +185,27 @@ function ProductDetails() {
     })
   }
 
+  function handleBuyNow() {
+    if (!product || isOutOfStock || isAdmin) {
+      return
+    }
+
+    const cartItem = createCartItem(product, safeQuantity)
+
+    if (!accessToken) {
+      navigate('/login', {
+        state: {
+          buyNowItem: cartItem,
+          from: { pathname: '/checkout' },
+        },
+      })
+      return
+    }
+
+    dispatch(addToCart(cartItem))
+    navigate('/checkout')
+  }
+
   async function handleToggleWishlist() {
     if (!product || isAdmin) {
       return
@@ -224,13 +245,34 @@ function ProductDetails() {
 
       <main>
         <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <Link
-            className="inline-flex items-center gap-2 text-sm font-bold text-[#4f463d] transition hover:text-[#181512]"
-            to="/"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to shop
-          </Link>
+          <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-[#4f463d]">
+            <Link
+              className="inline-flex items-center gap-2 transition hover:text-[#181512]"
+              to="/"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to shop
+            </Link>
+            {product ? (
+              <>
+                <span className="text-[#9b8b7a]">/</span>
+                {categoryId ? (
+                  <Link
+                    className="transition hover:text-[#181512]"
+                    to={`/products?category=${encodeURIComponent(categoryId)}`}
+                  >
+                    {getProductCategoryName(product)}
+                  </Link>
+                ) : (
+                  <span>{getProductCategoryName(product)}</span>
+                )}
+                <span className="text-[#9b8b7a]">/</span>
+                <span className="max-w-[220px] truncate text-[#181512] sm:max-w-md">
+                  {product.name}
+                </span>
+              </>
+            ) : null}
+          </div>
 
           {isLoading ? (
             <div className="mt-8 grid gap-8 lg:grid-cols-[1.08fr_0.92fr]">
@@ -262,11 +304,15 @@ function ProductDetails() {
                 <ProductPurchasePanel
                   canBuy={!isAdmin}
                   isWishlisted={isWishlisted}
-                  isWishlistLoading={isWishlistLoading}
-                  isOutOfStock={isOutOfStock}
-                  onAddToCart={handleAddToCart}
-                  onToggleWishlist={handleToggleWishlist}
-                  onUpdateQuantity={updateQuantity}
+                isWishlistLoading={isWishlistLoading}
+                isOutOfStock={isOutOfStock}
+                onAddToCart={handleAddToCart}
+                onBuyNow={handleBuyNow}
+                onDismissStatus={() =>
+                  setStatus({ message: '', productId: '' })
+                }
+                onToggleWishlist={handleToggleWishlist}
+                onUpdateQuantity={updateQuantity}
                   product={product}
                   quantity={safeQuantity}
                   statusMessage={visibleStatus}

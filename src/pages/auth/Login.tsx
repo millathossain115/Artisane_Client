@@ -1,11 +1,15 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { ArrowLeft, Eye, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import artistImage from '../../assets/artist-optimized.jpg'
 import { login, saveAuthSession } from '../../features/auth/authApi'
-import { syncCartForCurrentUser } from '../../features/cart/cartSlice'
+import {
+  addToCart,
+  syncCartForCurrentUser,
+  type CartItem,
+} from '../../features/cart/cartSlice'
 import { useAppDispatch } from '../../redux/hooks'
 
 const demoAccounts = [
@@ -21,9 +25,18 @@ const demoAccounts = [
   },
 ]
 
+type LoginLocationState = {
+  buyNowItem?: CartItem
+  from?: {
+    pathname?: string
+  }
+}
+
 function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
   const dispatch = useAppDispatch()
+  const locationState = location.state as LoginLocationState | null
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -50,10 +63,20 @@ function Login() {
 
       saveAuthSession(authData)
       dispatch(syncCartForCurrentUser())
+      if (authData.user.role !== 'admin' && locationState?.buyNowItem) {
+        dispatch(addToCart(locationState.buyNowItem))
+      }
       setStatus(response.message)
 
       window.setTimeout(() => {
-        navigate(authData.user.role === 'admin' ? '/dashboard' : '/')
+        const redirectPath =
+          locationState?.from?.pathname && locationState.from.pathname !== '/login'
+            ? locationState.from.pathname
+            : '/'
+
+        navigate(authData.user.role === 'admin' ? '/dashboard' : redirectPath, {
+          replace: true,
+        })
       }, 500)
     } catch (caughtError) {
       setError(

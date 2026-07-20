@@ -1,5 +1,6 @@
 import {
   BadgeCheck,
+  CreditCard,
   Heart,
   Minus,
   PackageCheck,
@@ -7,6 +8,7 @@ import {
   ShoppingBag,
   Star,
   Truck,
+  X,
 } from 'lucide-react'
 
 import type { Product } from '../../features/products/productApi'
@@ -18,6 +20,8 @@ type ProductPurchasePanelProps = {
   isWishlistLoading?: boolean
   isOutOfStock: boolean
   onAddToCart: () => void
+  onBuyNow: () => void
+  onDismissStatus?: () => void
   onToggleWishlist?: () => void
   onUpdateQuantity: (quantity: number) => void
   product: Product
@@ -31,6 +35,8 @@ function ProductPurchasePanel({
   isWishlistLoading = false,
   isOutOfStock,
   onAddToCart,
+  onBuyNow,
+  onDismissStatus,
   onToggleWishlist,
   onUpdateQuantity,
   product,
@@ -40,9 +46,31 @@ function ProductPurchasePanel({
   return (
     <aside className="lg:sticky lg:top-28">
       <div className="border border-black/10 bg-white p-5 sm:p-6">
-        <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7a3f1d]">
-          {getProductCategoryName(product)}
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7a3f1d]">
+            {getProductCategoryName(product)}
+          </p>
+          {canBuy ? (
+            <button
+              aria-label={
+                isWishlisted
+                  ? `Remove ${product.name} from wishlist`
+                  : `Add ${product.name} to wishlist`
+              }
+              aria-pressed={isWishlisted}
+              className="grid h-10 w-10 shrink-0 place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isWishlistLoading}
+              onClick={onToggleWishlist}
+              type="button"
+            >
+              <Heart
+                className={`h-4 w-4 ${
+                  isWishlisted ? 'fill-[#8f3f1d] text-[#8f3f1d]' : ''
+                }`}
+              />
+            </button>
+          ) : null}
+        </div>
         <h1 className="mt-3 text-4xl font-bold sm:text-5xl">{product.name}</h1>
         <p className="mt-3 text-sm font-semibold text-[#6b5f53]">
           {product.brand ?? 'Artisane Studio'}
@@ -118,13 +146,21 @@ function ProductPurchasePanel({
         ) : null}
 
         {statusMessage ? (
-          <p className="mt-4 bg-[#effaf3] px-4 py-3 text-sm font-bold text-[#1f6b43]">
-            {statusMessage}
-          </p>
+          <div className="mt-4 flex items-start justify-between gap-3 bg-[#effaf3] px-4 py-3 text-sm font-bold text-[#1f6b43]">
+            <p>{statusMessage}</p>
+            <button
+              aria-label="Close product message"
+              className="grid h-6 w-6 shrink-0 place-items-center border border-[#1f6b43]/20 transition hover:border-[#1f6b43]"
+              onClick={onDismissStatus}
+              type="button"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
         ) : null}
 
         {canBuy ? (
-          <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
             <button
               className="inline-flex min-h-12 items-center justify-center gap-2 bg-[#181512] px-5 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
               disabled={isOutOfStock}
@@ -135,22 +171,13 @@ function ProductPurchasePanel({
               Add to cart
             </button>
             <button
-              aria-label={
-                isWishlisted
-                  ? `Remove ${product.name} from wishlist`
-                  : `Add ${product.name} to wishlist`
-              }
-              aria-pressed={isWishlisted}
-              className="grid h-12 w-full place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-50 sm:w-12"
-              disabled={isWishlistLoading}
-              onClick={onToggleWishlist}
+              className="inline-flex min-h-12 items-center justify-center gap-2 border border-black/10 bg-[#f8f3ea] px-5 text-sm font-bold text-[#181512] transition hover:border-[#181512] hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isOutOfStock}
+              onClick={onBuyNow}
               type="button"
             >
-              <Heart
-                className={`h-4 w-4 ${
-                  isWishlisted ? 'fill-[#8f3f1d] text-[#8f3f1d]' : ''
-                }`}
-              />
+              <CreditCard className="h-4 w-4" />
+              Buy now
             </button>
           </div>
         ) : (
@@ -159,15 +186,6 @@ function ProductPurchasePanel({
             are available for customer accounts only.
           </p>
         )}
-        {canBuy ? (
-          <button
-            className="mt-3 min-h-12 w-full border border-black/10 bg-[#f8f3ea] px-5 text-sm font-bold text-[#6b5f53] disabled:cursor-not-allowed"
-            disabled
-            type="button"
-          >
-            Buy now coming with checkout
-          </button>
-        ) : null}
       </div>
     </aside>
   )
