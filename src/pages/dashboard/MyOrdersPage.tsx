@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
+  ExternalLink,
   Package,
   RotateCcw,
   X,
@@ -29,6 +30,7 @@ import {
   getOrderItemImage,
   getOrderItemName,
   getOrderPrimaryItem,
+  getOrderTrackingUrl,
 } from '../../utils/orderDisplay'
 import { userNavItems } from './user-dashboard/userNavItems'
 
@@ -55,6 +57,31 @@ function getApiErrorMessage(error: unknown, fallback: string) {
     apiError.data?.message ??
     apiError.message ??
     fallback
+  )
+}
+
+function TrackingCodeLink({ order }: { order: Order }) {
+  const trackingCode = order.trackingCode?.trim()
+  const trackingUrl = getOrderTrackingUrl(order)
+
+  if (!trackingCode) {
+    return <span className="text-[#6b5f53]">Not set</span>
+  }
+
+  if (!trackingUrl) {
+    return <span className="font-bold">{trackingCode}</span>
+  }
+
+  return (
+    <a
+      className="inline-flex items-center gap-1 font-bold text-[#7a3f1d] underline"
+      href={trackingUrl}
+      rel="noreferrer"
+      target="_blank"
+    >
+      {trackingCode}
+      <ExternalLink className="h-3.5 w-3.5" />
+    </a>
   )
 }
 
@@ -189,13 +216,14 @@ function MyOrdersPage() {
         ) : null}
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[960px] border-collapse text-left text-sm">
             <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
               <tr>
                 <th className="px-5 py-3">Order</th>
                 <th className="px-5 py-3">Items</th>
                 <th className="px-5 py-3">Order status</th>
                 <th className="px-5 py-3">Payment</th>
+                <th className="px-5 py-3">Tracking</th>
                 <th className="px-5 py-3">Total</th>
                 <th className="px-5 py-3">Placed</th>
                 <th className="px-5 py-3 text-right">Action</th>
@@ -205,7 +233,7 @@ function MyOrdersPage() {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, index) => (
                   <tr className="border-t border-black/10" key={index}>
-                    <td className="px-5 py-5" colSpan={7}>
+                    <td className="px-5 py-5" colSpan={8}>
                       <div className="h-5 animate-pulse bg-[#f8f3ea]" />
                     </td>
                   </tr>
@@ -231,6 +259,9 @@ function MyOrdersPage() {
                       <span className="bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
                         {formatOrderStatus(order.paymentStatus)}
                       </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <TrackingCodeLink order={order} />
                     </td>
                     <td className="px-5 py-4 font-bold">
                       {formatPrice(order.totalPrice ?? 0)}
@@ -265,7 +296,7 @@ function MyOrdersPage() {
                 <tr className="border-t border-black/10">
                   <td
                     className="px-5 py-8 text-center font-semibold text-[#6b5f53]"
-                    colSpan={7}
+                    colSpan={8}
                   >
                     No orders found.
                   </td>
@@ -413,18 +444,19 @@ function MyOrdersPage() {
                 </p>
                 <p>
                   <span className="font-bold">Tracking code:</span>{' '}
-                  {selectedOrder.trackingCode ?? 'Not set'}
+                  <TrackingCodeLink order={selectedOrder} />
                 </p>
                 <p>
                   <span className="font-bold">Tracking link:</span>{' '}
-                  {selectedOrder.trackingUrl ? (
+                  {getOrderTrackingUrl(selectedOrder) ? (
                     <a
-                      className="font-bold text-[#7a3f1d] underline"
-                      href={selectedOrder.trackingUrl}
+                      className="inline-flex items-center gap-1 font-bold text-[#7a3f1d] underline"
+                      href={getOrderTrackingUrl(selectedOrder)}
                       rel="noreferrer"
                       target="_blank"
                     >
-                      Open tracking
+                      Open live tracking
+                      <ExternalLink className="h-3.5 w-3.5" />
                     </a>
                   ) : (
                     'Not set'

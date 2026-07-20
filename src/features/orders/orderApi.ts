@@ -69,8 +69,13 @@ export type CreateOrderPayload = {
     product: string
     quantity: number
   }[]
+  district_id?: string
+  full_address?: string
   notes?: string
   paymentMethod: PaymentMethod
+  recipient_name?: string
+  recipient_phone?: string
+  zone_id?: string
   shippingAddress: string
 }
 
@@ -214,7 +219,7 @@ export const orderApi = baseApi.injectEndpoints({
     cancelOrder: builder.mutation<Order | null, string>({
       invalidatesTags: ['Order', 'Dashboard', 'Product'],
       query: (id) => ({
-        method: 'PATCH',
+        method: 'POST',
         url: `/orders/${id}/cancel`,
       }),
       transformResponse: (response: ApiResponse<Order>) =>

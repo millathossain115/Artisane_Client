@@ -8,6 +8,10 @@ import { getAccessToken, getStoredUser } from '../../features/auth/authApi'
 import { useGetMyProfileQuery } from '../../features/auth/profileApi'
 import { clearCart } from '../../features/cart/cartSlice'
 import {
+  useGetDistrictsQuery,
+  useGetZonesQuery,
+} from '../../features/locations/locationApi'
+import {
   type PaymentMethod,
   useCreateOrderMutation,
 } from '../../features/orders/orderApi'
@@ -36,8 +40,13 @@ function Checkout() {
   const { data: profile } = useGetMyProfileQuery(undefined, {
     skip: !accessToken,
   })
-  const [shippingAddress, setShippingAddress] = useState('')
-  const [contactPhone, setContactPhone] = useState(storedUser?.phone ?? '')
+  const [deliveryForm, setDeliveryForm] = useState({
+    districtId: '',
+    fullAddress: '',
+    recipientName: storedUser?.name ?? '',
+    recipientPhone: storedUser?.phone ?? '',
+    zoneId: '',
+  })
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod')
   const [notes, setNotes] = useState('')
   const [message, setMessage] = useState<CheckoutMessage | null>(null)
@@ -45,10 +54,29 @@ function Checkout() {
     useState<PendingCheckoutOrder | null>(null)
   const [isConfirmingOrder, setIsConfirmingOrder] = useState(false)
   const [hasPrefilledProfile, setHasPrefilledProfile] = useState(false)
+  const { data: districts = [], isLoading: isDistrictsLoading } =
+    useGetDistrictsQuery(undefined, {
+      skip: !accessToken,
+    })
+  const { data: zones = [], isFetching: isZonesLoading } = useGetZonesQuery(
+    deliveryForm.districtId,
+    {
+      skip: !accessToken || !deliveryForm.districtId,
+    },
+  )
 
   const subtotal = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cartItems],
+  )
+  const selectedDistrict = useMemo(
+    () =>
+      districts.find((district) => district.id === deliveryForm.districtId),
+    [deliveryForm.districtId, districts],
+  )
+  const selectedZone = useMemo(
+    () => zones.find((zone) => zone.id === deliveryForm.zoneId),
+    [deliveryForm.zoneId, zones],
   )
 
   useEffect(() => {
@@ -75,12 +103,31 @@ function Checkout() {
       return
     }
 
-    setShippingAddress((currentAddress) =>
-      currentAddress || profile.address || '',
-    )
-    setContactPhone((currentPhone) => currentPhone || profile.phone || '')
+    setDeliveryForm((current) => ({
+      ...current,
+      fullAddress: current.fullAddress || profile.address || '',
+      recipientName:
+        current.recipientName || profile.name || storedUser?.name || '',
+      recipientPhone:
+        current.recipientPhone || profile.phone || storedUser?.phone || '',
+    }))
     setHasPrefilledProfile(true)
-  }, [hasPrefilledProfile, profile])
+  }, [hasPrefilledProfile, profile, storedUser?.name, storedUser?.phone])
+
+  function updateDeliveryField(field: keyof typeof deliveryForm, value: string) {
+    setDeliveryForm((current) => ({
+      ...current,
+      [field]: value,
+    }))
+  }
+
+  function updateDistrict(districtId: string) {
+    setDeliveryForm((current) => ({
+      ...current,
+      districtId,
+      zoneId: '',
+    }))
+  }
 
   if (!accessToken) {
     return <Navigate replace to="/login" />
@@ -100,22 +147,42 @@ function Checkout() {
       return
     }
 
-    const resolvedShippingAddress = shippingAddress.trim()
-    const resolvedContactPhone = contactPhone.trim()
+    const resolvedRecipientName = deliveryForm.recipientName.trim()
+    const resolvedRecipientPhone = deliveryForm.recipientPhone.trim()
+    const resolvedFullAddress = deliveryForm.fullAddress.trim()
 
-    if (!resolvedShippingAddress || !resolvedContactPhone) {
+    if (
+      !resolvedRecipientName ||
+      !resolvedRecipientPhone ||
+      !resolvedFullAddress ||
+      !deliveryForm.districtId ||
+      !deliveryForm.zoneId
+    ) {
       setMessage({
-        text: 'Shipping address and contact phone are required.',
+        text: 'Recipient name, phone, address, district, and zone are required.',
         type: 'error',
       })
       return
     }
 
+    const districtName = selectedDistrict?.name ?? deliveryForm.districtId
+    const zoneName = selectedZone?.name ?? deliveryForm.zoneId
+    const shippingAddress = [resolvedFullAddress, zoneName, districtName]
+      .filter(Boolean)
+      .join(', ')
+
     setPendingOrder({
-      contactPhone: resolvedContactPhone,
+      contactPhone: resolvedRecipientPhone,
+      districtId: deliveryForm.districtId,
+      districtName,
+      fullAddress: resolvedFullAddress,
       notes: notes.trim() || undefined,
       paymentMethod,
-      shippingAddress: resolvedShippingAddress,
+      recipientName: resolvedRecipientName,
+      recipientPhone: resolvedRecipientPhone,
+      shippingAddress,
+      zoneId: deliveryForm.zoneId,
+      zoneName,
     })
   }
 
@@ -131,13 +198,18 @@ function Checkout() {
       const orderResult = await withTimeout(
         createOrder({
           contactPhone: pendingOrder.contactPhone,
+          district_id: pendingOrder.districtId,
+          full_address: pendingOrder.fullAddress,
           items: cartItems.map((item) => ({
             product: item.id,
             quantity: item.quantity,
           })),
           notes: pendingOrder.notes,
           paymentMethod: pendingOrder.paymentMethod,
+          recipient_name: pendingOrder.recipientName,
+          recipient_phone: pendingOrder.recipientPhone,
           shippingAddress: pendingOrder.shippingAddress,
+          zone_id: pendingOrder.zoneId,
         }).unwrap(),
         PAYMENT_REDIRECT_TIMEOUT_MS,
         'Payment gateway did not respond in time. If this order appears in My Orders, do not place it again.',
@@ -176,20 +248,36 @@ function Checkout() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_420px] lg:items-start">
           <CheckoutForm
-            contactPhone={contactPhone}
+            districts={districts}
+            fullAddress={deliveryForm.fullAddress}
             hasCartItems={cartItems.length > 0}
+            isDistrictsLoading={isDistrictsLoading}
+            isZonesLoading={isZonesLoading}
             isConfirmingOrder={isConfirmingOrder}
             message={message}
             messageRef={messageRef}
             notes={notes}
-            onContactPhoneChange={setContactPhone}
+            onDistrictChange={updateDistrict}
             onDismissMessage={() => setMessage(null)}
+            onFullAddressChange={(value) =>
+              updateDeliveryField('fullAddress', value)
+            }
             onNotesChange={setNotes}
             onPaymentMethodChange={setPaymentMethod}
-            onShippingAddressChange={setShippingAddress}
+            onRecipientNameChange={(value) =>
+              updateDeliveryField('recipientName', value)
+            }
+            onRecipientPhoneChange={(value) =>
+              updateDeliveryField('recipientPhone', value)
+            }
             onSubmit={handleSubmit}
+            onZoneChange={(value) => updateDeliveryField('zoneId', value)}
             paymentMethod={paymentMethod}
-            shippingAddress={shippingAddress}
+            recipientName={deliveryForm.recipientName}
+            recipientPhone={deliveryForm.recipientPhone}
+            selectedDistrictId={deliveryForm.districtId}
+            selectedZoneId={deliveryForm.zoneId}
+            zones={zones}
           />
           <CheckoutSummary cartItems={cartItems} subtotal={subtotal} />
         </div>

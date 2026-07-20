@@ -54,11 +54,23 @@ function CheckoutConfirmModal({
             )?.label ?? 'Payment method'}
           </p>
           <p>
-            <span className="font-bold">Phone:</span> {pendingOrder.contactPhone}
+            <span className="font-bold">Recipient:</span>{' '}
+            {pendingOrder.recipientName}
+          </p>
+          <p>
+            <span className="font-bold">Phone:</span>{' '}
+            {pendingOrder.recipientPhone}
+          </p>
+          <p>
+            <span className="font-bold">District:</span>{' '}
+            {pendingOrder.districtName}
+          </p>
+          <p>
+            <span className="font-bold">Zone:</span> {pendingOrder.zoneName}
           </p>
           <p className="leading-6">
-            <span className="font-bold">Shipping:</span>{' '}
-            {pendingOrder.shippingAddress}
+            <span className="font-bold">Full address:</span>{' '}
+            {pendingOrder.fullAddress}
           </p>
         </div>
 

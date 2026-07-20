@@ -24,6 +24,7 @@ import {
   useGetAllOrdersQuery,
   useGetOrderByIdQuery,
   useSyncShipmentMutation,
+  useUpdateOrderStatusMutation,
 } from '../../../features/orders/orderApi'
 import { formatPrice, getAssetUrl } from '../../../utils/productDisplay'
 import {
@@ -121,6 +122,13 @@ function ManageOrders() {
     trackingCode: '',
     trackingUrl: '',
   })
+  const [statusForm, setStatusForm] = useState<{
+    orderStatus: OrderStatus | ''
+    paymentStatus: PaymentStatus | ''
+  }>({
+    orderStatus: '',
+    paymentStatus: '',
+  })
 
   const { data: orderList, isError, isLoading } = useGetAllOrdersQuery({
     limit: 10,
@@ -134,6 +142,8 @@ function ManageOrders() {
     useCreateShipmentMutation()
   const [syncShipment, { isLoading: isSyncingShipment }] =
     useSyncShipmentMutation()
+  const [updateOrderStatus, { isLoading: isUpdatingStatus }] =
+    useUpdateOrderStatusMutation()
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation()
   const [deleteOrder, { isLoading: isDeleting }] = useDeleteOrderMutation()
 
@@ -162,6 +172,10 @@ function ManageOrders() {
         trackingCode: '',
         trackingUrl: '',
       })
+      setStatusForm({
+        orderStatus: '',
+        paymentStatus: '',
+      })
       return
     }
 
@@ -170,6 +184,10 @@ function ManageOrders() {
       courierProvider: selectedOrder.courierProvider ?? 'redx',
       trackingCode: selectedOrder.trackingCode ?? '',
       trackingUrl: selectedOrder.trackingUrl ?? '',
+    })
+    setStatusForm({
+      orderStatus: selectedOrder.orderStatus ?? '',
+      paymentStatus: selectedOrder.paymentStatus ?? '',
     })
   }, [selectedOrder])
 
@@ -249,6 +267,34 @@ function ManageOrders() {
     } catch (error) {
       setMessage({
         text: getApiErrorMessage(error, 'Failed to sync shipment.'),
+        type: 'error',
+      })
+    }
+  }
+
+  async function confirmStatusUpdate() {
+    if (!selectedOrder) {
+      return
+    }
+
+    if (!statusForm.orderStatus && !statusForm.paymentStatus) {
+      return
+    }
+
+    try {
+      await updateOrderStatus({
+        id: selectedOrder._id,
+        orderStatus: statusForm.orderStatus || undefined,
+        paymentStatus: statusForm.paymentStatus || undefined,
+      }).unwrap()
+
+      setMessage({
+        text: `${formatOrderId(selectedOrder._id)} status updated.`,
+        type: 'success',
+      })
+    } catch (error) {
+      setMessage({
+        text: getApiErrorMessage(error, 'Failed to update order status.'),
         type: 'error',
       })
     }
@@ -559,6 +605,74 @@ function ManageOrders() {
                     ? `${formatCourierProvider(selectedOrder.courierProvider)} · ${formatOrderStatus(selectedOrder.courierStatus ?? 'shipment_created')}`
                     : 'Not created yet'}
                 </p>
+              </div>
+            </div>
+
+            <div className="mt-5 border-b border-black/10 pb-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
+                    Status controls
+                  </p>
+                  <p className="mt-1 text-sm text-[#6b5f53]">
+                    Update order flow and payment state.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <label className="grid gap-2">
+                  <span className="text-sm font-bold">Order status</span>
+                  <select
+                    className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+                    onChange={(event) =>
+                      setStatusForm((current) => ({
+                        ...current,
+                        orderStatus: event.target.value as OrderStatus | '',
+                      }))
+                    }
+                    value={statusForm.orderStatus}
+                  >
+                    <option value="">Keep current</option>
+                    {orderStatusOptions.map((status) => (
+                      <option key={status} value={status}>
+                        {formatOrderStatus(status)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="grid gap-2">
+                  <span className="text-sm font-bold">Payment status</span>
+                  <select
+                    className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+                    onChange={(event) =>
+                      setStatusForm((current) => ({
+                        ...current,
+                        paymentStatus: event.target.value as PaymentStatus | '',
+                      }))
+                    }
+                    value={statusForm.paymentStatus}
+                  >
+                    <option value="">Keep current</option>
+                    {paymentStatusOptions.map((status) => (
+                      <option key={status} value={status}>
+                        {formatOrderStatus(status)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div className="md:col-span-2 flex justify-end">
+                  <button
+                    className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={isUpdatingStatus}
+                    onClick={confirmStatusUpdate}
+                    type="button"
+                  >
+                    {isUpdatingStatus ? 'Updating...' : 'Save status'}
+                  </button>
+                </div>
               </div>
             </div>
 

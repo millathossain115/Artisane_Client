@@ -150,3 +150,19 @@ export function getDeliveryIssueLabel(order: Order) {
 
   return ''
 }
+
+export function getOrderTrackingUrl(order: Order) {
+  const trackingUrl = order.trackingUrl?.trim()
+
+  if (trackingUrl) {
+    return trackingUrl
+  }
+
+  const trackingCode = order.trackingCode?.trim()
+
+  if (order.courierProvider === 'steadfast' && trackingCode) {
+    return `https://steadfast.com.bd/t/${encodeURIComponent(trackingCode)}`
+  }
+
+  return ''
+}

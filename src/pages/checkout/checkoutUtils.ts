@@ -54,9 +54,16 @@ export type CheckoutMessage = {
 
 export type PendingCheckoutOrder = {
   contactPhone: string
+  districtId: string
+  districtName: string
+  fullAddress: string
   notes?: string
   paymentMethod: PaymentMethod
+  recipientName: string
+  recipientPhone: string
   shippingAddress: string
+  zoneId: string
+  zoneName: string
 }
 
 export function getPaymentRedirectUrl(orderResult: CreateOrderResult | null) {
