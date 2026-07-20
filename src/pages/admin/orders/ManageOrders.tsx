@@ -7,6 +7,7 @@ import {
   Eye,
   Package,
   RefreshCw,
+  RotateCcw,
   Search,
   Trash2,
   X,
@@ -188,6 +189,13 @@ function ManageOrders() {
     },
     [orderDetail, orders, selectedOrderId],
   )
+
+  function resetFilters() {
+    setSearchTerm('')
+    setOrderStatusFilter('all')
+    setPaymentStatusFilter('all')
+    setPage(1)
+  }
 
   useEffect(() => {
     if (!selectedOrder) {
@@ -415,7 +423,7 @@ function ManageOrders() {
           </div>
         ) : null}
 
-        <div className="grid gap-3 border-b border-black/10 p-5 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:items-end">
+        <div className="grid gap-3 border-b border-black/10 p-5 xl:grid-cols-[minmax(0,1fr)_auto_auto_auto] xl:items-end">
           <label className="grid gap-2">
             <span className="text-sm font-bold">Search current page</span>
             <span className="relative">
@@ -466,6 +474,15 @@ function ManageOrders() {
               ))}
             </select>
           </label>
+
+          <button
+            className="inline-flex min-h-12 items-center justify-center gap-2 border border-black/10 px-4 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+            onClick={resetFilters}
+            type="button"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Reset filters
+          </button>
         </div>
 
         <div className="overflow-x-auto">
