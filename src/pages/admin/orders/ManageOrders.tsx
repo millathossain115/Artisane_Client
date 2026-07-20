@@ -486,7 +486,7 @@ function ManageOrders() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1100px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[1220px] border-collapse text-left text-sm">
             <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
               <tr>
                 <th className="px-5 py-3">Order</th>
@@ -495,6 +495,7 @@ function ManageOrders() {
                 <th className="px-5 py-3">Order status</th>
                 <th className="px-5 py-3">Payment</th>
                 <th className="px-5 py-3">Total</th>
+                <th className="px-5 py-3">Shipment</th>
                 <th className="px-5 py-3">Placed</th>
                 <th className="px-5 py-3 text-right">Action</th>
               </tr>
@@ -503,7 +504,7 @@ function ManageOrders() {
               {isLoading ? (
                 Array.from({ length: 6 }).map((_, index) => (
                   <tr className="border-t border-black/10" key={index}>
-                    <td className="px-5 py-5" colSpan={8}>
+                    <td className="px-5 py-5" colSpan={9}>
                       <div className="h-5 animate-pulse bg-[#f8f3ea]" />
                     </td>
                   </tr>
@@ -538,6 +539,27 @@ function ManageOrders() {
                     </td>
                     <td className="px-5 py-4 font-bold">
                       {formatPrice(order.totalPrice ?? 0)}
+                    </td>
+                    <td className="px-5 py-4">
+                      {order.courierProvider || order.trackingCode ? (
+                        <div className="grid gap-1">
+                          <span className="bg-[#eef3ff] px-2 py-1 text-xs font-bold text-[#27408b]">
+                            {formatOrderStatus(
+                              order.courierStatus ?? 'shipment_created',
+                            )}
+                          </span>
+                          <span className="text-xs font-semibold text-[#6b5f53]">
+                            {formatCourierProvider(order.courierProvider)}
+                            {order.trackingCode
+                              ? ` · ${order.trackingCode}`
+                              : ''}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#6b5f53]">
+                          Not created
+                        </span>
+                      )}
                     </td>
                     <td className="px-5 py-4 text-[#6b5f53]">
                       {formatOrderDate(order.createdAt)}
@@ -581,7 +603,7 @@ function ManageOrders() {
                 <tr className="border-t border-black/10">
                   <td
                     className="px-5 py-8 text-center font-semibold text-[#6b5f53]"
-                    colSpan={8}
+                    colSpan={9}
                   >
                     No orders found.
                   </td>
