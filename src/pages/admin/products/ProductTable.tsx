@@ -1,20 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import {
-  AlertTriangle,
-  ChevronLeft,
-  ChevronRight,
-  ImageOff,
-  LoaderCircle,
-  Package,
-  Pencil,
-  Save,
-  Search,
-  Trash2,
-  Upload,
-  X,
-} from 'lucide-react'
+import { Package } from 'lucide-react'
 
-import { API_BASE_URL } from '../../../config/api'
 import { useGetCategoriesQuery } from '../../../features/categories/categoryApi'
 import {
   type Product,
@@ -22,132 +8,24 @@ import {
   useGetProductsQuery,
   useUpdateProductMutation,
 } from '../../../features/products/productApi'
-
-type ProductEditForm = {
-  brand: string
-  categoryId: string
-  description: string
-  name: string
-  price: string
-  slug: string
-  stock: string
-}
-
-type SortFilter = 'newest' | 'oldest' | 'name-asc' | 'name-desc'
-
-const PAGE_SIZE_OPTIONS = [5, 10, 20]
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024
-const MAX_PRODUCT_IMAGES = 5
-
-function createSlug(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-}
-
-function formatDate(value?: string) {
-  if (!value) {
-    return 'Not set'
-  }
-
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return 'Not set'
-  }
-
-  return date.toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('en-US', {
-    currency: 'USD',
-    maximumFractionDigits: 2,
-    style: 'currency',
-  }).format(value)
-}
-
-function formatFileSize(size: number) {
-  if (size < 1024 * 1024) {
-    return `${Math.ceil(size / 1024)} KB`
-  }
-
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`
-}
-
-function getProductImageUrl(imageUrl?: string) {
-  if (!imageUrl) {
-    return ''
-  }
-
-  if (imageUrl.startsWith('http')) {
-    return imageUrl
-  }
-
-  return `${API_BASE_URL.replace('/api/v1', '')}${imageUrl}`
-}
-
-function getCategoryName(category: Product['category']) {
-  if (typeof category === 'string') {
-    return category
-  }
-
-  return category.name
-}
-
-function getCategoryId(category: Product['category']) {
-  if (typeof category === 'string') {
-    return category
-  }
-
-  return category._id
-}
-
-function getErrorMessage(error: unknown, fallback: string) {
-  if (!error || typeof error !== 'object') {
-    return fallback
-  }
-
-  const errorRecord = error as Record<string, unknown>
-  const data = errorRecord.data
-
-  if (data && typeof data === 'object') {
-    const dataRecord = data as Record<string, unknown>
-
-    if (typeof dataRecord.message === 'string') {
-      return dataRecord.message
-    }
-  }
-
-  if (typeof errorRecord.message === 'string') {
-    return errorRecord.message
-  }
-
-  return fallback
-}
-
-function getSortParams(sortFilter: SortFilter) {
-  if (sortFilter === 'oldest') {
-    return { sortBy: 'createdAt' as const, sortOrder: 'asc' as const }
-  }
-
-  if (sortFilter === 'name-asc') {
-    return { sortBy: 'name' as const, sortOrder: 'asc' as const }
-  }
-
-  if (sortFilter === 'name-desc') {
-    return { sortBy: 'name' as const, sortOrder: 'desc' as const }
-  }
-
-  return { sortBy: 'createdAt' as const, sortOrder: 'desc' as const }
-}
+import ProductDeleteModal from './components/ProductDeleteModal'
+import ProductEditModal from './components/ProductEditModal'
+import ProductFilters from './components/ProductFilters'
+import ProductRowsTable from './components/ProductRowsTable'
+import ProductStatusBanner from './components/ProductStatusBanner'
+import ProductUpdateConfirmModal from './components/ProductUpdateConfirmModal'
+import {
+  createSlug,
+  getCategoryId,
+  getEmptyProductEditForm,
+  getErrorMessage,
+  getSortParams,
+  MAX_IMAGE_SIZE,
+  MAX_PRODUCT_IMAGES,
+  PAGE_SIZE_OPTIONS,
+  type ProductEditForm,
+  type SortFilter,
+} from './productTableUtils'
 
 function ProductTable() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -161,9 +39,9 @@ function ProductTable() {
     isError: hasProductsError,
     isLoading: isProductsLoading,
   } = useGetProductsQuery({
+    category: categoryFilter || undefined,
     limit: pageSize,
     page: currentPage,
-    category: categoryFilter || undefined,
     searchTerm: searchTerm.trim() || undefined,
     ...sortParams,
   })
@@ -184,15 +62,9 @@ function ProductTable() {
   const [productToEdit, setProductToEdit] = useState<Product | null>(null)
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
   const [showUpdateConfirm, setShowUpdateConfirm] = useState(false)
-  const [editForm, setEditForm] = useState<ProductEditForm>({
-    brand: '',
-    categoryId: '',
-    description: '',
-    name: '',
-    price: '',
-    slug: '',
-    stock: '',
-  })
+  const [editForm, setEditForm] = useState<ProductEditForm>(
+    getEmptyProductEditForm(),
+  )
   const [editImageFiles, setEditImageFiles] = useState<File[]>([])
   const [editImagePreviews, setEditImagePreviews] = useState<string[]>([])
   const [editImageInputKey, setEditImageInputKey] = useState(0)
@@ -221,6 +93,11 @@ function ProductTable() {
     }
   }, [])
 
+  function clearMessages() {
+    setStatus('')
+    setError('')
+  }
+
   function clearEditImagePreviews() {
     editImagePreviewRef.current.forEach((previewUrl) =>
       URL.revokeObjectURL(previewUrl),
@@ -230,8 +107,7 @@ function ProductTable() {
   }
 
   function handleEditImageChange(files: FileList | null) {
-    setStatus('')
-    setError('')
+    clearMessages()
 
     if (!files?.length) {
       setEditImageFiles([])
@@ -293,8 +169,7 @@ function ProductTable() {
   }
 
   function openEditModal(product: Product) {
-    setStatus('')
-    setError('')
+    clearMessages()
     setProductToEdit(product)
     setEditForm({
       brand: product.brand ?? '',
@@ -310,6 +185,11 @@ function ProductTable() {
     setEditImageInputKey((currentKey) => currentKey + 1)
   }
 
+  function openDeleteModal(product: Product) {
+    clearMessages()
+    setProductToDelete(product)
+  }
+
   function closeEditModal() {
     setProductToEdit(null)
     setEditImageFiles([])
@@ -317,8 +197,7 @@ function ProductTable() {
   }
 
   function updateEditField(field: keyof ProductEditForm, value: string) {
-    setStatus('')
-    setError('')
+    clearMessages()
     setEditForm((current) => ({
       ...current,
       [field]: value,
@@ -331,8 +210,7 @@ function ProductTable() {
       return null
     }
 
-    setStatus('')
-    setError('')
+    clearMessages()
 
     const numericPrice = Number(editForm.price)
     const numericStock = Number(editForm.stock)
@@ -394,8 +272,7 @@ function ProductTable() {
 
   function handleUpdateSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setStatus('')
-    setError('')
+    clearMessages()
 
     if (!validateEditForm()) {
       return
@@ -409,8 +286,7 @@ function ProductTable() {
       return
     }
 
-    setStatus('')
-    setError('')
+    clearMessages()
 
     try {
       await deleteProduct(productToDelete._id).unwrap()
@@ -438,30 +314,11 @@ function ProductTable() {
         </div>
       </div>
 
-      {(status || error) && (
-        <div
-          className={`border-b border-black/10 px-5 py-3 text-sm font-semibold ${
-            error
-              ? 'bg-[#fff5ef] text-[#8f3f1d]'
-              : 'bg-[#effaf3] text-[#1f6b43]'
-          }`}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <span>{error || status}</span>
-            <button
-              aria-label="Close message"
-              className="grid h-8 w-8 shrink-0 place-items-center border border-current/20 transition hover:bg-white/45"
-              onClick={() => {
-                setStatus('')
-                setError('')
-              }}
-              type="button"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
+      <ProductStatusBanner
+        error={error}
+        onClose={clearMessages}
+        status={status}
+      />
 
       {(isProductsLoading || hasProductsError) && (
         <div
@@ -475,546 +332,71 @@ function ProductTable() {
         </div>
       )}
 
-      <div className="grid gap-3 border-b border-black/10 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-        <label className="grid gap-2 text-sm font-bold">
-          Search products
-          <span className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6b5f53]" />
-            <input
-              className="min-h-12 w-full border border-black/10 pl-10 pr-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
-              onChange={(event) => {
-                setSearchTerm(event.target.value)
-                setCurrentPage(1)
-              }}
-              placeholder="Name, slug, brand, or description"
-              type="search"
-              value={searchTerm}
-            />
-          </span>
-        </label>
+      <ProductFilters
+        categories={categories}
+        categoryFilter={categoryFilter}
+        isCategoriesLoading={isCategoriesLoading}
+        pageSize={pageSize}
+        searchTerm={searchTerm}
+        setCategoryFilter={setCategoryFilter}
+        setCurrentPage={setCurrentPage}
+        setPageSize={setPageSize}
+        setSearchTerm={setSearchTerm}
+        setSortFilter={setSortFilter}
+        sortFilter={sortFilter}
+      />
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          <label className="grid gap-2 text-sm font-bold">
-            Category
-            <select
-              className="min-h-12 w-full border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
-              disabled={isCategoriesLoading}
-              onChange={(event) => {
-                setCategoryFilter(event.target.value)
-                setCurrentPage(1)
-              }}
-              value={categoryFilter}
-            >
-              <option value="">All categories</option>
-              {categories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </label>
+      <ProductRowsTable
+        onDelete={openDeleteModal}
+        onEdit={openEditModal}
+        products={products}
+        resultEnd={resultEnd}
+        resultStart={resultStart}
+        safeCurrentPage={safeCurrentPage}
+        setCurrentPage={setCurrentPage}
+        totalPages={totalPages}
+        totalProducts={totalProducts}
+      />
 
-          <label className="grid gap-2 text-sm font-bold">
-            Sort
-            <select
-              className="min-h-12 w-full border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
-              onChange={(event) => {
-                setSortFilter(event.target.value as SortFilter)
-                setCurrentPage(1)
-              }}
-              value={sortFilter}
-            >
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="name-asc">A to Z</option>
-              <option value="name-desc">Z to A</option>
-            </select>
-          </label>
+      {productToEdit ? (
+        <ProductEditModal
+          categories={categories}
+          editForm={editForm}
+          editImageFiles={editImageFiles}
+          editImageInputKey={editImageInputKey}
+          editImagePreviews={editImagePreviews}
+          hasCategoriesError={hasCategoriesError}
+          isCategoriesLoading={isCategoriesLoading}
+          isUpdating={isUpdating}
+          onClose={() => {
+            setShowUpdateConfirm(false)
+            closeEditModal()
+          }}
+          onImageChange={handleEditImageChange}
+          onRemoveImage={removeEditImage}
+          onSubmit={handleUpdateSubmit}
+          onUpdateField={updateEditField}
+          product={productToEdit}
+        />
+      ) : null}
 
-          <label className="grid gap-2 text-sm font-bold">
-            Rows
-            <select
-              className="min-h-12 w-full border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
-              onChange={(event) => {
-                setPageSize(Number(event.target.value))
-                setCurrentPage(1)
-              }}
-              value={pageSize}
-            >
-              {PAGE_SIZE_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </div>
+      {showUpdateConfirm && productToEdit ? (
+        <ProductUpdateConfirmModal
+          isUpdating={isUpdating}
+          onClose={() => setShowUpdateConfirm(false)}
+          onConfirm={updateConfirmedProduct}
+          product={productToEdit}
+        />
+      ) : null}
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[1040px] border-collapse text-left text-sm">
-          <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
-            <tr>
-              <th className="px-5 py-3">Product</th>
-              <th className="px-5 py-3">Category</th>
-              <th className="px-5 py-3">Price</th>
-              <th className="px-5 py-3">Stock</th>
-              <th className="px-5 py-3">Brand</th>
-              <th className="px-5 py-3">Created</th>
-              <th className="px-5 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.length ? (
-              products.map((product) => {
-                const imageUrl = getProductImageUrl(product.images?.[0])
-
-                return (
-                  <tr
-                    className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
-                    key={product._id}
-                  >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]">
-                          {imageUrl ? (
-                            <img
-                              alt=""
-                              className="h-full w-full object-cover"
-                              src={imageUrl}
-                            />
-                          ) : (
-                            <ImageOff className="h-5 w-5" />
-                          )}
-                        </span>
-                        <span>
-                          <span className="block font-bold">
-                            {product.name}
-                          </span>
-                          <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
-                            {product.slug}
-                          </span>
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 font-semibold text-[#7a3f1d]">
-                      {getCategoryName(product.category)}
-                    </td>
-                    <td className="px-5 py-4 font-bold">
-                      {formatCurrency(product.price)}
-                    </td>
-                    <td className="px-5 py-4 text-[#6b5f53]">
-                      {product.stock}
-                    </td>
-                    <td className="px-5 py-4 text-[#6b5f53]">
-                      {product.brand || 'No brand'}
-                    </td>
-                    <td className="px-5 py-4 text-[#6b5f53]">
-                      {formatDate(product.createdAt)}
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
-                        <button
-                          aria-label={`Update ${product.name}`}
-                          className="inline-flex h-9 w-9 items-center justify-center border border-black/10 text-[#181512] transition hover:border-[#181512] hover:bg-white"
-                          onClick={() => openEditModal(product)}
-                          type="button"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          aria-label={`Delete ${product.name}`}
-                          className="inline-flex h-9 w-9 items-center justify-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef]"
-                          onClick={() => {
-                            setStatus('')
-                            setError('')
-                            setProductToDelete(product)
-                          }}
-                          type="button"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })
-            ) : (
-              <tr className="border-t border-black/10">
-                <td
-                  className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
-                  colSpan={7}
-                >
-                  No products found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
-        <p className="text-sm font-semibold text-[#6b5f53]">
-          Showing {resultStart}-{resultEnd} of {totalProducts} products.
-        </p>
-
-        <div className="flex items-center gap-2">
-          <button
-            aria-label="Previous page"
-            className="inline-flex h-10 w-10 items-center justify-center border border-black/10 text-[#181512] transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
-            disabled={safeCurrentPage === 1}
-            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-            type="button"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <span className="min-w-24 text-center text-sm font-bold">
-            Page {safeCurrentPage} of {totalPages}
-          </span>
-          <button
-            aria-label="Next page"
-            className="inline-flex h-10 w-10 items-center justify-center border border-black/10 text-[#181512] transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
-            disabled={safeCurrentPage === totalPages}
-            onClick={() =>
-              setCurrentPage((page) => Math.min(totalPages, page + 1))
-            }
-            type="button"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
-      {productToEdit && (
-        <div
-          className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-[#181512]/55 px-4 py-6"
-          role="presentation"
-        >
-          <div
-            aria-modal="true"
-            className="w-full max-w-3xl border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
-            role="dialog"
-          >
-            <p className="text-sm font-bold text-[#7a3f1d]">Update product</p>
-            <h2 className="mt-2 text-2xl font-bold">{productToEdit.name}</h2>
-
-            <form className="mt-5" onSubmit={handleUpdateSubmit}>
-              <div className="grid gap-5 md:grid-cols-2">
-                <label className="grid gap-2 text-sm font-bold">
-                  Product name
-                  <input
-                    className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
-                    onChange={(event) =>
-                      updateEditField('name', event.target.value)
-                    }
-                    required
-                    type="text"
-                    value={editForm.name}
-                  />
-                  <span className="text-xs font-semibold text-[#6b5f53]">
-                    Slug: {editForm.slug || 'product-slug'}
-                  </span>
-                </label>
-
-                <label className="grid gap-2 text-sm font-bold">
-                  Category
-                  <select
-                    className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
-                    disabled={isCategoriesLoading}
-                    onChange={(event) =>
-                      updateEditField('categoryId', event.target.value)
-                    }
-                    required
-                    value={editForm.categoryId}
-                  >
-                    <option value="">
-                      {isCategoriesLoading
-                        ? 'Loading categories...'
-                        : 'Select category'}
-                    </option>
-                    {categories.map((category) => (
-                      <option key={category._id} value={category._id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="grid gap-2 text-sm font-bold">
-                  Brand
-                  <input
-                    className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
-                    onChange={(event) =>
-                      updateEditField('brand', event.target.value)
-                    }
-                    type="text"
-                    value={editForm.brand}
-                  />
-                </label>
-
-                <label className="grid gap-2 text-sm font-bold">
-                  Price
-                  <input
-                    className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
-                    min="0"
-                    onChange={(event) =>
-                      updateEditField('price', event.target.value)
-                    }
-                    required
-                    step="0.01"
-                    type="number"
-                    value={editForm.price}
-                  />
-                </label>
-
-                <label className="grid gap-2 text-sm font-bold">
-                  Stock
-                  <input
-                    className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
-                    min="0"
-                    onChange={(event) =>
-                      updateEditField('stock', event.target.value)
-                    }
-                    required
-                    step="1"
-                    type="number"
-                    value={editForm.stock}
-                  />
-                </label>
-              </div>
-
-              <label className="mt-5 grid gap-2 text-sm font-bold">
-                Description
-                <textarea
-                  className="min-h-28 resize-y border border-black/10 px-3 py-3 text-sm font-medium leading-6 outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
-                  onChange={(event) =>
-                    updateEditField('description', event.target.value)
-                  }
-                  value={editForm.description}
-                />
-              </label>
-
-              <label className="mt-5 grid gap-2 text-sm font-bold">
-                Replacement photos
-                <div className="border border-dashed border-black/20 bg-[#f8f3ea] p-4">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden bg-white text-[#7a3f1d]">
-                        {editImagePreviews[0] ||
-                        getProductImageUrl(productToEdit.images?.[0]) ? (
-                          <img
-                            alt=""
-                            className="h-full w-full object-cover"
-                            src={
-                              editImagePreviews[0] ||
-                              getProductImageUrl(productToEdit.images?.[0])
-                            }
-                          />
-                        ) : (
-                          <ImageOff className="h-5 w-5" />
-                        )}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate font-bold">
-                          {editImageFiles.length
-                            ? `${editImageFiles.length} replacement photo selected`
-                            : 'Keep current photos'}
-                        </span>
-                        <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
-                          Upload only when changing product photos.
-                        </span>
-                      </span>
-                    </div>
-
-                    <span className="relative inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d]">
-                      <Upload className="h-4 w-4" />
-                      Choose files
-                      <input
-                        accept="image/*"
-                        className="absolute inset-0 cursor-pointer opacity-0"
-                        key={editImageInputKey}
-                        multiple
-                        onChange={(event) =>
-                          handleEditImageChange(event.target.files)
-                        }
-                        type="file"
-                      />
-                    </span>
-                  </div>
-
-                  {editImagePreviews.length > 0 && (
-                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                      {editImagePreviews.map((previewUrl, index) => (
-                        <div
-                          className="relative overflow-hidden border border-black/10 bg-white"
-                          key={previewUrl}
-                        >
-                          <img
-                            alt=""
-                            className="aspect-square w-full object-cover"
-                            src={previewUrl}
-                          />
-                          <button
-                            aria-label={`Remove ${editImageFiles[index]?.name ?? 'image'}`}
-                            className="absolute right-2 top-2 grid h-9 w-9 place-items-center bg-white text-[#8f3f1d] shadow-[0_10px_24px_rgba(24,21,18,0.18)] transition hover:bg-[#fff5ef]"
-                            onClick={() => removeEditImage(index)}
-                            type="button"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                          <div className="p-3">
-                            <p className="truncate font-bold">
-                              {editImageFiles[index]?.name}
-                            </p>
-                            <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
-                              {editImageFiles[index]
-                                ? formatFileSize(editImageFiles[index].size)
-                                : ''}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </label>
-
-              {hasCategoriesError && (
-                <p className="mt-5 border border-[#c85f2f]/30 bg-[#fff5ef] px-4 py-3 text-sm font-semibold text-[#8f3f1d]">
-                  Failed to load categories for product form.
-                </p>
-              )}
-
-              <div className="mt-6 flex flex-wrap justify-end gap-2">
-                <button
-                  className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
-                  disabled={isUpdating}
-                  onClick={() => {
-                    setShowUpdateConfirm(false)
-                    closeEditModal()
-                  }}
-                  type="button"
-                >
-                  Cancel
-                </button>
-                <button
-                  className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
-                  disabled={isUpdating || isCategoriesLoading}
-                  type="submit"
-                >
-                  {isUpdating ? (
-                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  {isUpdating ? 'Updating...' : 'Update product'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {showUpdateConfirm && productToEdit && (
-        <div
-          className="fixed inset-0 z-[60] grid place-items-center bg-[#181512]/55 px-4"
-          role="presentation"
-        >
-          <div
-            aria-modal="true"
-            className="w-full max-w-md border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
-            role="dialog"
-          >
-            <div className="flex items-start gap-3">
-              <span className="grid h-11 w-11 shrink-0 place-items-center bg-[#fff5ef] text-[#8f3f1d]">
-                <AlertTriangle className="h-5 w-5" />
-              </span>
-              <div>
-                <p className="text-sm font-bold text-[#8f3f1d]">
-                  Confirm product update
-                </p>
-                <h2 className="mt-2 text-2xl font-bold">
-                  Update {productToEdit.name}?
-                </h2>
-              </div>
-            </div>
-
-            <p className="mt-4 text-sm leading-6 text-[#6b5f53]">
-              This will save the edited product details. If replacement photos
-              are selected, the product images will be updated too.
-            </p>
-
-            <div className="mt-5 flex flex-wrap justify-end gap-2">
-              <button
-                className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
-                disabled={isUpdating}
-                onClick={() => setShowUpdateConfirm(false)}
-                type="button"
-              >
-                Cancel
-              </button>
-              <button
-                className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={isUpdating}
-                onClick={updateConfirmedProduct}
-                type="button"
-              >
-                {isUpdating ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-                {isUpdating ? 'Updating...' : 'Confirm update'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {productToDelete && (
-        <div
-          className="fixed inset-0 z-50 grid place-items-center bg-[#181512]/55 px-4"
-          role="presentation"
-        >
-          <div
-            aria-modal="true"
-            className="w-full max-w-md border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
-            role="dialog"
-          >
-            <p className="text-sm font-bold text-[#8f3f1d]">Delete product</p>
-            <h2 className="mt-2 text-2xl font-bold">
-              Delete {productToDelete.name}?
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[#6b5f53]">
-              This will remove the product from the marketplace database.
-            </p>
-
-            <div className="mt-5 flex flex-wrap justify-end gap-2">
-              <button
-                className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
-                disabled={isDeleting}
-                onClick={() => setProductToDelete(null)}
-                type="button"
-              >
-                Cancel
-              </button>
-              <button
-                className="inline-flex min-h-11 items-center gap-2 bg-[#8f3f1d] px-4 text-sm font-bold text-white transition hover:bg-[#181512] disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={isDeleting}
-                onClick={handleConfirmDelete}
-                type="button"
-              >
-                {isDeleting ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="h-4 w-4" />
-                )}
-                {isDeleting ? 'Deleting...' : 'Confirm delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {productToDelete ? (
+        <ProductDeleteModal
+          isDeleting={isDeleting}
+          onClose={() => setProductToDelete(null)}
+          onConfirm={handleConfirmDelete}
+          product={productToDelete}
+        />
+      ) : null}
     </section>
   )
 }
