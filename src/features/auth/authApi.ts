@@ -32,6 +32,10 @@ export type LoginPayload = {
   password: string
 }
 
+export type GoogleLoginPayload = {
+  credential: string
+}
+
 export type RegisterPayload = {
   name: string
   email: string
@@ -63,6 +67,13 @@ async function request<T>(
 
 export async function login(payload: LoginPayload) {
   return request<AuthData>('/login', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function loginWithGoogle(payload: GoogleLoginPayload) {
+  return request<AuthData>('/google', {
     method: 'POST',
     body: JSON.stringify(payload),
   })

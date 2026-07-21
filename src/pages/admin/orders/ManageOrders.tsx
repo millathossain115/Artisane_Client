@@ -114,7 +114,9 @@ function ManageOrders() {
   const fraudRisk = selectedOrder?.fraudRisk ?? 'low'
   const fraudFlags = selectedOrder?.fraudFlags ?? []
 
-  useEffect(() => {
+  const [prevSelectedOrder, setPrevSelectedOrder] = useState(selectedOrder)
+  if (selectedOrder !== prevSelectedOrder) {
+    setPrevSelectedOrder(selectedOrder)
     if (!selectedOrder) {
       setShowShipmentWarning(false)
       setShipmentForm(getEmptyShipmentForm())
@@ -122,15 +124,14 @@ function ManageOrders() {
         orderStatus: '',
         paymentStatus: '',
       })
-      return
+    } else {
+      setShipmentForm(getEmptyShipmentForm())
+      setStatusForm({
+        orderStatus: selectedOrder.orderStatus ?? '',
+        paymentStatus: selectedOrder.paymentStatus ?? '',
+      })
     }
-
-    setShipmentForm(getEmptyShipmentForm())
-    setStatusForm({
-      orderStatus: selectedOrder.orderStatus ?? '',
-      paymentStatus: selectedOrder.paymentStatus ?? '',
-    })
-  }, [selectedOrder])
+  }
 
   function resetFilters() {
     setSearchTerm('')

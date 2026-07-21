@@ -1,5 +1,3 @@
-import type { FormEvent } from 'react'
-import { useState } from 'react'
 import {
   ArrowLeft,
   Eye,
@@ -8,12 +6,19 @@ import {
   ShieldCheck,
   UserRound,
 } from 'lucide-react'
+import type { FormEvent } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import paletteImage from '../../assets/palette-optimized.jpg'
-import { register, saveAuthSession } from '../../features/auth/authApi'
+import {
+  loginWithGoogle,
+  register,
+  saveAuthSession,
+} from '../../features/auth/authApi'
 import { syncCartForCurrentUser } from '../../features/cart/cartSlice'
 import { useAppDispatch } from '../../redux/hooks'
+import GoogleAuthButton from './GoogleAuthButton'
 
 function Register() {
   const navigate = useNavigate()
@@ -26,6 +31,15 @@ function Register() {
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  function handleAuthSuccess(message: string) {
+    dispatch(syncCartForCurrentUser())
+    setStatus(message)
+
+    window.setTimeout(() => {
+      navigate('/')
+    }, 500)
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -41,12 +55,7 @@ function Register() {
       }
 
       saveAuthSession(response.data)
-      dispatch(syncCartForCurrentUser())
-      setStatus(response.message)
-
-      window.setTimeout(() => {
-        navigate('/')
-      }, 500)
+      handleAuthSuccess(response.message)
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -58,12 +67,41 @@ function Register() {
     }
   }
 
+  async function handleGoogleCredential(credential: string) {
+    setStatus('')
+    setError('')
+    setIsSubmitting(true)
+
+    try {
+      const response = await loginWithGoogle({ credential })
+
+      if (!response.data) {
+        throw new Error('Google login succeeded but no auth data was returned.')
+      }
+
+      saveAuthSession(response.data)
+      handleAuthSuccess(response.message)
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to continue with Google right now.',
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <main className="grid min-h-screen bg-[#f8f3ea] text-[#181512] lg:grid-cols-[1.1fr_0.9fr]">
-      <section className="hero-enter flex min-h-screen items-center px-4 py-8 sm:px-6 lg:px-12">
-        <div className="mx-auto w-full max-w-md">
+      <section className="hero-enter relative flex min-h-screen items-center px-4 py-6 sm:px-6 lg:px-10 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <div className="absolute -left-[10%] -top-[10%] h-[500px] w-[500px] rounded-full bg-[#f1c9a6]/30 blur-3xl" />
+          <div className="absolute -bottom-[10%] -right-[10%] h-[400px] w-[400px] rounded-full bg-[#e6d0bb]/40 blur-3xl" />
+        </div>
+        <div className="mx-auto w-full max-w-md relative z-10 rounded-2xl border border-white/50 bg-white/40 p-6 shadow-xl shadow-black/5 backdrop-blur-xl sm:p-8">
           <Link
-            className="mb-10 inline-flex items-center gap-2 text-sm font-bold text-[#6b5f53] transition hover:text-[#181512]"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-[#6b5f53] transition-colors hover:text-[#181512]"
             to="/"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -74,20 +112,20 @@ function Register() {
             <p className="text-sm font-semibold text-[#7a3f1d]">
               Join the marketplace
             </p>
-            <h1 className="mt-2 text-4xl font-bold">Register</h1>
-            <p className="mt-3 text-sm leading-6 text-[#6b5f53]">
+            <h1 className="mt-1 text-3xl font-bold tracking-tight">Register</h1>
+            <p className="mt-2 text-sm leading-relaxed text-[#6b5f53]">
               Create an account to save favorite pieces, checkout faster, and
               follow maker drops.
             </p>
           </div>
 
-          <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+          <form className="mt-4 space-y-3" onSubmit={handleSubmit}>
             <label className="block">
-              <span className="text-sm font-bold">Full name</span>
-              <span className="mt-2 flex items-center gap-3 border border-black/10 bg-white px-4 py-3 transition focus-within:border-[#181512]">
-                <UserRound className="h-5 w-5 text-[#7a3f1d]" />
+              <span className="text-xs font-bold uppercase tracking-wider text-[#6b5f53]">Full name</span>
+              <span className="mt-1.5 flex items-center gap-3 rounded-xl border border-white/40 bg-white/60 px-3 py-2.5 shadow-sm transition-all focus-within:border-[#7a3f1d]/50 focus-within:bg-white focus-within:shadow-md focus-within:ring-2 focus-within:ring-[#7a3f1d]/20">
+                <UserRound className="h-4 w-4 text-[#7a3f1d]" />
                 <input
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#8a7d71]"
+                  className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#8a7d71]"
                   onChange={(event) => setName(event.target.value)}
                   placeholder="Your name"
                   required
@@ -98,11 +136,11 @@ function Register() {
             </label>
 
             <label className="block">
-              <span className="text-sm font-bold">Email address</span>
-              <span className="mt-2 flex items-center gap-3 border border-black/10 bg-white px-4 py-3 transition focus-within:border-[#181512]">
-                <Mail className="h-5 w-5 text-[#7a3f1d]" />
+              <span className="text-xs font-bold uppercase tracking-wider text-[#6b5f53]">Email address</span>
+              <span className="mt-1.5 flex items-center gap-3 rounded-xl border border-white/40 bg-white/60 px-3 py-2.5 shadow-sm transition-all focus-within:border-[#7a3f1d]/50 focus-within:bg-white focus-within:shadow-md focus-within:ring-2 focus-within:ring-[#7a3f1d]/20">
+                <Mail className="h-4 w-4 text-[#7a3f1d]" />
                 <input
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#8a7d71]"
+                  className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#8a7d71]"
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="you@example.com"
                   required
@@ -113,11 +151,11 @@ function Register() {
             </label>
 
             <label className="block">
-              <span className="text-sm font-bold">Phone number</span>
-              <span className="mt-2 flex items-center gap-3 border border-black/10 bg-white px-4 py-3 transition focus-within:border-[#181512]">
-                <UserRound className="h-5 w-5 text-[#7a3f1d]" />
+              <span className="text-xs font-bold uppercase tracking-wider text-[#6b5f53]">Phone number</span>
+              <span className="mt-1.5 flex items-center gap-3 rounded-xl border border-white/40 bg-white/60 px-3 py-2.5 shadow-sm transition-all focus-within:border-[#7a3f1d]/50 focus-within:bg-white focus-within:shadow-md focus-within:ring-2 focus-within:ring-[#7a3f1d]/20">
+                <UserRound className="h-4 w-4 text-[#7a3f1d]" />
                 <input
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#8a7d71]"
+                  className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#8a7d71]"
                   onChange={(event) => setPhone(event.target.value)}
                   placeholder="01700000000"
                   required
@@ -128,11 +166,11 @@ function Register() {
             </label>
 
             <label className="block">
-              <span className="text-sm font-bold">Password</span>
-              <span className="mt-2 flex items-center gap-3 border border-black/10 bg-white px-4 py-3 transition focus-within:border-[#181512]">
-                <LockKeyhole className="h-5 w-5 text-[#7a3f1d]" />
+              <span className="text-xs font-bold uppercase tracking-wider text-[#6b5f53]">Password</span>
+              <span className="mt-1.5 flex items-center gap-3 rounded-xl border border-white/40 bg-white/60 px-3 py-2.5 shadow-sm transition-all focus-within:border-[#7a3f1d]/50 focus-within:bg-white focus-within:shadow-md focus-within:ring-2 focus-within:ring-[#7a3f1d]/20">
+                <LockKeyhole className="h-4 w-4 text-[#7a3f1d]" />
                 <input
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#8a7d71]"
+                  className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#8a7d71]"
                   minLength={6}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Create password"
@@ -146,33 +184,45 @@ function Register() {
                   onClick={() => setShowPassword((current) => !current)}
                   type="button"
                 >
-                  <Eye className="h-5 w-5" />
+                  <Eye className="h-4 w-4" />
                 </button>
               </span>
             </label>
 
-            <label className="inline-flex items-start gap-3 text-sm leading-6 text-[#6b5f53]">
+            <label className="inline-flex items-start gap-2.5 text-xs font-medium leading-relaxed text-[#6b5f53]">
               <input
-                className="mt-1 h-4 w-4 accent-[#181512]"
+                className="mt-0.5 h-4 w-4 rounded accent-[#181512] transition-all"
                 type="checkbox"
               />
               I agree to receive order updates and accept the Artisane terms.
             </label>
 
+            <div className="grid gap-3 pt-2">
+              <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-[#8a7d71]">
+                <span className="h-px flex-1 bg-black/10" />
+                or
+                <span className="h-px flex-1 bg-black/10" />
+              </div>
+              <GoogleAuthButton
+                disabled={isSubmitting}
+                onCredential={handleGoogleCredential}
+              />
+            </div>
+
             {error ? (
-              <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+               <p className="rounded-lg border border-red-200 bg-red-50/80 px-3 py-2 text-xs font-semibold text-red-700 backdrop-blur-sm">
                 {error}
               </p>
             ) : null}
 
             {status ? (
-              <p className="border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+               <p className="rounded-lg border border-emerald-200 bg-emerald-50/80 px-3 py-2 text-xs font-semibold text-emerald-700 backdrop-blur-sm">
                 {status}
               </p>
             ) : null}
 
             <button
-              className="flex min-h-12 w-full items-center justify-center gap-2 bg-[#181512] px-5 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:bg-[#6b5f53]"
+              className="mt-2 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#181512] px-5 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-[#7a3f1d] hover:shadow-lg disabled:pointer-events-none disabled:opacity-60"
               disabled={isSubmitting}
               type="submit"
             >
@@ -181,9 +231,9 @@ function Register() {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm text-[#6b5f53]">
+          <p className="mt-4 text-center text-sm font-medium text-[#6b5f53]">
             Already have an account?{' '}
-            <Link className="font-bold text-[#181512]" to="/login">
+            <Link className="font-bold text-[#181512] transition-colors hover:text-[#7a3f1d]" to="/login">
               Login
             </Link>
           </p>
@@ -193,26 +243,26 @@ function Register() {
       <section className="relative hidden overflow-hidden bg-[#181512] lg:block">
         <img
           alt="Handmade color palette"
-          className="absolute inset-0 h-full w-full object-cover opacity-72"
+          className="absolute inset-0 h-full w-full object-cover opacity-72 transition-transform duration-1000 hover:scale-105"
           src={paletteImage}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(24,21,18,0.08),rgba(24,21,18,0.82))]" />
-        <div className="hero-enter relative flex min-h-screen flex-col justify-between p-10 text-white">
-          <Link className="inline-flex w-fit items-center gap-3" to="/">
-            <span className="grid h-10 w-10 place-items-center bg-white text-base font-bold text-[#181512]">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#181512]/90 via-[#181512]/40 to-[#181512]/10" />
+        <div className="hero-enter relative flex min-h-screen flex-col justify-between p-12 text-white">
+          <Link className="inline-flex w-fit items-center gap-3 transition-opacity hover:opacity-80" to="/">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/90 shadow-lg backdrop-blur-sm text-base font-bold text-[#181512]">
               A
             </span>
-            <span className="font-display text-2xl font-bold">Artisane</span>
+            <span className="font-display text-2xl font-bold tracking-tight">Artisane</span>
           </Link>
 
           <div className="max-w-md">
-            <p className="text-sm font-semibold text-[#f1c9a6]">
+            <p className="text-xs font-bold uppercase tracking-widest text-[#f1c9a6]">
               Maker-first shopping
             </p>
-            <h2 className="mt-3 text-5xl font-bold leading-tight">
+            <h2 className="mt-3 text-4xl font-extrabold leading-tight tracking-tight lg:text-5xl">
               Discover limited batches before they sell out.
             </h2>
-            <p className="mt-5 text-base leading-7 text-white/78">
+            <p className="mt-5 text-base leading-relaxed text-white/80">
               New members get early access to curated edits, saved carts, and
               faster checkout.
             </p>
