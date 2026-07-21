@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Search } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { useGetProductsQuery } from '../../../features/products/productApi'
@@ -17,6 +17,7 @@ function NavbarSearch({ className = '' }: NavbarSearchProps) {
   const navigate = useNavigate()
   const [searchValue, setSearchValue] = useState('')
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
   const searchRef = useRef<HTMLDivElement | null>(null)
   const trimmedSearchValue = searchValue.trim()
   const shouldFetchSearch = trimmedSearchValue.length >= 2
@@ -35,6 +36,7 @@ function NavbarSearch({ className = '' }: NavbarSearchProps) {
     function handleClickOutside(event: MouseEvent) {
       if (!searchRef.current?.contains(event.target as Node)) {
         setIsSearchOpen(false)
+        setIsFocused(false)
       }
     }
 
@@ -65,26 +67,55 @@ function NavbarSearch({ className = '' }: NavbarSearchProps) {
     setIsSearchOpen(value.trim().length >= 2)
   }
 
+  function handleClearSearch() {
+    setSearchValue('')
+    setIsSearchOpen(false)
+  }
+
   function handleSearchProductClick() {
     setIsSearchOpen(false)
   }
 
+  const isActive = isFocused || isSearchOpen
+
   return (
     <div className={`relative ${className}`} ref={searchRef}>
       <form
-        className="flex items-center gap-2 border border-black/10 bg-white px-3 py-2"
+        className={`flex items-center gap-2.5 border bg-white px-3.5 py-2 transition-all duration-200 ${
+          isActive
+            ? 'border-[#181512] ring-2 ring-[#181512]/10 shadow-md'
+            : 'border-black/15 hover:border-black/35'
+        }`}
         onSubmit={handleSearchSubmit}
       >
-        <Search className="h-5 w-5 text-[#766a5e]" />
+        <Search
+          className={`h-4 w-4 shrink-0 transition-colors duration-200 ${
+            isActive ? 'text-[#7a3f1d]' : 'text-[#766a5e]'
+          }`}
+        />
         <input
-          className="w-full bg-transparent text-sm outline-none placeholder:text-[#8a7d71]"
+          className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#8a7d71]"
           name="search"
+          onBlur={() => setIsFocused(false)}
           onChange={(event) => handleSearchChange(event.target.value)}
-          onFocus={() => setIsSearchOpen(trimmedSearchValue.length >= 2)}
-          placeholder="Search handmade products"
+          onFocus={() => {
+            setIsFocused(true)
+            setIsSearchOpen(trimmedSearchValue.length >= 2)
+          }}
+          placeholder="Search handmade products..."
           type="search"
           value={searchValue}
         />
+        {searchValue ? (
+          <button
+            aria-label="Clear search"
+            className="grid h-5 w-5 shrink-0 place-items-center text-[#8a7d71] transition hover:text-[#181512]"
+            onClick={handleClearSearch}
+            type="button"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        ) : null}
       </form>
 
       {isSearchOpen ? (
