@@ -16,6 +16,7 @@ import ProductStatusBanner from './components/ProductStatusBanner'
 import ProductUpdateConfirmModal from './components/ProductUpdateConfirmModal'
 import {
   createSlug,
+  formatFileSize,
   getCategoryId,
   getEmptyProductEditForm,
   getErrorMessage,
