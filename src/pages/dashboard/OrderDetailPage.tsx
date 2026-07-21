@@ -5,16 +5,24 @@ import {
   LoaderCircle,
   PackageCheck,
   RotateCcw,
+  ShoppingBag,
 } from 'lucide-react'
+import { useDispatch } from 'react-redux'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import DashboardLayout from '../../components/layout/DashboardLayout'
+import {
+  addToCart,
+  createCartItem,
+  createCartItemFromOrderItem,
+} from '../../features/cart/cartSlice'
 import {
   type Order,
   type OrderItem,
   useCancelOrderMutation,
   useGetOrderByIdQuery,
 } from '../../features/orders/orderApi'
+import { useLazyGetProductByIdQuery } from '../../features/products/productApi'
 import {
   canCancelOrder,
   formatCourierProvider,
@@ -61,8 +69,11 @@ function TrackingCodeLink({ order }: { order: Order }) {
 function OrderDetailPage() {
   const { id = '' } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [message, setMessage] = useState<OrderMessage | null>(null)
+  const [isReorderingAll, setIsReorderingAll] = useState(false)
+  const [reorderingItemId, setReorderingItemId] = useState<string | null>(null)
 
   const {
     data: order,
@@ -72,6 +83,7 @@ function OrderDetailPage() {
     skip: !id,
   })
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation()
+  const [fetchProduct] = useLazyGetProductByIdQuery()
 
   const orderProgressSteps = [
     { key: 'confirmed', label: 'Confirmed' },
@@ -98,6 +110,112 @@ function OrderDetailPage() {
         type: 'error',
       })
     }
+  }
+
+  async function handleReorderAll() {
+    if (!order || !order.items?.length) {
+      return
+    }
+
+    setIsReorderingAll(true)
+    let addedCount = 0
+    let skippedCount = 0
+
+    try {
+      for (const item of order.items) {
+        const productId =
+          typeof item.product === 'object' && item.product
+            ? item.product._id
+            : typeof item.product === 'string'
+              ? item.product
+              : item._id || ''
+
+        if (!productId) {
+          skippedCount++
+          continue
+        }
+
+        try {
+          const freshProduct = await fetchProduct(productId).unwrap()
+          if (
+            freshProduct &&
+            !freshProduct.isDeleted &&
+            freshProduct.stock > 0
+          ) {
+            dispatch(
+              addToCart(createCartItem(freshProduct, item.quantity ?? 1)),
+            )
+            addedCount++
+          } else {
+            skippedCount++
+          }
+        } catch {
+          dispatch(addToCart(createCartItemFromOrderItem(item)))
+          addedCount++
+        }
+      }
+
+      if (addedCount > 0) {
+        setMessage({
+          text: `Added ${addedCount} item(s) to cart with live pricing. ${
+            skippedCount > 0 ? `${skippedCount} out-of-stock item(s) skipped.` : ''
+          } Proceeding to checkout...`,
+          type: 'success',
+        })
+        setTimeout(() => {
+          navigate('/checkout')
+        }, 800)
+      } else {
+        setMessage({
+          text: 'Items in this order are currently out of stock or unavailable.',
+          type: 'error',
+        })
+      }
+    } finally {
+      setIsReorderingAll(false)
+    }
+  }
+
+  async function handleReorderSingle(item: OrderItem) {
+    const productId =
+      typeof item.product === 'object' && item.product
+        ? item.product._id
+        : typeof item.product === 'string'
+          ? item.product
+          : item._id || ''
+
+    const itemKey = item._id || productId
+    setReorderingItemId(itemKey)
+
+    try {
+      if (productId) {
+        const freshProduct = await fetchProduct(productId).unwrap()
+        if (
+          freshProduct &&
+          !freshProduct.isDeleted &&
+          freshProduct.stock > 0
+        ) {
+          dispatch(
+            addToCart(createCartItem(freshProduct, item.quantity ?? 1)),
+          )
+          setMessage({
+            text: `"${freshProduct.name}" added to cart with current live price (${formatPrice(freshProduct.price)}).`,
+            type: 'success',
+          })
+          return
+        }
+      }
+    } catch {
+      // fallback
+    } finally {
+      setReorderingItemId(null)
+    }
+
+    dispatch(addToCart(createCartItemFromOrderItem(item)))
+    setMessage({
+      text: `"${getOrderItemName(item)}" added to your cart.`,
+      type: 'success',
+    })
   }
 
   return (
@@ -164,6 +282,19 @@ function OrderDetailPage() {
                 <span className="bg-[#effaf3] px-3 py-1.5 text-xs font-bold text-[#1f6b43]">
                   Payment: {formatOrderStatus(order.paymentStatus)}
                 </span>
+                <button
+                  className="inline-flex min-h-9 items-center gap-1.5 border border-[#181512] bg-[#181512] px-3 text-xs font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={isReorderingAll}
+                  onClick={handleReorderAll}
+                  type="button"
+                >
+                  {isReorderingAll ? (
+                    <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <ShoppingBag className="h-3.5 w-3.5" />
+                  )}
+                  {isReorderingAll ? 'Checking live stock...' : 'Reorder all'}
+                </button>
                 {canCancelOrder(order) ? (
                   <button
                     className="inline-flex min-h-9 items-center gap-1.5 border border-[#c85f2f]/30 bg-[#fff5ef] px-3 text-xs font-bold text-[#8f3f1d] transition hover:border-[#8f3f1d]"
@@ -269,18 +400,41 @@ function OrderDetailPage() {
           </section>
 
           <section className="border border-black/10 bg-white p-5">
-            <div className="flex items-center gap-2 border-b border-black/10 pb-3">
-              <PackageCheck className="h-5 w-5 text-[#7a3f1d]" />
-              <h3 className="text-lg font-bold">Ordered items</h3>
+            <div className="flex items-center justify-between border-b border-black/10 pb-3">
+              <div className="flex items-center gap-2">
+                <PackageCheck className="h-5 w-5 text-[#7a3f1d]" />
+                <h3 className="text-lg font-bold">Ordered items</h3>
+              </div>
+              <button
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#7a3f1d] hover:underline disabled:opacity-50"
+                disabled={isReorderingAll}
+                onClick={handleReorderAll}
+                type="button"
+              >
+                {isReorderingAll ? (
+                  <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <ShoppingBag className="h-3.5 w-3.5" />
+                )}
+                Reorder all items
+              </button>
             </div>
 
             <div className="mt-4 grid gap-3">
               {(order.items ?? []).map((item: OrderItem, index: number) => {
                 const imageUrl = getAssetUrl(getOrderItemImage(item))
+                const productId =
+                  typeof item.product === 'object' && item.product
+                    ? item.product._id
+                    : typeof item.product === 'string'
+                      ? item.product
+                      : item._id || ''
+                const itemKey = item._id || productId || String(index)
+                const isItemReordering = reorderingItemId === itemKey
 
                 return (
                   <article
-                    className="grid grid-cols-[64px_1fr_auto] items-center gap-4 border border-black/10 p-3 text-sm"
+                    className="grid grid-cols-[64px_1fr_auto_auto] items-center gap-4 border border-black/10 p-3 text-sm"
                     key={item._id ?? index}
                   >
                     <div className="h-16 w-16 overflow-hidden bg-[#f8f3ea]">
@@ -301,6 +455,19 @@ function OrderDetailPage() {
                     <p className="text-base font-bold text-[#181512]">
                       {formatPrice(item.subtotal ?? 0)}
                     </p>
+                    <button
+                      className="inline-flex min-h-8 items-center gap-1 border border-black/10 bg-white px-2.5 text-xs font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea] disabled:opacity-50"
+                      disabled={isItemReordering}
+                      onClick={() => handleReorderSingle(item)}
+                      type="button"
+                    >
+                      {isItemReordering ? (
+                        <LoaderCircle className="h-3.5 w-3.5 animate-spin text-[#7a3f1d]" />
+                      ) : (
+                        <ShoppingBag className="h-3.5 w-3.5 text-[#7a3f1d]" />
+                      )}
+                      <span>Buy again</span>
+                    </button>
                   </article>
                 )
               })}

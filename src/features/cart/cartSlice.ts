@@ -58,6 +58,8 @@ function clampQuantity(quantity: number, stock: number) {
   return Math.min(Math.max(1, quantity), maxQuantity)
 }
 
+import type { OrderItem } from '../orders/orderApi'
+
 export function createCartItem(product: Product, quantity = 1): CartItem {
   const category = getProductCategory(product)
 
@@ -72,6 +74,32 @@ export function createCartItem(product: Product, quantity = 1): CartItem {
     quantity: clampQuantity(quantity, product.stock),
     slug: product.slug,
     stock: product.stock,
+  }
+}
+
+export function createCartItemFromOrderItem(item: OrderItem): CartItem {
+  const productId =
+    typeof item.product === 'object' && item.product
+      ? item.product._id
+      : typeof item.product === 'string'
+        ? item.product
+        : item._id || ''
+
+  const stock =
+    typeof item.product === 'object' && item.product
+      ? item.product.stock
+      : 99
+
+  return {
+    categoryId: typeof item.category === 'string' ? item.category : undefined,
+    categoryName: 'Studio goods',
+    id: productId,
+    image: item.image,
+    name: item.productName || 'Handmade item',
+    price: item.price ?? 0,
+    quantity: Math.max(1, item.quantity ?? 1),
+    slug: item.productSlug || '',
+    stock: stock > 0 ? stock : 99,
   }
 }
 

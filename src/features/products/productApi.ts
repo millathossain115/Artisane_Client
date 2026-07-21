@@ -202,5 +202,6 @@ export const {
   useDeleteProductMutation,
   useGetProductByIdQuery,
   useGetProductsQuery,
+  useLazyGetProductByIdQuery,
   useUpdateProductMutation,
 } = productApi

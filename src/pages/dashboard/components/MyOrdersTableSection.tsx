@@ -1,14 +1,24 @@
-import type { Dispatch, SetStateAction } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, type Dispatch, type SetStateAction } from 'react'
+import { useDispatch } from 'react-redux'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   ChevronLeft,
   ChevronRight,
   Eye,
   ExternalLink,
+  LoaderCircle,
   RotateCcw,
+  ShoppingBag,
 } from 'lucide-react'
 
+import {
+  addToCart,
+  createCartItem,
+  createCartItemFromOrderItem,
+} from '../../../features/cart/cartSlice'
+
 import type { Order, OrderStatus } from '../../../features/orders/orderApi'
+import { useLazyGetProductByIdQuery } from '../../../features/products/productApi'
 import { formatPrice } from '../../../utils/productDisplay'
 import {
   canCancelOrder,
@@ -76,6 +86,58 @@ function MyOrdersTableSection({
   orders,
   visibleOrders,
 }: Omit<MyOrdersTableSectionProps, 'onOpenOrder'>) {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const [fetchProduct] = useLazyGetProductByIdQuery()
+  const [reorderingOrderId, setReorderingOrderId] = useState<string | null>(null)
+
+  async function handleReorder(order: Order) {
+    if (!order.items?.length) {
+      return
+    }
+
+    setReorderingOrderId(order._id)
+
+    try {
+      let added = false
+      for (const item of order.items) {
+        const productId =
+          typeof item.product === 'object' && item.product
+            ? item.product._id
+            : typeof item.product === 'string'
+              ? item.product
+              : item._id || ''
+
+        try {
+          if (productId) {
+            const freshProduct = await fetchProduct(productId).unwrap()
+            if (
+              freshProduct &&
+              !freshProduct.isDeleted &&
+              freshProduct.stock > 0
+            ) {
+              dispatch(
+                addToCart(createCartItem(freshProduct, item.quantity ?? 1)),
+              )
+              added = true
+              continue
+            }
+          }
+        } catch {
+          // fallback to item snapshot
+        }
+
+        dispatch(addToCart(createCartItemFromOrderItem(item)))
+        added = true
+      }
+
+      if (added) {
+        navigate('/checkout')
+      }
+    } finally {
+      setReorderingOrderId(null)
+    }
+  }
   return (
     <section className="border border-black/10 bg-white">
       <div className="flex flex-col gap-4 border-b border-black/10 p-5 sm:flex-row sm:items-end sm:justify-between">
@@ -187,6 +249,21 @@ function MyOrdersTableSection({
                         <Eye className="h-3.5 w-3.5" />
                         <span>Details</span>
                       </Link>
+                      <button
+                        aria-label={`Reorder ${formatOrderId(order._id)}`}
+                        className="inline-flex min-h-9 items-center gap-1.5 border border-black/10 bg-white px-3 text-xs font-bold text-[#181512] transition hover:border-[#181512] hover:bg-[#f8f3ea] disabled:opacity-50"
+                        disabled={reorderingOrderId === order._id}
+                        onClick={() => handleReorder(order)}
+                        title="Buy items again"
+                        type="button"
+                      >
+                        {reorderingOrderId === order._id ? (
+                          <LoaderCircle className="h-3.5 w-3.5 animate-spin text-[#7a3f1d]" />
+                        ) : (
+                          <ShoppingBag className="h-3.5 w-3.5 text-[#7a3f1d]" />
+                        )}
+                        <span>{reorderingOrderId === order._id ? 'Fetching...' : 'Reorder'}</span>
+                      </button>
                       <button
                         aria-label={`Cancel ${formatOrderId(order._id)}`}
                         className="grid h-9 w-9 place-items-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef] disabled:cursor-not-allowed disabled:opacity-45"
