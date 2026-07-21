@@ -1,10 +1,11 @@
-import { Search } from 'lucide-react'
+import { RotateCcw, Search } from 'lucide-react'
 import type { Dispatch, SetStateAction } from 'react'
 
 import type { UserRole, UserStatus } from '../../../../features/users/userApi'
 import { PAGE_SIZE_OPTIONS } from '../userTableUtils'
 
 type UserFiltersProps = {
+  onResetFilters: () => void
   pageSize: number
   roleFilter: UserRole | ''
   searchTerm: string
@@ -17,6 +18,7 @@ type UserFiltersProps = {
 }
 
 function UserFilters({
+  onResetFilters,
   pageSize,
   roleFilter,
   searchTerm,
@@ -27,8 +29,13 @@ function UserFilters({
   setStatusFilter,
   statusFilter,
 }: UserFiltersProps) {
+  const hasActiveFilters =
+    searchTerm.trim() !== '' ||
+    roleFilter !== '' ||
+    statusFilter !== '' ||
+    pageSize !== PAGE_SIZE_OPTIONS[1]
   return (
-    <div className="grid gap-3 border-b border-black/10 p-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+    <div className="grid gap-3 border-b border-black/10 p-5 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:items-end">
       <label className="grid gap-2 text-sm font-bold">
         Search users
         <span className="relative">
@@ -97,6 +104,16 @@ function UserFilters({
           </select>
         </label>
       </div>
+
+      <button
+        className="inline-flex min-h-12 items-center justify-center gap-2 border border-black/10 bg-white px-4 text-sm font-bold text-[#181512] transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+        disabled={!hasActiveFilters}
+        onClick={onResetFilters}
+        type="button"
+      >
+        <RotateCcw className="h-4 w-4" />
+        Reset filters
+      </button>
     </div>
   )
 }

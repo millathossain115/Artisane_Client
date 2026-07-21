@@ -222,21 +222,11 @@ function UserTable() {
       <UserStatsCards isLoading={isStatsLoading} kpis={kpis} />
 
       <section className="mt-6 border border-black/10 bg-white" id="users">
-        <div className="flex flex-col gap-4 border-b border-black/10 p-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Current users</h2>
-            <p className="mt-1 text-sm text-[#6b5f53]">
-              All customer and admin records currently stored in the database.
-            </p>
-          </div>
-
-          <button
-            className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
-            onClick={resetFilters}
-            type="button"
-          >
-            Reset filters
-          </button>
+        <div className="border-b border-black/10 p-5">
+          <h2 className="text-2xl font-bold">Current users</h2>
+          <p className="mt-1 text-sm text-[#6b5f53]">
+            All customer and admin records currently stored in the database.
+          </p>
         </div>
 
         {(isUsersLoading || hasUsersError || hasStatsError) && (
@@ -266,6 +256,7 @@ function UserTable() {
         )}
 
         <UserFilters
+          onResetFilters={resetFilters}
           pageSize={pageSize}
           roleFilter={roleFilter}
           searchTerm={searchTerm}
