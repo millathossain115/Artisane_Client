@@ -72,6 +72,24 @@ export function formatFileSize(size: number) {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`
 }
 
+export function truncateFileName(name: string, maxLength = 20) {
+  if (name.length <= maxLength) {
+    return name
+  }
+
+  const dotIndex = name.lastIndexOf('.')
+  if (dotIndex > 0 && name.length - dotIndex <= 6) {
+    const ext = name.slice(dotIndex)
+    const baseName = name.slice(0, dotIndex)
+    const keepChars = Math.max(3, maxLength - ext.length - 3)
+    if (baseName.length > keepChars) {
+      return `${baseName.slice(0, keepChars)}...${ext}`
+    }
+  }
+
+  return `${name.slice(0, maxLength - 3)}...`
+}
+
 export function getProductImageUrl(imageUrl?: string) {
   if (!imageUrl) {
     return ''

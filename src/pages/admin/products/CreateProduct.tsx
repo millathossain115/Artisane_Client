@@ -59,6 +59,24 @@ function formatFileSize(size: number) {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`
 }
 
+function truncateFileName(name: string, maxLength = 20) {
+  if (name.length <= maxLength) {
+    return name
+  }
+
+  const dotIndex = name.lastIndexOf('.')
+  if (dotIndex > 0 && name.length - dotIndex <= 6) {
+    const ext = name.slice(dotIndex)
+    const baseName = name.slice(0, dotIndex)
+    const keepChars = Math.max(3, maxLength - ext.length - 3)
+    if (baseName.length > keepChars) {
+      return `${baseName.slice(0, keepChars)}...${ext}`
+    }
+  }
+
+  return `${name.slice(0, maxLength - 3)}...`
+}
+
 function CreateProduct() {
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
@@ -72,6 +90,7 @@ function CreateProduct() {
   const [imageInputKey, setImageInputKey] = useState(0)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
+  const [imageWarning, setImageWarning] = useState('')
   const [isCategoryLoadErrorDismissed, setIsCategoryLoadErrorDismissed] =
     useState(false)
   const [showCreateConfirm, setShowCreateConfirm] = useState(false)
@@ -90,6 +109,14 @@ function CreateProduct() {
   const categories = categoryList?.data ?? []
   const selectedCategory = categories.find(
     (category) => category._id === categoryId,
+  )
+  const isFormFilled = Boolean(
+    name.trim() ||
+      description.trim() ||
+      price.trim() ||
+      stock.trim() ||
+      categoryId ||
+      imageFiles.length > 0,
   )
 
   useEffect(() => {
@@ -111,6 +138,7 @@ function CreateProduct() {
   function handleImageChange(files: FileList | null) {
     setStatus('')
     setError('')
+    setImageWarning('')
 
     if (!files?.length) {
       return
@@ -119,13 +147,24 @@ function CreateProduct() {
     const nextFiles = Array.from(files)
 
     if (nextFiles.some((file) => !file.type.startsWith('image/'))) {
-      setError('Only image files are allowed.')
+      setImageWarning('Only image files are allowed.')
       setImageInputKey((currentKey) => currentKey + 1)
       return
     }
 
     if (nextFiles.some((file) => file.size > MAX_IMAGE_SIZE)) {
-      setError('Each image must be 5MB or less.')
+      const oversizedFiles = nextFiles.filter(
+        (file) => file.size > MAX_IMAGE_SIZE,
+      )
+      const oversizedNames = oversizedFiles
+        .map(
+          (file) =>
+            `${truncateFileName(file.name, 15)} (${formatFileSize(file.size)})`,
+        )
+        .join(', ')
+      setImageWarning(
+        `Warning: Selected image exceeds maximum allowed size of ${formatFileSize(MAX_IMAGE_SIZE)}: ${oversizedNames}`,
+      )
       setImageInputKey((currentKey) => currentKey + 1)
       return
     }
@@ -349,7 +388,12 @@ function CreateProduct() {
           </label>
 
           <label className="mt-5 grid gap-2 text-sm font-bold">
-            Product photos
+            <div className="flex items-center justify-between">
+              <span>Product photos</span>
+              <span className="text-xs font-semibold text-[#7a3f1d]">
+                Max size: {formatFileSize(MAX_IMAGE_SIZE)}
+              </span>
+            </div>
             <div className="border border-dashed border-black/20 bg-[#f8f3ea] p-4 transition focus-within:border-[#181512]">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex min-w-0 items-center gap-3">
@@ -363,8 +407,7 @@ function CreateProduct() {
                         : 'Upload product photos'}
                     </span>
                     <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
-                      Up to {MAX_PRODUCT_IMAGES} images. Each image must be 5MB
-                      or less.
+                      Up to {MAX_PRODUCT_IMAGES} images. Max per image: {formatFileSize(MAX_IMAGE_SIZE)}.
                     </span>
                   </span>
                 </div>
@@ -404,8 +447,10 @@ function CreateProduct() {
                         <Trash2 className="h-4 w-4" />
                       </button>
                       <div className="p-3">
-                        <p className="truncate font-bold">
-                          {imageFiles[index]?.name}
+                        <p className="truncate font-bold" title={imageFiles[index]?.name}>
+                          {imageFiles[index]?.name
+                            ? truncateFileName(imageFiles[index].name, 22)
+                            : ''}
                         </p>
                         <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
                           {imageFiles[index]
@@ -415,6 +460,13 @@ function CreateProduct() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {imageWarning && (
+                <div className="mt-3 flex items-center gap-2 border border-[#c85f2f]/30 bg-[#fff5ef] p-3 text-xs font-semibold text-[#8f3f1d]">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>{imageWarning}</span>
                 </div>
               )}
             </div>
@@ -456,7 +508,7 @@ function CreateProduct() {
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <button
               className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-5 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={isCreating || isCategoriesLoading}
+              disabled={isCreating || isCategoriesLoading || !isFormFilled}
               type="submit"
             >
               {isCreating ? (

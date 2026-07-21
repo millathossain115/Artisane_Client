@@ -14,6 +14,7 @@ import {
   Upload,
   X,
   RotateCcw,
+  AlertTriangle,
 } from 'lucide-react'
 
 import { API_BASE_URL } from '../../../config/api'
@@ -97,6 +98,24 @@ function formatFileSize(size: number) {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`
 }
 
+function truncateFileName(name: string, maxLength = 20) {
+  if (name.length <= maxLength) {
+    return name
+  }
+
+  const dotIndex = name.lastIndexOf('.')
+  if (dotIndex > 0 && name.length - dotIndex <= 6) {
+    const ext = name.slice(dotIndex)
+    const baseName = name.slice(0, dotIndex)
+    const keepChars = Math.max(3, maxLength - ext.length - 3)
+    if (baseName.length > keepChars) {
+      return `${baseName.slice(0, keepChars)}...${ext}`
+    }
+  }
+
+  return `${name.slice(0, maxLength - 3)}...`
+}
+
 function isCategoryActive(category: Category) {
   return category.isActive ?? !category.isDeleted
 }
@@ -176,6 +195,8 @@ function CategoryTable() {
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
     null,
   )
+  const [showUpdateConfirm, setShowUpdateConfirm] = useState(false)
+  const [imageWarning, setImageWarning] = useState('')
   const [editForm, setEditForm] = useState<CategoryEditForm>({
     description: '',
     name: '',
@@ -203,6 +224,13 @@ function CategoryTable() {
     searchTerm.trim() !== '' ||
     sortFilter !== 'newest' ||
     pageSize !== PAGE_SIZE_OPTIONS[0]
+  const isEditFormChanged = Boolean(
+    categoryToEdit &&
+      (editForm.name.trim() !== categoryToEdit.name ||
+        editForm.slug.trim() !== categoryToEdit.slug ||
+        editForm.description.trim() !== (categoryToEdit.description ?? '') ||
+        Boolean(editImageFile)),
+  )
 
   useEffect(() => {
     return () => {
@@ -232,6 +260,7 @@ function CategoryTable() {
   function handleEditImageChange(file: File | undefined) {
     setStatus('')
     setError('')
+    setImageWarning('')
 
     if (!file) {
       setEditImageFile(null)
@@ -243,7 +272,7 @@ function CategoryTable() {
       setEditImageFile(null)
       clearEditImagePreview()
       setEditImageInputKey((currentKey) => currentKey + 1)
-      setError('Only image files are allowed.')
+      setImageWarning('Only image files are allowed.')
       return
     }
 
@@ -251,7 +280,9 @@ function CategoryTable() {
       setEditImageFile(null)
       clearEditImagePreview()
       setEditImageInputKey((currentKey) => currentKey + 1)
-      setError('Image size must be 5MB or less.')
+      setImageWarning(
+        `Warning: Selected photo (${formatFileSize(file.size)}) exceeds maximum allowed size of ${formatFileSize(MAX_IMAGE_SIZE)}.`,
+      )
       return
     }
 
@@ -262,6 +293,7 @@ function CategoryTable() {
   function openEditModal(category: Category) {
     setStatus('')
     setError('')
+    setImageWarning('')
     setCategoryToEdit(category)
     setEditForm({
       description: category.description ?? '',
@@ -277,6 +309,8 @@ function CategoryTable() {
     setCategoryToEdit(null)
     setEditImageFile(null)
     clearEditImagePreview()
+    setShowUpdateConfirm(false)
+    setImageWarning('')
   }
 
   function updateEditField(field: keyof CategoryEditForm, value: string) {
@@ -288,9 +322,17 @@ function CategoryTable() {
     }))
   }
 
-  async function handleUpdateSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleUpdateSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
+    if (!categoryToEdit) {
+      return
+    }
+
+    setShowUpdateConfirm(true)
+  }
+
+  async function handleConfirmUpdate() {
     if (!categoryToEdit) {
       return
     }
@@ -310,6 +352,7 @@ function CategoryTable() {
       setStatus('Category updated successfully.')
       closeEditModal()
     } catch (caughtError) {
+      setShowUpdateConfirm(false)
       setError(getErrorMessage(caughtError, 'Failed to update category.'))
     }
   }
@@ -695,7 +738,12 @@ function CategoryTable() {
               </label>
 
               <label className="mt-5 grid gap-2 text-sm font-bold">
-                Category image
+                <div className="flex items-center justify-between">
+                  <span>Category image</span>
+                  <span className="text-xs font-semibold text-[#7a3f1d]">
+                    Max size: {formatFileSize(MAX_IMAGE_SIZE)}
+                  </span>
+                </div>
                 <div className="border border-dashed border-black/20 bg-[#f8f3ea] p-4">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex min-w-0 items-center gap-3">
@@ -714,14 +762,19 @@ function CategoryTable() {
                           <Globe2 className="h-5 w-5" />
                         )}
                       </span>
-                      <span className="min-w-0">
-                        <span className="block truncate font-bold">
-                          {editImageFile?.name ?? 'Keep current image'}
+                      <span className="min-w-0 max-w-[180px] sm:max-w-[240px]">
+                        <span
+                          className="block truncate font-bold"
+                          title={editImageFile?.name}
+                        >
+                          {editImageFile
+                            ? truncateFileName(editImageFile.name, 22)
+                            : 'Keep current image'}
                         </span>
                         <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
                           {editImageFile
                             ? `${editImageFile.type} - ${formatFileSize(editImageFile.size)}`
-                            : 'Upload only when changing category image.'}
+                            : `Upload only when changing category image. Max: ${formatFileSize(MAX_IMAGE_SIZE)}.`}
                         </span>
                       </span>
                     </div>
@@ -740,6 +793,13 @@ function CategoryTable() {
                       />
                     </span>
                   </div>
+
+                  {imageWarning && (
+                    <div className="mt-3 flex items-center gap-2 border border-[#c85f2f]/30 bg-[#fff5ef] p-3 text-xs font-semibold text-[#8f3f1d]">
+                      <AlertTriangle className="h-4 w-4 shrink-0" />
+                      <span>{imageWarning}</span>
+                    </div>
+                  )}
                 </div>
               </label>
 
@@ -754,7 +814,7 @@ function CategoryTable() {
                 </button>
                 <button
                   className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
-                  disabled={isUpdating}
+                  disabled={isUpdating || !isEditFormChanged}
                   type="submit"
                 >
                   {isUpdating ? (
@@ -766,6 +826,54 @@ function CategoryTable() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showUpdateConfirm && categoryToEdit && (
+        <div
+          className="fixed inset-0 z-[60] grid place-items-center bg-[#181512]/55 px-4"
+          role="presentation"
+        >
+          <div
+            aria-modal="true"
+            className="w-full max-w-md border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
+            role="dialog"
+          >
+            <div className="flex items-center gap-2 text-[#7a3f1d]">
+              <AlertTriangle className="h-5 w-5" />
+              <p className="text-sm font-bold">Confirm update</p>
+            </div>
+            <h2 className="mt-2 text-2xl font-bold">
+              Update {categoryToEdit.name}?
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-[#6b5f53]">
+              Are you sure you want to save changes to this category?
+            </p>
+
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button
+                className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
+                disabled={isUpdating}
+                onClick={() => setShowUpdateConfirm(false)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isUpdating}
+                onClick={handleConfirmUpdate}
+                type="button"
+              >
+                {isUpdating ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                {isUpdating ? 'Updating...' : 'Confirm update'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-import { Search } from 'lucide-react'
+import { RotateCcw, Search } from 'lucide-react'
 import type { Dispatch, SetStateAction } from 'react'
 
 import type { Category } from '../../../../features/categories/categoryApi'
@@ -11,6 +11,7 @@ type ProductFiltersProps = {
   categories: Category[]
   categoryFilter: string
   isCategoriesLoading: boolean
+  onResetFilters: () => void
   pageSize: number
   searchTerm: string
   setCategoryFilter: Dispatch<SetStateAction<string>>
@@ -25,6 +26,7 @@ function ProductFilters({
   categories,
   categoryFilter,
   isCategoriesLoading,
+  onResetFilters,
   pageSize,
   searchTerm,
   setCategoryFilter,
@@ -34,8 +36,13 @@ function ProductFilters({
   setSortFilter,
   sortFilter,
 }: ProductFiltersProps) {
+  const hasActiveFilters =
+    searchTerm.trim() !== '' ||
+    categoryFilter !== '' ||
+    sortFilter !== 'newest' ||
+    pageSize !== PAGE_SIZE_OPTIONS[0]
   return (
-    <div className="grid gap-3 border-b border-black/10 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+    <div className="grid gap-3 border-b border-black/10 p-5 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:items-end">
       <label className="grid gap-2 text-sm font-bold">
         Search products
         <span className="relative">
@@ -109,6 +116,16 @@ function ProductFilters({
           </select>
         </label>
       </div>
+
+      <button
+        className="inline-flex min-h-12 items-center justify-center gap-2 border border-black/10 bg-white px-4 text-sm font-bold text-[#181512] transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+        disabled={!hasActiveFilters}
+        onClick={onResetFilters}
+        type="button"
+      >
+        <RotateCcw className="h-4 w-4" />
+        Reset filters
+      </button>
     </div>
   )
 }

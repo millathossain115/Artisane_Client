@@ -6,6 +6,7 @@ import {
   Save,
   Upload,
   X,
+  AlertTriangle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -55,6 +56,24 @@ function formatFileSize(size: number) {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`
 }
 
+function truncateFileName(name: string, maxLength = 20) {
+  if (name.length <= maxLength) {
+    return name
+  }
+
+  const dotIndex = name.lastIndexOf('.')
+  if (dotIndex > 0 && name.length - dotIndex <= 6) {
+    const ext = name.slice(dotIndex)
+    const baseName = name.slice(0, dotIndex)
+    const keepChars = Math.max(3, maxLength - ext.length - 3)
+    if (baseName.length > keepChars) {
+      return `${baseName.slice(0, keepChars)}...${ext}`
+    }
+  }
+
+  return `${name.slice(0, maxLength - 3)}...`
+}
+
 function CreateCategory() {
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
@@ -65,9 +84,11 @@ function CreateCategory() {
   const [isActive, setIsActive] = useState(true)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
+  const [imageWarning, setImageWarning] = useState('')
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [createCategory, { isLoading }] = useCreateCategoryMutation()
   const imagePreviewRef = useRef('')
+  const isFormFilled = Boolean(name.trim() || description.trim() || imageFile)
 
   useEffect(() => {
     return () => {
@@ -102,6 +123,7 @@ function CreateCategory() {
   function handleImageChange(file: File | undefined) {
     setStatus('')
     setError('')
+    setImageWarning('')
 
     if (!file) {
       setImageFile(null)
@@ -113,7 +135,7 @@ function CreateCategory() {
       setImageFile(null)
       clearImagePreview()
       setImageInputKey((currentKey) => currentKey + 1)
-      setError('Only image files are allowed.')
+      setImageWarning('Only image files are allowed.')
       return
     }
 
@@ -121,7 +143,9 @@ function CreateCategory() {
       setImageFile(null)
       clearImagePreview()
       setImageInputKey((currentKey) => currentKey + 1)
-      setError('Image size must be 5MB or less.')
+      setImageWarning(
+        `Warning: Selected photo (${formatFileSize(file.size)}) exceeds maximum allowed size of ${formatFileSize(MAX_IMAGE_SIZE)}.`,
+      )
       return
     }
 
@@ -217,7 +241,12 @@ function CreateCategory() {
           </label>
 
           <label className="mt-5 grid gap-2 text-sm font-bold">
-            Category image
+            <div className="flex items-center justify-between">
+              <span>Category image</span>
+              <span className="text-xs font-semibold text-[#7a3f1d]">
+                Max size: {formatFileSize(MAX_IMAGE_SIZE)}
+              </span>
+            </div>
             <div className="border border-dashed border-black/20 bg-[#f8f3ea] p-4 transition focus-within:border-[#181512]">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex min-w-0 items-center gap-3">
@@ -232,14 +261,19 @@ function CreateCategory() {
                       <Globe2 className="h-5 w-5" />
                     )}
                   </span>
-                  <span className="min-w-0">
-                    <span className="block truncate font-bold">
-                      {imageFile?.name ?? 'Upload category image'}
+                  <span className="min-w-0 max-w-[180px] sm:max-w-[240px]">
+                    <span
+                      className="block truncate font-bold"
+                      title={imageFile?.name}
+                    >
+                      {imageFile
+                        ? truncateFileName(imageFile.name, 22)
+                        : 'Upload category image'}
                     </span>
                     <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
                       {imageFile
                         ? `${imageFile.type} - ${formatFileSize(imageFile.size)}`
-                        : 'Optional. Default global icon will be used.'}
+                        : `Optional. Max size: ${formatFileSize(MAX_IMAGE_SIZE)}.`}
                     </span>
                   </span>
                 </div>
@@ -258,6 +292,13 @@ function CreateCategory() {
                   />
                 </span>
               </div>
+
+              {imageWarning && (
+                <div className="mt-3 flex items-center gap-2 border border-[#c85f2f]/30 bg-[#fff5ef] p-3 text-xs font-semibold text-[#8f3f1d]">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>{imageWarning}</span>
+                </div>
+              )}
             </div>
           </label>
 
@@ -299,7 +340,7 @@ function CreateCategory() {
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <button
               className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-5 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={isLoading}
+              disabled={isLoading || !isFormFilled}
               type="submit"
             >
               {isLoading ? (
@@ -353,7 +394,7 @@ function CreateCategory() {
           </p>
 
           <p className="mt-5 text-xs font-bold uppercase text-[#f1c9a6]">
-            {imageFile ? imageFile.name : 'Default global icon'}
+            {imageFile ? truncateFileName(imageFile.name, 22) : 'Default global icon'}
           </p>
         </aside>
       </div>

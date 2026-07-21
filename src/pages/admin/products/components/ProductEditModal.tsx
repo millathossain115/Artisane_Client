@@ -1,11 +1,14 @@
-import { ImageOff, LoaderCircle, Save, Trash2, Upload } from 'lucide-react'
+import { AlertTriangle, ImageOff, LoaderCircle, Save, Trash2, Upload } from 'lucide-react'
 import type { FormEvent } from 'react'
 
 import type { Category } from '../../../../features/categories/categoryApi'
 import type { Product } from '../../../../features/products/productApi'
 import {
   formatFileSize,
+  getCategoryId,
   getProductImageUrl,
+  MAX_IMAGE_SIZE,
+  truncateFileName,
   type ProductEditForm,
 } from '../productTableUtils'
 
@@ -16,6 +19,7 @@ type ProductEditModalProps = {
   editImageInputKey: number
   editImagePreviews: string[]
   hasCategoriesError: boolean
+  imageWarning?: string
   isCategoriesLoading: boolean
   isUpdating: boolean
   onClose: () => void
@@ -33,6 +37,7 @@ function ProductEditModal({
   editImageInputKey,
   editImagePreviews,
   hasCategoriesError,
+  imageWarning,
   isCategoriesLoading,
   isUpdating,
   onClose,
@@ -42,39 +47,53 @@ function ProductEditModal({
   onUpdateField,
   product,
 }: ProductEditModalProps) {
+  const isEditFormChanged = Boolean(
+    editForm.name.trim() !== product.name ||
+      editForm.categoryId !== getCategoryId(product.category) ||
+      editForm.brand.trim() !== (product.brand ?? '') ||
+      editForm.price.trim() !== String(product.price) ||
+      editForm.stock.trim() !== String(product.stock) ||
+      editForm.description.trim() !== (product.description ?? '') ||
+      editImageFiles.length > 0,
+  )
+
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-[#181512]/55 px-4 py-6"
+      className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-[#181512]/55 px-4 py-4 sm:py-6"
       role="presentation"
     >
       <div
         aria-modal="true"
-        className="w-full max-w-3xl border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
+        className="w-full max-w-2xl border border-black/10 bg-white p-4 sm:p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
         role="dialog"
       >
-        <p className="text-sm font-bold text-[#7a3f1d]">Update product</p>
-        <h2 className="mt-2 text-2xl font-bold">{product.name}</h2>
+        <div className="flex items-center justify-between border-b border-black/10 pb-2.5">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-[#7a3f1d]">Update product</p>
+            <h2 className="mt-0.5 text-xl font-bold leading-snug">{product.name}</h2>
+          </div>
+        </div>
 
-        <form className="mt-5" onSubmit={onSubmit}>
-          <div className="grid gap-5 md:grid-cols-2">
-            <label className="grid gap-2 text-sm font-bold">
+        <form className="mt-3 sm:mt-4" onSubmit={onSubmit}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="grid gap-1 text-xs font-bold">
               Product name
               <input
-                className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+                className="min-h-10 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
                 onChange={(event) => onUpdateField('name', event.target.value)}
                 required
                 type="text"
                 value={editForm.name}
               />
-              <span className="text-xs font-semibold text-[#6b5f53]">
+              <span className="text-[11px] font-semibold text-[#6b5f53]">
                 Slug: {editForm.slug || 'product-slug'}
               </span>
             </label>
 
-            <label className="grid gap-2 text-sm font-bold">
+            <label className="grid gap-1 text-xs font-bold">
               Category
               <select
-                className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+                className="min-h-10 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
                 disabled={isCategoriesLoading}
                 onChange={(event) =>
                   onUpdateField('categoryId', event.target.value)
@@ -93,20 +112,20 @@ function ProductEditModal({
               </select>
             </label>
 
-            <label className="grid gap-2 text-sm font-bold">
+            <label className="grid gap-1 text-xs font-bold">
               Brand
               <input
-                className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+                className="min-h-10 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
                 onChange={(event) => onUpdateField('brand', event.target.value)}
                 type="text"
                 value={editForm.brand}
               />
             </label>
 
-            <label className="grid gap-2 text-sm font-bold">
-              Price
+            <label className="grid gap-1 text-xs font-bold">
+              Price ($)
               <input
-                className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+                className="min-h-10 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
                 min="0"
                 onChange={(event) => onUpdateField('price', event.target.value)}
                 required
@@ -116,10 +135,10 @@ function ProductEditModal({
               />
             </label>
 
-            <label className="grid gap-2 text-sm font-bold">
-              Stock
+            <label className="grid gap-1 text-xs font-bold sm:col-span-2">
+              Stock count
               <input
-                className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+                className="min-h-10 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
                 min="0"
                 onChange={(event) => onUpdateField('stock', event.target.value)}
                 required
@@ -130,10 +149,10 @@ function ProductEditModal({
             </label>
           </div>
 
-          <label className="mt-5 grid gap-2 text-sm font-bold">
+          <label className="mt-3 grid gap-1 text-xs font-bold">
             Description
             <textarea
-              className="min-h-28 resize-y border border-black/10 px-3 py-3 text-sm font-medium leading-6 outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+              className="min-h-20 resize-y border border-black/10 px-3 py-2 text-sm font-medium leading-5 outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
               onChange={(event) =>
                 onUpdateField('description', event.target.value)
               }
@@ -141,12 +160,17 @@ function ProductEditModal({
             />
           </label>
 
-          <label className="mt-5 grid gap-2 text-sm font-bold">
-            Replacement photos
-            <div className="border border-dashed border-black/20 bg-[#f8f3ea] p-4">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex min-w-0 items-center gap-3">
-                  <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden bg-white text-[#7a3f1d]">
+          <label className="mt-3 grid gap-1 text-xs font-bold">
+            <div className="flex items-center justify-between">
+              <span>Replacement photos</span>
+              <span className="text-[11px] font-semibold text-[#7a3f1d]">
+                Max size: {formatFileSize(MAX_IMAGE_SIZE)}
+              </span>
+            </div>
+            <div className="border border-dashed border-black/20 bg-[#f8f3ea] p-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden bg-white text-[#7a3f1d]">
                     {editImagePreviews[0] ||
                     getProductImageUrl(product.images?.[0]) ? (
                       <img
@@ -158,23 +182,23 @@ function ProductEditModal({
                         }
                       />
                     ) : (
-                      <ImageOff className="h-5 w-5" />
+                      <ImageOff className="h-4 w-4" />
                     )}
                   </span>
                   <span className="min-w-0">
-                    <span className="block truncate font-bold">
+                    <span className="block truncate font-bold text-xs">
                       {editImageFiles.length
                         ? `${editImageFiles.length} replacement photo selected`
                         : 'Keep current photos'}
                     </span>
-                    <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
-                      Upload only when changing product photos.
+                    <span className="mt-0.5 block text-[11px] font-semibold text-[#6b5f53]">
+                      Upload only when changing product photos. Max: {formatFileSize(MAX_IMAGE_SIZE)}.
                     </span>
                   </span>
                 </div>
 
-                <span className="relative inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d]">
-                  <Upload className="h-4 w-4" />
+                <span className="relative inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 bg-[#181512] px-3 text-xs font-bold text-white transition hover:bg-[#7a3f1d]">
+                  <Upload className="h-3.5 w-3.5" />
                   Choose files
                   <input
                     accept="image/*"
@@ -188,7 +212,7 @@ function ProductEditModal({
               </div>
 
               {editImagePreviews.length > 0 && (
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="mt-3 grid gap-2.5 sm:grid-cols-3">
                   {editImagePreviews.map((previewUrl, index) => (
                     <div
                       className="relative overflow-hidden border border-black/10 bg-white"
@@ -201,17 +225,22 @@ function ProductEditModal({
                       />
                       <button
                         aria-label={`Remove ${editImageFiles[index]?.name ?? 'image'}`}
-                        className="absolute right-2 top-2 grid h-9 w-9 place-items-center bg-white text-[#8f3f1d] shadow-[0_10px_24px_rgba(24,21,18,0.18)] transition hover:bg-[#fff5ef]"
+                        className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center bg-white text-[#8f3f1d] shadow-[0_4px_12px_rgba(24,21,18,0.18)] transition hover:bg-[#fff5ef]"
                         onClick={() => onRemoveImage(index)}
                         type="button"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
-                      <div className="p-3">
-                        <p className="truncate font-bold">
-                          {editImageFiles[index]?.name}
+                      <div className="p-2">
+                        <p
+                          className="truncate font-bold text-xs"
+                          title={editImageFiles[index]?.name}
+                        >
+                          {editImageFiles[index]?.name
+                            ? truncateFileName(editImageFiles[index].name, 20)
+                            : ''}
                         </p>
-                        <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
+                        <p className="mt-0.5 text-[11px] font-semibold text-[#6b5f53]">
                           {editImageFiles[index]
                             ? formatFileSize(editImageFiles[index].size)
                             : ''}
@@ -221,18 +250,25 @@ function ProductEditModal({
                   ))}
                 </div>
               )}
+
+              {imageWarning && (
+                <div className="mt-2.5 flex items-center gap-2 border border-[#c85f2f]/30 bg-[#fff5ef] p-2 text-xs font-semibold text-[#8f3f1d]">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>{imageWarning}</span>
+                </div>
+              )}
             </div>
           </label>
 
           {hasCategoriesError && (
-            <p className="mt-5 border border-[#c85f2f]/30 bg-[#fff5ef] px-4 py-3 text-sm font-semibold text-[#8f3f1d]">
+            <p className="mt-3 border border-[#c85f2f]/30 bg-[#fff5ef] px-3 py-2 text-xs font-semibold text-[#8f3f1d]">
               Failed to load categories for product form.
             </p>
           )}
 
-          <div className="mt-6 flex flex-wrap justify-end gap-2">
+          <div className="mt-4 flex flex-wrap justify-end gap-2 border-t border-black/10 pt-3">
             <button
-              className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
+              className="min-h-10 border border-black/10 bg-white px-4 text-xs font-bold transition hover:border-[#181512]"
               disabled={isUpdating}
               onClick={onClose}
               type="button"
@@ -240,14 +276,14 @@ function ProductEditModal({
               Cancel
             </button>
             <button
-              className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={isUpdating || isCategoriesLoading}
+              className="inline-flex min-h-10 items-center gap-2 bg-[#181512] px-4 text-xs font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isUpdating || isCategoriesLoading || !isEditFormChanged}
               type="submit"
             >
               {isUpdating ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" />
+                <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <Save className="h-4 w-4" />
+                <Save className="h-3.5 w-3.5" />
               )}
               {isUpdating ? 'Updating...' : 'Update product'}
             </button>

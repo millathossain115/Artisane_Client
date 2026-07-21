@@ -23,6 +23,7 @@ import {
   MAX_IMAGE_SIZE,
   MAX_PRODUCT_IMAGES,
   PAGE_SIZE_OPTIONS,
+  truncateFileName,
   type ProductEditForm,
   type SortFilter,
 } from './productTableUtils'
@@ -70,6 +71,7 @@ function ProductTable() {
   const [editImageInputKey, setEditImageInputKey] = useState(0)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
+  const [imageWarning, setImageWarning] = useState('')
   const editImagePreviewRef = useRef<string[]>([])
   const products = productList?.data ?? []
   const categories = categoryList?.data ?? []
@@ -126,7 +128,7 @@ function ProductTable() {
     }
 
     if (nextFiles.some((file) => !file.type.startsWith('image/'))) {
-      setError('Only image files are allowed.')
+      setImageWarning('Only image files are allowed.')
       setEditImageFiles([])
       clearEditImagePreviews()
       setEditImageInputKey((currentKey) => currentKey + 1)
@@ -134,7 +136,18 @@ function ProductTable() {
     }
 
     if (nextFiles.some((file) => file.size > MAX_IMAGE_SIZE)) {
-      setError('Each image must be 5MB or less.')
+      const oversizedFiles = nextFiles.filter(
+        (file) => file.size > MAX_IMAGE_SIZE,
+      )
+      const oversizedNames = oversizedFiles
+        .map(
+          (file) =>
+            `${truncateFileName(file.name, 15)} (${formatFileSize(file.size)})`,
+        )
+        .join(', ')
+      setImageWarning(
+        `Warning: Selected image exceeds maximum allowed size of ${formatFileSize(MAX_IMAGE_SIZE)}: ${oversizedNames}`,
+      )
       setEditImageFiles([])
       clearEditImagePreviews()
       setEditImageInputKey((currentKey) => currentKey + 1)
@@ -194,6 +207,15 @@ function ProductTable() {
     setProductToEdit(null)
     setEditImageFiles([])
     clearEditImagePreviews()
+    setImageWarning('')
+  }
+
+  function handleResetFilters() {
+    setSearchTerm('')
+    setCategoryFilter('')
+    setSortFilter('newest')
+    setPageSize(PAGE_SIZE_OPTIONS[0])
+    setCurrentPage(1)
   }
 
   function updateEditField(field: keyof ProductEditForm, value: string) {
@@ -336,6 +358,7 @@ function ProductTable() {
         categories={categories}
         categoryFilter={categoryFilter}
         isCategoriesLoading={isCategoriesLoading}
+        onResetFilters={handleResetFilters}
         pageSize={pageSize}
         searchTerm={searchTerm}
         setCategoryFilter={setCategoryFilter}
@@ -366,6 +389,7 @@ function ProductTable() {
           editImageInputKey={editImageInputKey}
           editImagePreviews={editImagePreviews}
           hasCategoriesError={hasCategoriesError}
+          imageWarning={imageWarning}
           isCategoriesLoading={isCategoriesLoading}
           isUpdating={isUpdating}
           onClose={() => {
