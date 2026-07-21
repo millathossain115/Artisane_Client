@@ -1,13 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
+import { ArrowLeft, LoaderCircle } from 'lucide-react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import {
-  type OrderStatus,
-  type PaymentStatus,
   useCancelOrderMutation,
   useCreateShipmentMutation,
   useDeleteOrderMutation,
-  useGetAllOrdersQuery,
   useGetOrderByIdQuery,
   useSyncShipmentMutation,
   useUpdateOrderStatusMutation,
@@ -17,29 +16,20 @@ import { adminNavItems } from '../adminNavItems'
 import OrderConfirmModal from './components/OrderConfirmModal'
 import OrderDetailPanel from './components/OrderDetailPanel'
 import OrderMessageBanner from './components/OrderMessageBanner'
-import OrdersTableSection from './components/OrdersTableSection'
 import ShipmentWarningModal from './components/ShipmentWarningModal'
 import {
   type AdminOrderMessage,
   type ConfirmTarget,
   getApiErrorMessage,
   getEmptyShipmentForm,
-  matchesSearch,
   parseOptionalInteger,
   type ShipmentFormState,
   type StatusFormState,
 } from './orderAdminUtils'
 
-function ManageOrders() {
-  const [page, setPage] = useState(1)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [orderStatusFilter, setOrderStatusFilter] = useState<
-    'all' | OrderStatus
-  >('all')
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState<
-    'all' | PaymentStatus
-  >('all')
-  const [selectedOrderId, setSelectedOrderId] = useState('')
+function AdminOrderDetailPage() {
+  const { id = '' } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const [confirmTarget, setConfirmTarget] = useState<ConfirmTarget | null>(null)
   const [message, setMessage] = useState<AdminOrderMessage | null>(null)
   const [showShipmentWarning, setShowShipmentWarning] = useState(false)
@@ -52,24 +42,15 @@ function ManageOrders() {
   })
 
   const {
-    data: orderList,
+    data: selectedOrder,
     isError,
-    isLoading,
-    refetch: refetchOrders,
-  } = useGetAllOrdersQuery(
-    {
-      limit: 10,
-      page,
-    },
-    { refetchOnMountOrArgChange: true },
-  )
-  const {
-    data: orderDetail,
     isFetching: isFetchingOrderDetail,
+    isLoading,
     refetch: refetchOrderDetail,
-  } = useGetOrderByIdQuery(selectedOrderId, {
-    skip: !selectedOrderId,
+  } = useGetOrderByIdQuery(id, {
+    skip: !id,
   })
+
   const [createShipment, { isLoading: isCreatingShipment }] =
     useCreateShipmentMutation()
   const [syncShipment, { isLoading: isSyncingShipment }] =
@@ -79,27 +60,6 @@ function ManageOrders() {
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation()
   const [deleteOrder, { isLoading: isDeleting }] = useDeleteOrderMutation()
 
-  const orders = useMemo(() => orderList?.data ?? [], [orderList?.data])
-  const meta = orderList?.meta
-  const selectedOrder = useMemo(() => {
-    if (!selectedOrderId) {
-      return null
-    }
-
-    return (
-      orderDetail ??
-      orders.find((order) => order._id === selectedOrderId) ??
-      null
-    )
-  }, [orderDetail, orders, selectedOrderId])
-  const visibleOrders = orders.filter(
-    (order) =>
-      matchesSearch(order, searchTerm) &&
-      (orderStatusFilter === 'all' ||
-        order.orderStatus === orderStatusFilter) &&
-      (paymentStatusFilter === 'all' ||
-        order.paymentStatus === paymentStatusFilter),
-  )
   const shipmentExists = Boolean(
     selectedOrder?.courierProvider ||
       selectedOrder?.courierOrderId ||
@@ -117,14 +77,7 @@ function ManageOrders() {
   const [prevSelectedOrder, setPrevSelectedOrder] = useState(selectedOrder)
   if (selectedOrder !== prevSelectedOrder) {
     setPrevSelectedOrder(selectedOrder)
-    if (!selectedOrder) {
-      setShowShipmentWarning(false)
-      setShipmentForm(getEmptyShipmentForm())
-      setStatusForm({
-        orderStatus: '',
-        paymentStatus: '',
-      })
-    } else {
+    if (selectedOrder) {
       setShipmentForm(getEmptyShipmentForm())
       setStatusForm({
         orderStatus: selectedOrder.orderStatus ?? '',
@@ -133,16 +86,8 @@ function ManageOrders() {
     }
   }
 
-  function resetFilters() {
-    setSearchTerm('')
-    setOrderStatusFilter('all')
-    setPaymentStatusFilter('all')
-    setPage(1)
-  }
-
-  function closeOrderDetail() {
-    setShowShipmentWarning(false)
-    setSelectedOrderId('')
+  function handleCloseDetail() {
+    navigate('/dashboard/admin/orders')
   }
 
   async function confirmOrderAction() {
@@ -157,7 +102,6 @@ function ManageOrders() {
         await deleteOrder(confirmTarget.order._id).unwrap()
       }
 
-      await refetchOrders()
       setMessage({
         text: `${formatOrderId(confirmTarget.order._id)} ${
           confirmTarget.type === 'cancel' ? 'cancelled' : 'deleted'
@@ -165,7 +109,11 @@ function ManageOrders() {
         type: 'success',
       })
       setConfirmTarget(null)
-      setSelectedOrderId('')
+      if (confirmTarget.type === 'delete') {
+        navigate('/dashboard/admin/orders')
+      } else {
+        await refetchOrderDetail()
+      }
     } catch (error) {
       setMessage({
         text: getApiErrorMessage(
@@ -208,7 +156,6 @@ function ManageOrders() {
         text: `${formatOrderId(selectedOrder._id)} shipment created.`,
         type: 'success',
       })
-      await refetchOrders()
       await refetchOrderDetail()
       setShowShipmentWarning(false)
     } catch (error) {
@@ -231,7 +178,6 @@ function ManageOrders() {
         text: `${formatOrderId(selectedOrder._id)} shipment synced.`,
         type: 'success',
       })
-      await refetchOrders()
       await refetchOrderDetail()
     } catch (error) {
       setMessage({
@@ -261,7 +207,6 @@ function ManageOrders() {
         text: `${formatOrderId(selectedOrder._id)} status updated.`,
         type: 'success',
       })
-      await refetchOrders()
       await refetchOrderDetail()
     } catch (error) {
       setMessage({
@@ -273,10 +218,12 @@ function ManageOrders() {
 
   return (
     <DashboardLayout
-      helperText="Review new orders, confirm payments, update fulfillment status, and remove invalid records."
+      actions={[{ label: 'All orders', to: '/dashboard/admin/orders' }]}
+      eyebrow="Marketplace admin"
+      helperText="Review order details, update fulfillment status, create courier shipments, and inspect fraud risk."
       sidebarItems={adminNavItems}
-      subtitle="Manage customer orders, payment state, cancellation, and fulfillment progress."
-      title="Manage orders"
+      subtitle={selectedOrder ? `Order management for ${formatOrderId(selectedOrder._id)}` : 'Admin order details'}
+      title={selectedOrder ? formatOrderId(selectedOrder._id) : 'Admin order details'}
       workspaceLabel="Marketplace studio"
     >
       {message ? (
@@ -286,33 +233,45 @@ function ManageOrders() {
         />
       ) : null}
 
-      <OrdersTableSection
-        isError={isError}
-        isLoading={isLoading}
-        meta={meta}
-        onResetFilters={resetFilters}
-        orders={orders}
-        orderStatusFilter={orderStatusFilter}
-        page={page}
-        paymentStatusFilter={paymentStatusFilter}
-        searchTerm={searchTerm}
-        setConfirmTarget={setConfirmTarget}
-        setOrderStatusFilter={setOrderStatusFilter}
-        setPage={setPage}
-        setPaymentStatusFilter={setPaymentStatusFilter}
-        setSearchTerm={setSearchTerm}
-        visibleOrders={visibleOrders}
-      />
+      <div className="mb-4">
+        <Link
+          className="inline-flex items-center gap-2 border border-black/10 bg-white px-4 py-2 text-sm font-bold text-[#181512] transition hover:border-[#181512]"
+          to="/dashboard/admin/orders"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Manage Orders
+        </Link>
+      </div>
 
-      {selectedOrder ? (
+      {isLoading ? (
+        <div className="border border-black/10 bg-white p-8 text-center font-semibold text-[#6b5f53]">
+          <LoaderCircle className="mx-auto h-6 w-6 animate-spin text-[#7a3f1d]" />
+          <p className="mt-2">Loading order details...</p>
+        </div>
+      ) : isError || !selectedOrder ? (
+        <div className="border border-[#c85f2f]/30 bg-[#fff5ef] p-6 text-center text-[#8f3f1d]">
+          <h3 className="text-xl font-bold">Order not found</h3>
+          <p className="mt-2 text-sm font-medium">
+            Could not retrieve order details for ID: {id}
+          </p>
+          <button
+            className="mt-4 inline-flex min-h-10 items-center justify-center bg-[#181512] px-4 text-xs font-bold text-white transition hover:bg-[#7a3f1d]"
+            onClick={() => navigate('/dashboard/admin/orders')}
+            type="button"
+          >
+            Return to orders list
+          </button>
+        </div>
+      ) : (
         <OrderDetailPanel
           fraudFlags={fraudFlags}
           fraudRisk={fraudRisk}
           isCreatingShipment={isCreatingShipment}
           isFetchingOrderDetail={isFetchingOrderDetail}
+          isModal={false}
           isSyncingShipment={isSyncingShipment}
           isUpdatingStatus={isUpdatingStatus}
-          onClose={closeOrderDetail}
+          onClose={handleCloseDetail}
           onShipmentSync={confirmShipmentSync}
           onShowShipmentWarning={() => setShowShipmentWarning(true)}
           onStatusUpdate={confirmStatusUpdate}
@@ -325,7 +284,7 @@ function ManageOrders() {
           shipmentForm={shipmentForm}
           statusForm={statusForm}
         />
-      ) : null}
+      )}
 
       {showShipmentWarning && selectedOrder ? (
         <ShipmentWarningModal
@@ -350,4 +309,4 @@ function ManageOrders() {
   )
 }
 
-export default ManageOrders
+export default AdminOrderDetailPage

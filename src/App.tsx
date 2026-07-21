@@ -5,6 +5,7 @@ import ProtectedRoute from './components/routes/ProtectedRoute'
 import ScrollToTop from './components/routes/ScrollToTop'
 import CreateCategory from './pages/admin/categories/CreateCategory'
 import ManageCategories from './pages/admin/categories/ManageCategories'
+import AdminOrderDetailPage from './pages/admin/orders/AdminOrderDetailPage'
 import ManageOrders from './pages/admin/orders/ManageOrders'
 import CreateProduct from './pages/admin/products/CreateProduct'
 import ManageProducts from './pages/admin/products/ManageProducts'
@@ -116,6 +117,14 @@ function App() {
           element={
             <AdminRoute>
               <ManageOrders />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/orders/:id"
+          element={
+            <AdminRoute>
+              <AdminOrderDetailPage />
             </AdminRoute>
           }
         />
