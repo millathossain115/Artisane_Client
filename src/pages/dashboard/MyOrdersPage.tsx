@@ -85,7 +85,6 @@ function MyOrdersPage() {
         isLoading={isLoading}
         meta={meta}
         onCancelOrder={setCancelTarget}
-        onOpenOrder={setSelectedOrderId}
         onPageChange={setPage}
         onStatusFilterChange={(value) => {
           setOrderStatusFilter(value)

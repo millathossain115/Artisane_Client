@@ -75,7 +75,12 @@ function UserOrdersSection({ orders, stats }: UserOrdersSectionProps) {
                   key={order._id}
                 >
                   <td className="px-5 py-4 font-bold">
-                    {formatOrderId(order._id)}
+                    <Link
+                      className="text-[#7a3f1d] hover:underline"
+                      to={`/dashboard/orders/${order._id}`}
+                    >
+                      {formatOrderId(order._id)}
+                    </Link>
                   </td>
                   <td className="px-5 py-4 text-[#6b5f53]">
                     {getPrimaryOrderItem(order)}

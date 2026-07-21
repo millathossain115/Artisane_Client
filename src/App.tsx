@@ -15,6 +15,7 @@ import Categories from './pages/Categories'
 import Checkout from './pages/checkout/Checkout'
 import Dashboard from './pages/dashboard/Dashboard'
 import MyOrdersPage from './pages/dashboard/MyOrdersPage'
+import OrderDetailPage from './pages/dashboard/OrderDetailPage'
 import ProfilePage from './pages/dashboard/profile-page/ProfilePage'
 import UserReviewsPage from './pages/dashboard/reviews/ReviewsPage'
 import WishlistPage from './pages/dashboard/user-dashboard/WishlistPage'
@@ -83,6 +84,14 @@ function App() {
           element={
             <ProtectedRoute>
               <MyOrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/orders/:id"
+          element={
+            <ProtectedRoute>
+              <OrderDetailPage />
             </ProtectedRoute>
           }
         />

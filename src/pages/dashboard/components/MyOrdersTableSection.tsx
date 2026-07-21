@@ -1,4 +1,5 @@
-import { type Dispatch, type SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import { Link } from 'react-router-dom'
 import {
   ChevronLeft,
   ChevronRight,
@@ -67,7 +68,6 @@ function MyOrdersTableSection({
   isLoading,
   meta,
   onCancelOrder,
-  onOpenOrder,
   onPageChange,
   onStatusFilterChange,
   orderStatusFilter,
@@ -75,7 +75,7 @@ function MyOrdersTableSection({
   page,
   orders,
   visibleOrders,
-}: MyOrdersTableSectionProps) {
+}: Omit<MyOrdersTableSectionProps, 'onOpenOrder'>) {
   return (
     <section className="border border-black/10 bg-white">
       <div className="flex flex-col gap-4 border-b border-black/10 p-5 sm:flex-row sm:items-end sm:justify-between">
@@ -143,10 +143,20 @@ function MyOrdersTableSection({
                   key={order._id}
                 >
                   <td className="px-5 py-4 font-bold">
-                    {formatOrderId(order._id)}
+                    <Link
+                      className="text-[#7a3f1d] hover:underline"
+                      to={`/dashboard/orders/${order._id}`}
+                    >
+                      {formatOrderId(order._id)}
+                    </Link>
                   </td>
                   <td className="px-5 py-4 text-[#6b5f53]">
-                    {getOrderPrimaryItem(order)}
+                    <Link
+                      className="hover:text-[#181512] hover:underline"
+                      to={`/dashboard/orders/${order._id}`}
+                    >
+                      {getOrderPrimaryItem(order)}
+                    </Link>
                   </td>
                   <td className="px-5 py-4">
                     <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
@@ -169,14 +179,14 @@ function MyOrdersTableSection({
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex justify-end gap-2">
-                      <button
+                      <Link
                         aria-label={`View ${formatOrderId(order._id)}`}
-                        className="grid h-9 w-9 place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-white"
-                        onClick={() => onOpenOrder(order._id)}
-                        type="button"
+                        className="inline-flex min-h-9 items-center gap-1.5 border border-black/10 bg-white px-3 text-xs font-bold text-[#181512] transition hover:border-[#181512]"
+                        to={`/dashboard/orders/${order._id}`}
                       >
-                        <Eye className="h-4 w-4" />
-                      </button>
+                        <Eye className="h-3.5 w-3.5" />
+                        <span>Details</span>
+                      </Link>
                       <button
                         aria-label={`Cancel ${formatOrderId(order._id)}`}
                         className="grid h-9 w-9 place-items-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef] disabled:cursor-not-allowed disabled:opacity-45"
