@@ -43,7 +43,14 @@ export function loadRecentProducts(currentProductId?: string) {
       return []
     }
 
-    return parsedProducts.filter((product) => product.id !== currentProductId)
+    const seenIds = new Set<string>()
+    return parsedProducts.filter((product) => {
+      if (!product || !product.id || seenIds.has(product.id) || product.id === currentProductId) {
+        return false
+      }
+      seenIds.add(product.id)
+      return true
+    })
   } catch {
     return []
   }

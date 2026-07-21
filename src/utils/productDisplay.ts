@@ -34,8 +34,9 @@ export function getProductCategoryName(product?: Product | null) {
   return product ? getCategoryName(product.category) : 'Studio goods'
 }
 
-export function formatPrice(value: number) {
-  return `$${value.toFixed(value % 1 === 0 ? 0 : 2)}`
+export function formatPrice(value?: number | null) {
+  const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0
+  return `$${safeValue.toFixed(safeValue % 1 === 0 ? 0 : 2)}`
 }
 
 export function getProductImage(product?: Product) {

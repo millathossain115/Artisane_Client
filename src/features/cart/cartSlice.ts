@@ -200,10 +200,26 @@ const cartSlice = createSlice({
       )
 
       if (existingItem) {
+        const addedQty = incomingItem.quantity || 1
+        const newQuantity = clampQuantity(
+          existingItem.quantity + addedQty,
+          existingItem.stock,
+        )
+
+        if (newQuantity === existingItem.quantity) {
+          state.feedback = {
+            id: Date.now(),
+            message: `${existingItem.name} is at maximum available stock (${existingItem.stock}).`,
+            type: 'warning',
+          }
+          return
+        }
+
+        existingItem.quantity = newQuantity
         state.feedback = {
           id: Date.now(),
-          message: `${existingItem.name} is already in your cart.`,
-          type: 'warning',
+          message: `Increased ${existingItem.name} quantity to ${newQuantity}.`,
+          type: 'success',
         }
         return
       }
