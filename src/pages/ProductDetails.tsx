@@ -117,6 +117,10 @@ function ProductDetails() {
   const [deleteWishlistProduct, { isLoading: isDeletingWishlist }] =
     useDeleteWishlistProductMutation()
 
+  const [status, setStatus] = useState<{
+    message: string
+    productId?: string
+  } | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [recentProducts] = useState<RecentProduct[]>(() =>
@@ -295,7 +299,8 @@ function ProductDetails() {
       .filter((img): img is string => Boolean(img))
   }, [product])
 
-  const visibleStatus = status.productId === product?._id ? status.message : ''
+  const visibleStatus =
+    status?.productId === product?._id ? status?.message ?? '' : ''
 
   return (
     <div className="min-h-screen bg-[#faf7f2] font-sans text-[#181512]">
