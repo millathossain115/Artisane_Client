@@ -8,6 +8,7 @@ import {
   getAssetUrl,
   getProductCategoryName,
   getProductImage,
+  getProductUrl,
 } from '../../../../utils/productDisplay'
 import { renderStars } from '../reviewPageUtils'
 
@@ -46,7 +47,7 @@ function ReviewableProductCard({
         <div className="flex gap-4">
           <Link
             className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden bg-[#f8f3ea]"
-            to={`/products/${product._id}`}
+            to={getProductUrl(product)}
           >
             {imageUrl ? (
               <img
@@ -62,7 +63,7 @@ function ReviewableProductCard({
           <div>
             <Link
               className="line-clamp-1 font-bold transition hover:text-[#7a3f1d]"
-              to={`/products/${product._id}`}
+              to={getProductUrl(product)}
             >
               {product.name}
             </Link>

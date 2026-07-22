@@ -7,6 +7,7 @@ import {
   formatPrice,
   getAssetUrl,
   getProductCategoryName,
+  getProductUrl,
 } from '../../utils/productDisplay'
 
 type ProductShelfCardProps = {
@@ -21,7 +22,7 @@ function ProductShelfCard({ product }: ProductShelfCardProps) {
   return (
     <Link
       className="group block overflow-hidden border border-black/10 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(24,21,18,0.12)]"
-      to={`/products/${product._id}`}
+      to={getProductUrl(product)}
     >
       <div className="relative aspect-[4/5] overflow-hidden bg-[#e4d8c8]">
         {imageUrl ? (

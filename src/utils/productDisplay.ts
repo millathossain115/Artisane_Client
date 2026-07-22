@@ -61,3 +61,7 @@ export function getProductBadge(product: Product) {
 
   return 'New'
 }
+
+export function getProductUrl(product: Partial<Product> & { _id: string }) {
+  return `/products/${product.slug || product._id}`
+}

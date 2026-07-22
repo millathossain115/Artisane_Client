@@ -7,6 +7,7 @@ import {
   formatPrice,
   getProductCategoryName,
   getProductImage,
+  getProductUrl,
 } from '../../../utils/productDisplay'
 
 type NavbarSearchProps = {
@@ -136,7 +137,7 @@ function NavbarSearch({ className = '' }: NavbarSearchProps) {
                     className="grid grid-cols-[52px_1fr_auto] items-center gap-3 px-3 py-2 transition hover:bg-[#f8f3ea]"
                     key={product._id}
                     onClick={handleSearchProductClick}
-                    to={`/products/${product._id}`}
+                    to={getProductUrl(product)}
                   >
                     <span className="grid h-12 w-12 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]">
                       {imageUrl ? (

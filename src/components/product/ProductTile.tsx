@@ -19,6 +19,7 @@ import {
   getCategoryName,
   getProductBadge,
   getProductImage,
+  getProductUrl,
 } from '../../utils/productDisplay'
 
 type ProductTileProps = {
@@ -38,7 +39,7 @@ function ProductTile({
   const accessToken = getAccessToken()
   const isAdmin = getStoredUser()?.role === 'admin'
   const isDark = tone === 'dark'
-  const productUrl = `/products/${product._id}`
+  const productUrl = getProductUrl(product)
   const { data: wishlistList, isFetching: isWishlistFetching } =
     useGetMyWishlistQuery(
       {

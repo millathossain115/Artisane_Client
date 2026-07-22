@@ -8,7 +8,7 @@ import {
   useGetCategoriesQuery,
 } from '../../../features/categories/categoryApi'
 import { useGetProductsQuery } from '../../../features/products/productApi'
-import { formatPrice, getProductImage } from '../../../utils/productDisplay'
+import { formatPrice, getProductImage, getProductUrl } from '../../../utils/productDisplay'
 
 const FEATURED_CATEGORY_LIMIT = 6
 
@@ -267,7 +267,7 @@ function NavbarCategoryNav() {
                       className="group flex items-center gap-3 border border-black/10 bg-white p-2 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#181512] hover:bg-[#f8f3ea]"
                       key={product._id}
                       onClick={() => setActivePanel('')}
-                      to={`/products/${product._id}`}
+                      to={getProductUrl(product)}
                     >
                       <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]">
                         {imageUrl ? (

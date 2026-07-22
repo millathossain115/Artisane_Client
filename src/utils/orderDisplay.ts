@@ -166,3 +166,13 @@ export function getOrderTrackingUrl(order: Order) {
 
   return ''
 }
+
+export function getOrderUrl(order: Partial<Order> & { _id: string; transactionId?: string }) {
+  const ref = order.transactionId || order._id
+  return `/dashboard/orders/${ref}`
+}
+
+export function getAdminOrderUrl(order: Partial<Order> & { _id: string; transactionId?: string }) {
+  const ref = order.transactionId || order._id
+  return `/dashboard/admin/orders/${ref}`
+}

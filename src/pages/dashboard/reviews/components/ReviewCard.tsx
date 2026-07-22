@@ -1,6 +1,7 @@
 import { Edit3, ImageOff, Loader2, Save, Star, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
+import { getProductUrl } from '../../../../utils/productDisplay'
 import type { Review } from '../../../../features/reviews/reviewApi'
 import { formatDate } from '../../dashboardFormat'
 import {
@@ -44,11 +45,10 @@ function ReviewCard({
       ? getReviewProductImage(review)
       : ''
   const hidden = review.isHidden
-  const productUrl = `/products/${
+  const productUrl =
     review.product && typeof review.product !== 'string'
-      ? review.product._id
+      ? getProductUrl(review.product)
       : '#'
-  }`
 
   return (
     <article className="border border-black/10 bg-white p-4">

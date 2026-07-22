@@ -28,6 +28,7 @@ import {
   formatOrderStatus,
   getOrderPrimaryItem,
   getOrderTrackingUrl,
+  getOrderUrl,
 } from '../../../utils/orderDisplay'
 
 type MyOrdersTableSectionProps = {
@@ -225,7 +226,7 @@ function MyOrdersTableSection({
                   <td className="px-5 py-4 font-bold">
                     <Link
                       className="text-[#7a3f1d] hover:underline"
-                      to={`/dashboard/orders/${order._id}`}
+                      to={getOrderUrl(order)}
                     >
                       {formatOrderId(order._id)}
                     </Link>
@@ -233,7 +234,7 @@ function MyOrdersTableSection({
                   <td className="px-5 py-4 text-[#6b5f53]">
                     <Link
                       className="hover:text-[#181512] hover:underline"
-                      to={`/dashboard/orders/${order._id}`}
+                      to={getOrderUrl(order)}
                     >
                       {getOrderPrimaryItem(order)}
                     </Link>

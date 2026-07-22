@@ -6,6 +6,7 @@ import type {
   UserDashboardStats,
 } from '../../../features/dashboard/dashboardApi'
 import type { Order } from '../../../features/orders/orderApi'
+import { getOrderUrl } from '../../../utils/orderDisplay'
 import {
   formatCurrency,
   formatDate,
@@ -77,7 +78,7 @@ function UserOrdersSection({ orders, stats }: UserOrdersSectionProps) {
                   <td className="px-5 py-4 font-bold">
                     <Link
                       className="text-[#7a3f1d] hover:underline"
-                      to={`/dashboard/orders/${order._id}`}
+                      to={getOrderUrl(order)}
                     >
                       {formatOrderId(order._id)}
                     </Link>

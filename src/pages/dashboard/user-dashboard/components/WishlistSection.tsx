@@ -15,6 +15,7 @@ import {
   formatPrice,
   getProductCategoryName,
   getProductImage,
+  getProductUrl,
 } from '../../../../utils/productDisplay'
 import { getWishlistProduct } from '../../../../features/wishlists/wishlistApi'
 import { formatWishlistDate, getVisibleWishlistIds } from '../wishlistUtils'
@@ -171,7 +172,7 @@ function WishlistSection({
                       <div className="flex min-w-0 items-center gap-3">
                         <Link
                           className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]"
-                          to={product ? `/products/${product._id}` : '#'}
+                          to={product ? getProductUrl(product) : '#'}
                         >
                           {imageUrl ? (
                             <img
@@ -187,7 +188,7 @@ function WishlistSection({
                           {product ? (
                             <Link
                               className="line-clamp-1 font-bold transition hover:text-[#7a3f1d]"
-                              to={`/products/${product._id}`}
+                              to={getProductUrl(product)}
                             >
                               {product.name}
                             </Link>
