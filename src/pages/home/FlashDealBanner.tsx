@@ -28,7 +28,6 @@ function FlashDealBanner() {
   useEffect(() => {
     if (!promo?.endsAt) return
 
-    setTimeLeft(calculateTimeLeft(promo.endsAt))
     const timer = setInterval(() => {
       const nextTime = calculateTimeLeft(promo.endsAt)
       setTimeLeft(nextTime)

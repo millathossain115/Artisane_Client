@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Flame, Save, Sparkles } from 'lucide-react'
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import { adminNavItems } from '../adminNavItems'
@@ -11,43 +11,37 @@ function ManagePromoBanner() {
   const { data: promo, isLoading, refetch } = useGetActivePromoQuery()
   const [updatePromo, { isLoading: isSaving }] = useUpdatePromoMutation()
 
-  const [formState, setFormState] = useState({
-    title: '10% off artisanal starter kits with code ARTISANE10',
-    code: 'ARTISANE10',
-    discountPercent: 10,
-    description: 'Special flash deal on all craft kits and supplies',
-    endsAt: '',
-    isActive: true,
-    buttonText: 'Shop Starter Kits',
-    buttonLink: '/products',
-  })
+  const [formState, setFormState] = useState(() => ({
+    title: promo?.title || '10% off artisanal starter kits with code ARTISANE10',
+    code: promo?.code || 'ARTISANE10',
+    discountPercent: promo?.discountPercent ?? 10,
+    description: promo?.description || 'Special flash deal on all craft kits and supplies',
+    endsAt: promo?.endsAt
+      ? new Date(promo.endsAt).toISOString().slice(0, 16)
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
+    isActive: promo?.isActive ?? true,
+    buttonText: promo?.buttonText || 'Shop Starter Kits',
+    buttonLink: promo?.buttonLink || '/products',
+  }))
 
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
 
-  useEffect(() => {
-    if (promo) {
-      const formattedDate = promo.endsAt
-        ? new Date(promo.endsAt).toISOString().slice(0, 16)
-        : ''
+  // Track loaded promo ID or reset state when promo data arrives
+  const [loadedPromoId, setLoadedPromoId] = useState<string | null>(null)
 
-      setFormState({
-        title: promo.title || '',
-        code: promo.code || '',
-        discountPercent: promo.discountPercent ?? 10,
-        description: promo.description || '',
-        endsAt: formattedDate,
-        isActive: promo.isActive ?? true,
-        buttonText: promo.buttonText || 'Shop Now',
-        buttonLink: promo.buttonLink || '/products',
-      })
-    } else {
-      // Default to 7 days from now
-      const defaultDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 16)
-      setFormState((curr) => ({ ...curr, endsAt: defaultDate }))
-    }
-  }, [promo])
+  if (promo && promo._id !== loadedPromoId) {
+    setLoadedPromoId(promo._id)
+    setFormState({
+      title: promo.title || '',
+      code: promo.code || '',
+      discountPercent: promo.discountPercent ?? 10,
+      description: promo.description || '',
+      endsAt: promo.endsAt ? new Date(promo.endsAt).toISOString().slice(0, 16) : '',
+      isActive: promo.isActive ?? true,
+      buttonText: promo.buttonText || 'Shop Now',
+      buttonLink: promo.buttonLink || '/products',
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
