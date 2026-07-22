@@ -59,13 +59,15 @@ function ProductDetails() {
   const isAdmin = getStoredUser()?.role === 'admin'
   const cartItems = useAppSelector((state) => state.cart.items)
   const { id } = useParams<{ id: string }>()
-  const {
-    data: product,
-    isError,
-    isLoading,
-  } = useGetProductByIdQuery(id ?? '', {
-    skip: !id,
-  })
+  const { data: product, isLoading, isError } = useGetProductByIdQuery(
+    id ?? '',
+  )
+
+  useEffect(() => {
+    if (product?.name) {
+      document.title = `Artisane | ${product.name}`
+    }
+  }, [product?.name])
 
   const { data: activePromo } = useGetActivePromoQuery()
   const productCategoryId = getProductCategoryId(product)

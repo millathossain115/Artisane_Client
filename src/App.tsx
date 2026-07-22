@@ -27,12 +27,14 @@ import InfoPage from './pages/info/InfoPage'
 import NotFound from './pages/NotFound'
 import PaymentResult from './pages/payment/PaymentResult'
 import ProductDetails from './pages/ProductDetails'
+import { PageTitleUpdater } from './components/routes/PageTitleUpdater'
 import Products from './pages/Products'
 
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <PageTitleUpdater />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/categories" element={<Categories />} />
