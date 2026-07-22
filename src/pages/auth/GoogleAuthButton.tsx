@@ -36,8 +36,7 @@ declare global {
 
 const GOOGLE_SCRIPT_ID = 'google-identity-services'
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as
-  | string
-  | undefined
+  string | undefined
 
 function loadGoogleScript() {
   return new Promise<void>((resolve, reject) => {
@@ -81,7 +80,9 @@ function GoogleAuthButton({ disabled, onCredential }: GoogleAuthButtonProps) {
   const callbackRef = useRef(onCredential)
   const [loadError, setLoadError] = useState('')
 
-  callbackRef.current = onCredential
+  useEffect(() => {
+    callbackRef.current = onCredential
+  }, [onCredential])
 
   useEffect(() => {
     let cancelled = false

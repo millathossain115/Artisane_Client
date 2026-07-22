@@ -93,13 +93,13 @@ function HomeCategories({
           </p>
           <h2 className="mt-3 text-3xl font-bold sm:text-4xl">Shop by craft</h2>
         </div>
-        <a
+        <Link
           className="inline-flex items-center gap-2 text-sm font-bold text-[#181512]"
-          href="#latest"
+          to="/categories"
         >
-          View latest products
+          View all categories
           <ArrowRight className="h-4 w-4" />
-        </a>
+        </Link>
       </div>
 
       {hasError ? (

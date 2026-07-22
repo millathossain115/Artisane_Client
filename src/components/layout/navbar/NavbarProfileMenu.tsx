@@ -16,6 +16,7 @@ import {
 } from '../../../features/auth/authApi'
 import { syncCartForCurrentUser } from '../../../features/cart/cartSlice'
 import { useAppDispatch } from '../../../redux/hooks'
+import { getAssetUrl } from '../../../utils/productDisplay'
 
 function NavbarProfileMenu() {
   const dispatch = useAppDispatch()
@@ -26,6 +27,7 @@ function NavbarProfileMenu() {
   const isAdmin = user?.role === 'admin'
   const displayName = user?.name ?? 'Guest Artist'
   const displayEmail = user?.email ?? 'Login to view account'
+  const userImageUrl = getAssetUrl(user?.profileImage || user?.avatar)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -62,8 +64,16 @@ function NavbarProfileMenu() {
           onClick={() => setIsProfileOpen((current) => !current)}
           type="button"
         >
-          <span className="grid h-9 w-9 shrink-0 place-items-center bg-[#181512] text-white">
-            <UserRound className="h-4 w-4" />
+          <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden bg-[#181512] text-white">
+            {userImageUrl ? (
+              <img
+                alt={displayName}
+                className="h-full w-full object-cover"
+                src={userImageUrl}
+              />
+            ) : (
+              <UserRound className="h-4 w-4" />
+            )}
           </span>
           <span className="hidden min-w-0 flex-1 sm:block">
             <span className="block truncate text-sm font-bold">
