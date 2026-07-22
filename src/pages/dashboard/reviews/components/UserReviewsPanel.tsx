@@ -3,10 +3,8 @@ import type { Dispatch, SetStateAction } from 'react'
 
 import type {
   Review,
-  ReviewListMeta,
   ReviewableProduct,
 } from '../../../../features/reviews/reviewApi'
-import { formatCount } from '../../dashboardFormat'
 import type { ReviewDraft, ReviewMode } from '../reviewPageUtils'
 import ReviewableProductCard from './ReviewableProductCard'
 import ReviewCard from './ReviewCard'
@@ -21,7 +19,6 @@ type UserReviewsPanelProps = {
   isLoading: boolean
   isReviewableLoading: boolean
   isUpdatingReview: boolean
-  meta?: ReviewListMeta
   mode: ReviewMode
   myReviews: Review[]
   onCancelEdit: () => void
@@ -46,7 +43,6 @@ function UserReviewsPanel({
   isLoading,
   isReviewableLoading,
   isUpdatingReview,
-  meta,
   mode,
   myReviews,
   onCancelEdit,

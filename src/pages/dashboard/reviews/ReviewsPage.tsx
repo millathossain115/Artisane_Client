@@ -67,7 +67,6 @@ function ReviewsPage() {
 
   const reviewableItems = reviewableProducts ?? []
   const myReviews = useMemo(() => reviewList?.data ?? [], [reviewList?.data])
-  const meta = reviewList?.meta
 
   function updateDraft(productId: string, patch: Partial<ReviewDraft>) {
     setDrafts((current) => {
@@ -195,7 +194,6 @@ function ReviewsPage() {
         isLoading={isLoading}
         isReviewableLoading={isReviewableLoading}
         isUpdatingReview={isUpdatingReview}
-        meta={meta}
         mode={mode}
         myReviews={myReviews}
         onCancelEdit={handleCancelEdit}
