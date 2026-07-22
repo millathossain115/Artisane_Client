@@ -9,6 +9,10 @@ import {
   updateAddress,
   type UserAddress,
 } from '../../../features/address/addressApi'
+import {
+  useGetDistrictsQuery,
+  useGetZonesQuery,
+} from '../../../features/locations/locationApi'
 import { type ProfileForm } from './profilePageUtils'
 
 type ProfileAddressSectionProps = {
@@ -39,8 +43,17 @@ function ProfileAddressSection({
     phone: '',
     streetAddress: '',
     city: '',
+    districtId: '',
+    districtName: '',
+    zoneId: '',
+    zoneName: '',
     postalCode: '',
     isDefault: false,
+  })
+
+  const { data: districts = [] } = useGetDistrictsQuery()
+  const { data: zones = [] } = useGetZonesQuery(formState.districtId, {
+    skip: !formState.districtId,
   })
 
   const [pendingConfirm, setPendingConfirm] = useState<'save' | 'delete' | 'setDefault' | null>(null)
@@ -53,6 +66,8 @@ function ProfileAddressSection({
       formState.phone !== editingAddress.phone ||
       formState.streetAddress !== editingAddress.streetAddress ||
       formState.city !== editingAddress.city ||
+      formState.districtId !== (editingAddress.districtId || '') ||
+      formState.zoneId !== (editingAddress.zoneId || '') ||
       formState.postalCode !== (editingAddress.postalCode || '') ||
       formState.isDefault !== editingAddress.isDefault
     : true
@@ -82,6 +97,10 @@ function ProfileAddressSection({
       phone: '',
       streetAddress: '',
       city: '',
+      districtId: '',
+      districtName: '',
+      zoneId: '',
+      zoneName: '',
       postalCode: '',
       isDefault: addresses.length === 0,
     })
@@ -96,6 +115,10 @@ function ProfileAddressSection({
       phone: addr.phone,
       streetAddress: addr.streetAddress,
       city: addr.city,
+      districtId: addr.districtId || '',
+      districtName: addr.districtName || '',
+      zoneId: addr.zoneId || '',
+      zoneName: addr.zoneName || '',
       postalCode: addr.postalCode || '',
       isDefault: addr.isDefault,
     })
@@ -226,7 +249,9 @@ function ProfileAddressSection({
                 </h3>
                 <p className="text-xs text-[#6b5f53]">{addr.phone}</p>
                 <p className="mt-2 text-sm text-[#4f463d]">
-                  {addr.streetAddress}, {addr.city}{' '}
+                  {addr.streetAddress}
+                  {addr.zoneName ? `, ${addr.zoneName}` : ''}
+                  {addr.districtName ? `, ${addr.districtName}` : addr.city ? `, ${addr.city}` : ''}
                   {addr.postalCode ? ` - ${addr.postalCode}` : ''}
                 </p>
               </div>
@@ -330,7 +355,61 @@ function ProfileAddressSection({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1 text-xs font-bold">
-                  City
+                  District
+                  <select
+                    className={fieldClass}
+                    onChange={(e) => {
+                      const selected = districts.find((d) => d.id === e.target.value)
+                      setFormState({
+                        ...formState,
+                        districtId: e.target.value,
+                        districtName: selected?.name || '',
+                        zoneId: '',
+                        zoneName: '',
+                        city: selected?.name || formState.city,
+                      })
+                    }}
+                    value={formState.districtId}
+                  >
+                    <option value="">Select district</option>
+                    {districts.map((district) => (
+                      <option key={district.id} value={district.id}>
+                        {district.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="grid gap-1 text-xs font-bold">
+                  Zone / Area
+                  <select
+                    className={fieldClass}
+                    disabled={!formState.districtId}
+                    onChange={(e) => {
+                      const selected = zones.find((z) => z.id === e.target.value)
+                      setFormState({
+                        ...formState,
+                        zoneId: e.target.value,
+                        zoneName: selected?.name || '',
+                      })
+                    }}
+                    value={formState.zoneId}
+                  >
+                    <option value="">
+                      {!formState.districtId ? 'Select district first' : 'Select zone'}
+                    </option>
+                    {zones.map((zone) => (
+                      <option key={zone.id} value={zone.id}>
+                        {zone.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="grid gap-1 text-xs font-bold">
+                  City / Location
                   <input
                     className={fieldClass}
                     onChange={(e) =>

@@ -146,6 +146,8 @@ function Checkout() {
           setSelectedAddressId(defaultAddr._id)
           setDeliveryForm((curr) => ({
             ...curr,
+            districtId: defaultAddr.districtId || curr.districtId,
+            zoneId: defaultAddr.zoneId || curr.zoneId,
             recipientName: defaultAddr.recipientName,
             recipientPhone: defaultAddr.phone,
             fullAddress: `${defaultAddr.streetAddress}, ${defaultAddr.city}${defaultAddr.postalCode ? ' - ' + defaultAddr.postalCode : ''}`,
@@ -258,6 +260,8 @@ function Checkout() {
     setSelectedAddressId(addr._id)
     setDeliveryForm((curr) => ({
       ...curr,
+      districtId: addr.districtId || curr.districtId,
+      zoneId: addr.zoneId || curr.zoneId,
       recipientName: addr.recipientName,
       recipientPhone: addr.phone,
       fullAddress: `${addr.streetAddress}, ${addr.city}${addr.postalCode ? ' - ' + addr.postalCode : ''}`,

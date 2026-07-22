@@ -9,6 +9,10 @@ export type UserAddress = {
   phone: string
   streetAddress: string
   city: string
+  districtId?: string
+  districtName?: string
+  zoneId?: string
+  zoneName?: string
   postalCode?: string
   country?: string
   isDefault: boolean
