@@ -27,5 +27,6 @@ export const baseApi = createApi({
     'Review',
     'User',
     'Wishlist',
+    'Promo',
   ],
 })

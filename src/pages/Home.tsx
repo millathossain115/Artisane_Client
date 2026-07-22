@@ -10,6 +10,8 @@ import {
   useGetProductsQuery,
 } from '../features/products/productApi'
 import FeaturedProducts from './home/FeaturedProducts'
+import FlashDealBanner from './home/FlashDealBanner'
+import FlashDealModal from './home/FlashDealModal'
 import HomeCategories from './home/HomeCategories'
 import HomeHero from './home/HomeHero'
 import HomeNewsletter from './home/HomeNewsletter'
@@ -17,6 +19,7 @@ import HomePromoBanners from './home/HomePromoBanners'
 import HomeStats from './home/HomeStats'
 import KitProducts from './home/KitProducts'
 import LatestProducts from './home/LatestProducts'
+import WhyChooseUs from './home/WhyChooseUs'
 import { getProductImage } from '../utils/productDisplay'
 
 function shuffleProducts(products: Product[]) {
@@ -73,9 +76,11 @@ function Home() {
   return (
     <div className="min-h-screen bg-[#f6f0e5] text-[#181512]">
       <Navbar />
+      <FlashDealModal />
 
       <main>
         <HomeHero image={homeWallArtBanner} />
+        <FlashDealBanner />
         <HomeStats
           isCategoriesLoading={isCategoriesLoading}
           isProductsLoading={isProductsLoading}
@@ -105,6 +110,7 @@ function Home() {
           kitCategory={kitCategory}
           products={moreProducts}
         />
+        <WhyChooseUs />
         <HomeNewsletter />
       </main>
 

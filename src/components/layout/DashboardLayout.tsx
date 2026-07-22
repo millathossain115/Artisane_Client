@@ -59,7 +59,7 @@ function DashboardLayout({
   eyebrow = 'Control room',
   helperText,
   helperTitle = 'Today',
-  sidebarItems,
+  sidebarItems = [],
   subtitle,
   title,
   workspaceLabel = 'Marketplace studio',
