@@ -93,7 +93,7 @@ function ManagePromoBanner() {
       subtitle="Configure home page announcement banner and countdown timer"
       title="Flash Deal & Promo Banner"
     >
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="w-full space-y-6">
         <div className="border border-black/10 bg-white p-6">
           <div className="flex items-center gap-3 border-b border-black/10 pb-4">
             <span className="grid h-10 w-10 place-items-center bg-[#f8f3ea] text-[#8f3f1d]">

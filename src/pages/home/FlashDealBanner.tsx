@@ -48,12 +48,6 @@ function FlashDealBanner() {
     return null
   }
 
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(promo.code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   return (
     <section className="border-y border-black/10 bg-[#181512] px-4 py-3.5 text-white sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-center md:flex-row md:text-left">

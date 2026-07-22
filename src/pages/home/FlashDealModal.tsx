@@ -27,7 +27,7 @@ function FlashDealModal() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (!promo || !promo.isActive || !promo.endsAt) return
+    if (!promo || !promo.isActive || promo.enableAutoDiscount === false || !promo.endsAt) return
 
     const initialTime = calculateTimeLeft(promo.endsAt)
     if (initialTime.isExpired) return
@@ -51,7 +51,7 @@ function FlashDealModal() {
     return () => clearInterval(timer)
   }, [promo?.endsAt, isOpen])
 
-  if (isLoading || !promo || !promo.isActive || !isOpen || timeLeft.isExpired) {
+  if (isLoading || !promo || !promo.isActive || promo.enableAutoDiscount === false || !isOpen || timeLeft.isExpired) {
     return null
   }
 
@@ -147,31 +147,33 @@ function FlashDealModal() {
         </div>
 
         {/* Promo Code Box */}
-        <div className="mt-4 flex items-center justify-between gap-2 border border-dashed border-[#8f3f1d]/40 bg-[#f8f3ea] p-3">
-          <div>
-            <span className="block text-[9px] font-bold uppercase tracking-wider text-[#6b5f53]">
-              Promo Code
-            </span>
-            <code className="text-base font-bold tracking-widest text-[#7a3f1d]">
-              {promo.code}
-            </code>
+        {promo.enableVoucher !== false && promo.code && (
+          <div className="mt-4 flex items-center justify-between gap-2 border border-dashed border-[#8f3f1d]/40 bg-[#f8f3ea] p-3">
+            <div>
+              <span className="block text-[9px] font-bold uppercase tracking-wider text-[#6b5f53]">
+                Promo Code
+              </span>
+              <code className="text-base font-bold tracking-widest text-[#7a3f1d]">
+                {promo.code}
+              </code>
+            </div>
+            <button
+              className="inline-flex items-center gap-1.5 border border-[#181512] bg-[#181512] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#7a3f1d]"
+              onClick={handleCopyCode}
+              type="button"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-green-400" /> Copied
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5" /> Copy Code
+                </>
+              )}
+            </button>
           </div>
-          <button
-            className="inline-flex items-center gap-1.5 border border-[#181512] bg-[#181512] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#7a3f1d]"
-            onClick={handleCopyCode}
-            type="button"
-          >
-            {copied ? (
-              <>
-                <Check className="h-3.5 w-3.5 text-green-400" /> Copied
-              </>
-            ) : (
-              <>
-                <Copy className="h-3.5 w-3.5" /> Copy Code
-              </>
-            )}
-          </button>
-        </div>
+        )}
 
         {/* CTA Actions */}
         <div className="mt-5 flex flex-col gap-2">

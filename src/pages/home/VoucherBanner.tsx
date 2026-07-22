@@ -6,10 +6,14 @@ function VoucherBanner() {
   const { data: promo } = useGetActivePromoQuery()
   const [copied, setCopied] = useState(false)
 
+  if (!promo || !promo.isActive || promo.enableVoucher === false) {
+    return null
+  }
+
   const voucherCode = promo.voucherCode || promo.code
   const voucherDiscount = promo.voucherDiscountPercent ?? promo.discountPercent ?? 15
 
-  if (!promo || !promo.isActive || promo.enableVoucher === false || !voucherCode) {
+  if (!voucherCode) {
     return null
   }
 
