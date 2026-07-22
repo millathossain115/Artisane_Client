@@ -1,5 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { Pencil, Save } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import { getStoredUser, saveStoredUser } from '../../../features/auth/authApi'
