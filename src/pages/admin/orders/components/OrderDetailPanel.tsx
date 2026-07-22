@@ -1,5 +1,5 @@
-import { RefreshCw, X } from 'lucide-react'
-import type { Dispatch, SetStateAction } from 'react'
+import { AlertTriangle, RefreshCw, X } from 'lucide-react'
+import { useState, type Dispatch, type SetStateAction } from 'react'
 
 import type {
   Order,
@@ -67,6 +67,8 @@ function OrderDetailPanelContent({
   shipmentForm,
   statusForm,
 }: OrderDetailPanelProps) {
+  const [showStatusModal, setShowStatusModal] = useState(false)
+
   return (
     <div className={isModal ? 'max-h-[90vh] w-full max-w-4xl overflow-y-auto border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]' : 'w-full border border-black/10 bg-white p-6 shadow-sm'}>
       <div className="flex items-start justify-between gap-4">
@@ -165,12 +167,81 @@ function OrderDetailPanelContent({
             isUpdatingStatus ||
             (!statusForm.orderStatus && !statusForm.paymentStatus)
           }
-          onClick={onStatusUpdate}
+          onClick={() => setShowStatusModal(true)}
           type="button"
         >
           {isUpdatingStatus ? 'Saving changes...' : 'Save status changes'}
         </button>
       </div>
+
+      {showStatusModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-black/50 transition-opacity"
+            onClick={() => setShowStatusModal(false)}
+          />
+          <div className="relative w-full max-w-md border border-black/10 bg-[#f6f0e5] p-6 text-[#181512] shadow-2xl">
+            <button
+              className="absolute right-4 top-4 grid h-8 w-8 place-items-center border border-black/10 bg-white text-[#181512] transition hover:bg-[#181512] hover:text-white"
+              onClick={() => setShowStatusModal(false)}
+              type="button"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#8f3f1d] text-white">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Update Order Status?</h3>
+                <p className="text-xs text-[#6b5f53]">
+                  Changes will update order records for {formatOrderId(order._id)}.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 border-t border-black/10 pt-4 text-xs space-y-2">
+              {statusForm.orderStatus ? (
+                <div className="flex justify-between border-b border-black/5 pb-2">
+                  <span className="font-bold">Order status:</span>
+                  <span className="font-semibold text-[#8f3f1d]">
+                    {formatOrderStatus(order.orderStatus)} &rarr; {formatOrderStatus(statusForm.orderStatus)}
+                  </span>
+                </div>
+              ) : null}
+              {statusForm.paymentStatus ? (
+                <div className="flex justify-between pb-1">
+                  <span className="font-bold">Payment status:</span>
+                  <span className="font-semibold text-[#8f3f1d]">
+                    {formatOrderStatus(order.paymentStatus)} &rarr; {formatOrderStatus(statusForm.paymentStatus)}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
+                onClick={() => setShowStatusModal(false)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#8f3f1d] px-4 text-sm font-bold text-white transition hover:bg-[#181512]"
+                onClick={() => {
+                  setShowStatusModal(false)
+                  onStatusUpdate()
+                }}
+                type="button"
+              >
+                Confirm changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-5 border-b border-black/10 pb-5">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">

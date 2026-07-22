@@ -30,6 +30,7 @@ type UserReviewsPanelProps = {
   onDeleteReview: (review: Review) => void
   onSaveEdit: (review: Review) => void
   onStartEdit: (review: Review) => void
+  productOrderMap?: Record<string, string>
   reviewableItems: ReviewableProduct[]
   setMode: Dispatch<SetStateAction<ReviewMode>>
   updateDraft: (productId: string, patch: Partial<ReviewDraft>) => void
@@ -54,57 +55,54 @@ function UserReviewsPanel({
   onDeleteReview,
   onSaveEdit,
   onStartEdit,
+  productOrderMap,
   reviewableItems,
   setMode,
   updateDraft,
 }: UserReviewsPanelProps) {
   return (
     <section className="border border-black/10 bg-white">
-      <div className="flex flex-col gap-4 border-b border-black/10 p-5 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
-            Review center
-          </p>
-          <h2 className="mt-2 text-2xl font-bold">
-            {mode === 'to-review' ? 'To review' : 'My reviews'}
-          </h2>
-          <p className="mt-1 text-sm text-[#6b5f53]">
-            {mode === 'to-review'
-              ? `${formatCount(reviewableItems.length, '0')} eligible products waiting for feedback.`
-              : `${formatCount(meta?.total ?? myReviews.length, '0')} reviews in your archive.`}
-          </p>
-        </div>
-
-        <div className="flex gap-2">
+      <div className="border-b border-black/10 px-5">
+        <nav className="flex gap-8" aria-label="Review tabs">
           <button
-            className={`min-h-11 px-4 text-sm font-bold transition ${
+            className={`relative flex items-center gap-2 py-4 text-sm font-bold transition ${
               mode === 'to-review'
-                ? 'bg-[#181512] text-white'
-                : 'border border-black/10 bg-white hover:border-[#181512]'
+                ? 'text-[#8f3f1d]'
+                : 'text-[#181512] hover:text-[#8f3f1d]'
             }`}
             onClick={() => setMode('to-review')}
             type="button"
           >
-            To review
+            <span>To Review</span>
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#8f3f1d] px-1.5 text-xs font-bold text-white">
+              {reviewableItems.length}
+            </span>
+            {mode === 'to-review' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#8f3f1d]" />
+            )}
           </button>
+
           <button
-            className={`min-h-11 px-4 text-sm font-bold transition ${
-              mode === 'my-reviews'
-                ? 'bg-[#181512] text-white'
-                : 'border border-black/10 bg-white hover:border-[#181512]'
+            className={`relative py-4 text-sm font-bold transition ${
+              mode === 'history'
+                ? 'text-[#8f3f1d]'
+                : 'text-[#181512] hover:text-[#8f3f1d]'
             }`}
-            onClick={() => setMode('my-reviews')}
+            onClick={() => setMode('history')}
             type="button"
           >
-            My reviews
+            <span>History</span>
+            {mode === 'history' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#8f3f1d]" />
+            )}
           </button>
-        </div>
+        </nav>
       </div>
 
       {mode === 'to-review' ? (
         <div className="p-5">
           {isReviewableLoading ? (
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-4">
               {Array.from({ length: 2 }).map((_, index) => (
                 <div
                   className="h-72 animate-pulse border border-black/10 bg-[#f8f3ea]"
@@ -113,7 +111,7 @@ function UserReviewsPanel({
               ))}
             </div>
           ) : reviewableItems.length ? (
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-4">
               {reviewableItems.map((product) => {
                 const draft = drafts[product._id] ?? {
                   comment: '',
@@ -132,6 +130,7 @@ function UserReviewsPanel({
                       updateDraft(product._id, { rating: value })
                     }
                     onSubmit={() => onCreateReview(product)}
+                    orderId={productOrderMap?.[product._id]}
                     product={product}
                     saving={isCreatingReview}
                   />
@@ -174,6 +173,7 @@ function UserReviewsPanel({
             <div className="space-y-4">
               {myReviews.map((review) => {
                 const editing = editingReviewId === review._id
+                const productId = typeof review.product === 'object' && review.product ? review.product._id : undefined
 
                 return (
                   <ReviewCard
@@ -197,6 +197,7 @@ function UserReviewsPanel({
                     onDelete={() => onDeleteReview(review)}
                     onEdit={() => onStartEdit(review)}
                     onSave={() => onSaveEdit(review)}
+                    orderId={productId ? productOrderMap?.[productId] : undefined}
                     review={review}
                     saving={isUpdatingReview || isDeletingReview}
                   />

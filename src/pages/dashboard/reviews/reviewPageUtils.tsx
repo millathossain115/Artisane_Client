@@ -13,7 +13,7 @@ export type ReviewDraft = {
   rating: number
 }
 
-export type ReviewMode = 'my-reviews' | 'to-review'
+export type ReviewMode = 'history' | 'to-review'
 
 export function getApiErrorMessage(error: unknown, fallback: string) {
   const apiError = error as {

@@ -10,6 +10,7 @@ import {
   useGetReviewableProductsQuery,
   useUpdateReviewMutation,
 } from '../../../features/reviews/reviewApi'
+import { useGetMyOrdersQuery } from '../../../features/orders/orderApi'
 import { userNavItems } from '../user-dashboard/userNavItems'
 import ReviewMessageBanner from './components/ReviewMessageBanner'
 import UserReviewsPanel from './components/UserReviewsPanel'
@@ -32,19 +33,37 @@ function ReviewsPage() {
     rating: 5,
   })
   const { data: reviewableProducts, isLoading: isReviewableLoading } =
-    useGetReviewableProductsQuery()
+    useGetReviewableProductsQuery(undefined, { refetchOnMountOrArgChange: true })
   const {
     data: reviewList,
     isError,
     isLoading,
     refetch: refetchMyReviews,
-  } = useGetMyReviewsQuery({ limit: 10, page: 1 })
+  } = useGetMyReviewsQuery({ limit: 10, page: 1 }, { refetchOnMountOrArgChange: true })
   const [createReview, { isLoading: isCreatingReview }] =
     useCreateReviewMutation()
   const [updateReview, { isLoading: isUpdatingReview }] =
     useUpdateReviewMutation()
   const [deleteReview, { isLoading: isDeletingReview }] =
     useDeleteReviewMutation()
+
+  const { data: myOrdersData } = useGetMyOrdersQuery(
+    { limit: 100 },
+    { refetchOnMountOrArgChange: true },
+  )
+
+  const productOrderMap = useMemo(() => {
+    const map: Record<string, string> = {}
+    myOrdersData?.data?.forEach((order) => {
+      order.items?.forEach((item) => {
+        const pId = typeof item.product === 'object' && item.product ? item.product._id : (item.product as string)
+        if (pId && !map[pId]) {
+          map[pId] = order._id
+        }
+      })
+    })
+    return map
+  }, [myOrdersData?.data])
 
   const reviewableItems = reviewableProducts ?? []
   const myReviews = useMemo(() => reviewList?.data ?? [], [reviewList?.data])
@@ -185,6 +204,7 @@ function ReviewsPage() {
         onDeleteReview={handleDeleteReview}
         onSaveEdit={handleSaveEdit}
         onStartEdit={handleStartEdit}
+        productOrderMap={productOrderMap}
         reviewableItems={reviewableItems}
         setMode={setMode}
         updateDraft={updateDraft}

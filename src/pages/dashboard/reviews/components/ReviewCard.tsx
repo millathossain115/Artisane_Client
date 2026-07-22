@@ -20,6 +20,7 @@ type ReviewCardProps = {
   onDelete: () => void
   onEdit: () => void
   onSave: () => void
+  orderId?: string
   review: Review
   saving: boolean
 }
@@ -34,6 +35,7 @@ function ReviewCard({
   onDelete,
   onEdit,
   onSave,
+  orderId,
   review,
   saving,
 }: ReviewCardProps) {
@@ -92,9 +94,17 @@ function ReviewCard({
           </div>
         </div>
 
-        <p className="text-sm text-[#6b5f53]">
-          {formatDate(review.createdAt)}
-        </p>
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+          <Link
+            className="inline-flex h-9 shrink-0 items-center justify-center border border-black/10 px-3 text-xs font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+            to={orderId ? `/dashboard/orders/${orderId}` : '/dashboard/orders'}
+          >
+            View order details
+          </Link>
+          <p className="text-sm text-[#6b5f53]">
+            {formatDate(review.createdAt)}
+          </p>
+        </div>
       </div>
 
       {editing ? (
