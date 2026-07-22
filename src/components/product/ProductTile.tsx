@@ -11,7 +11,9 @@ import {
   useDeleteWishlistProductMutation,
   useGetMyWishlistQuery,
 } from '../../features/wishlists/wishlistApi'
+import { useGetActivePromoQuery } from '../../features/promo/promoApi'
 import { useAppDispatch } from '../../redux/hooks'
+import { getProductPriceInfo } from '../../utils/priceUtils'
 import {
   formatPrice,
   getCategoryName,
@@ -59,6 +61,9 @@ function ProductTile({
       ? product.averageRating.toFixed(1)
       : 'New'
 
+  const { data: activePromo } = useGetActivePromoQuery()
+  const priceInfo = getProductPriceInfo(product.price, activePromo)
+
   function handleOpenProduct() {
     navigate(productUrl)
   }
@@ -78,7 +83,14 @@ function ProductTile({
       return
     }
 
-    dispatch(addToCart(createCartItem(product)))
+    dispatch(
+      addToCart(
+        createCartItem({
+          ...product,
+          price: priceInfo.finalPrice,
+        }),
+      ),
+    )
   }
 
   async function handleWishlistClick(event: MouseEvent<HTMLButtonElement>) {
@@ -130,8 +142,15 @@ function ProductTile({
           </div>
         )}
 
-        <div className="absolute left-1.5 top-1.5 bg-white px-1.5 py-0.5 text-[10px] font-bold text-[#7a3f1d] sm:left-3 sm:top-3 sm:px-3 sm:py-1 sm:text-xs">
-          {getProductBadge(product)}
+        <div className="absolute left-1.5 top-1.5 flex flex-col gap-1 sm:left-3 sm:top-3">
+          {priceInfo.hasDiscount && (
+            <span className="bg-[#8f3f1d] px-1.5 py-0.5 text-[10px] font-bold text-white shadow sm:px-2.5 sm:py-1 sm:text-xs">
+              -{priceInfo.discountPercent}% OFF
+            </span>
+          )}
+          <span className="bg-white px-1.5 py-0.5 text-[10px] font-bold text-[#7a3f1d] sm:px-3 sm:py-1 sm:text-xs">
+            {getProductBadge(product)}
+          </span>
         </div>
         {!isAdmin ? (
           <button
@@ -179,9 +198,16 @@ function ProductTile({
 
         <div className="mt-2 flex items-end justify-between gap-2 sm:mt-4 sm:gap-3">
           <div>
-            <span className="text-sm font-bold sm:text-xl">
-              {formatPrice(product.price)}
-            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-sm font-bold sm:text-xl">
+                {formatPrice(priceInfo.finalPrice)}
+              </span>
+              {priceInfo.hasDiscount && (
+                <span className="text-xs font-semibold text-[#8a7d71] line-through">
+                  {formatPrice(priceInfo.originalPrice)}
+                </span>
+              )}
+            </div>
             <p className="mt-1 hidden text-xs font-semibold text-[#8a7d71] sm:block">
               {product.stock} in stock
             </p>

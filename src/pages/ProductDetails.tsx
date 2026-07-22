@@ -17,7 +17,9 @@ import {
   useDeleteWishlistProductMutation,
   useGetMyWishlistQuery,
 } from '../features/wishlists/wishlistApi'
+import { useGetActivePromoQuery } from '../features/promo/promoApi'
 import { useAppDispatch, useAppSelector } from '../redux/hooks'
+import { getProductPriceInfo } from '../utils/priceUtils'
 import {
   getAssetUrl,
   getProductCategoryId,
@@ -65,6 +67,7 @@ function ProductDetails() {
     skip: !id,
   })
 
+  const { data: activePromo } = useGetActivePromoQuery()
   const productCategoryId = getProductCategoryId(product)
   const { data: categoryProductsResult } = useGetProductsQuery(
     {
@@ -226,7 +229,18 @@ function ProductDetails() {
     }
 
     const qtyToAdd = safeQuantity > 0 ? safeQuantity : 1
-    dispatch(addToCart(createCartItem(product, qtyToAdd)))
+    const priceInfo = getProductPriceInfo(product.price, activePromo)
+    dispatch(
+      addToCart(
+        createCartItem(
+          {
+            ...product,
+            price: priceInfo.finalPrice,
+          },
+          qtyToAdd,
+        ),
+      ),
+    )
     setStatus({
       message: `${product.name} added to cart.`,
       productId: product._id,

@@ -29,6 +29,9 @@ type ProductPurchasePanelProps = {
   statusMessage: string
 }
 
+import { useGetActivePromoQuery } from '../../features/promo/promoApi'
+import { getProductPriceInfo } from '../../utils/priceUtils'
+
 function ProductPurchasePanel({
   canBuy = true,
   isWishlisted = false,
@@ -43,6 +46,9 @@ function ProductPurchasePanel({
   quantity,
   statusMessage,
 }: ProductPurchasePanelProps) {
+  const { data: activePromo } = useGetActivePromoQuery()
+  const priceInfo = getProductPriceInfo(product.price, activePromo)
+
   return (
     <aside className="lg:sticky lg:top-28">
       <div className="border border-black/10 bg-white p-5 sm:p-6">
@@ -77,9 +83,21 @@ function ProductPurchasePanel({
         </p>
 
         <div className="mt-5 flex flex-wrap items-center gap-3">
-          <span className="text-3xl font-bold">
-            {formatPrice(product.price)}
-          </span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold">
+              {formatPrice(priceInfo.finalPrice)}
+            </span>
+            {priceInfo.hasDiscount && (
+              <span className="text-lg font-semibold text-[#8a7d71] line-through">
+                {formatPrice(priceInfo.originalPrice)}
+              </span>
+            )}
+          </div>
+          {priceInfo.hasDiscount && (
+            <span className="bg-[#8f3f1d] px-2.5 py-1 text-xs font-bold text-white shadow">
+              -{priceInfo.discountPercent}% OFF
+            </span>
+          )}
           <span className="inline-flex items-center gap-1 bg-[#effaf3] px-3 py-1 text-xs font-bold text-[#1f6b43]">
             <PackageCheck className="h-3.5 w-3.5" />
             {product.stock} in stock

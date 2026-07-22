@@ -14,6 +14,7 @@ function ManagePromoBanner() {
   const [formState, setFormState] = useState({
     title: '10% off artisanal starter kits with code ARTISANE10',
     code: 'ARTISANE10',
+    discountPercent: 10,
     description: 'Special flash deal on all craft kits and supplies',
     endsAt: '',
     isActive: true,
@@ -32,6 +33,7 @@ function ManagePromoBanner() {
       setFormState({
         title: promo.title || '',
         code: promo.code || '',
+        discountPercent: promo.discountPercent ?? 10,
         description: promo.description || '',
         endsAt: formattedDate,
         isActive: promo.isActive ?? true,
@@ -127,8 +129,8 @@ function ManagePromoBanner() {
                 </label>
               </div>
 
-              {/* Title & Promo Code */}
-              <div className="grid gap-4 sm:grid-cols-2">
+              {/* Title, Code & Discount Percent */}
+              <div className="grid gap-4 sm:grid-cols-3">
                 <label className="grid gap-1.5 text-xs font-bold text-[#181512]">
                   Banner Title / Offer Headline *
                   <input
@@ -142,7 +144,7 @@ function ManagePromoBanner() {
                 </label>
 
                 <label className="grid gap-1.5 text-xs font-bold text-[#181512]">
-                  Promo Code (Uppercase) *
+                  Promo Code *
                   <input
                     type="text"
                     required
@@ -150,6 +152,22 @@ function ManagePromoBanner() {
                     value={formState.code}
                     onChange={(e) => setFormState({ ...formState, code: e.target.value.toUpperCase() })}
                     placeholder="e.g. ARTISANE10"
+                  />
+                </label>
+
+                <label className="grid gap-1.5 text-xs font-bold text-[#181512]">
+                  Discount (% OFF) *
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    required
+                    className={fieldClass}
+                    value={formState.discountPercent}
+                    onChange={(e) =>
+                      setFormState({ ...formState, discountPercent: Number(e.target.value) })
+                    }
+                    placeholder="10"
                   />
                 </label>
               </div>

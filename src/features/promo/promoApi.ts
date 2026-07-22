@@ -4,6 +4,7 @@ export type PromoBannerData = {
   _id: string
   title: string
   code: string
+  discountPercent?: number
   description?: string
   endsAt: string
   isActive: boolean

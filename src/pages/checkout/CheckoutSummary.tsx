@@ -1,4 +1,5 @@
 import type { CartItem } from '../../features/cart/cartSlice'
+import { useGetActivePromoQuery } from '../../features/promo/promoApi'
 import { formatPrice, getAssetUrl } from '../../utils/productDisplay'
 
 type CheckoutSummaryProps = {
@@ -7,6 +8,12 @@ type CheckoutSummaryProps = {
 }
 
 function CheckoutSummary({ cartItems, subtotal }: CheckoutSummaryProps) {
+  const { data: promo } = useGetActivePromoQuery()
+  
+  const totalSaved = promo && promo.isActive && promo.discountPercent && promo.discountPercent > 0
+    ? Math.round((subtotal / (100 - promo.discountPercent)) * promo.discountPercent)
+    : 0
+
   return (
     <aside className="border border-black/10 bg-[#181512] p-5 text-white lg:sticky lg:top-28">
       <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#f1c9a6]">
@@ -54,12 +61,19 @@ function CheckoutSummary({ cartItems, subtotal }: CheckoutSummaryProps) {
         )}
       </div>
 
-      <div className="mt-5 border-t border-white/10 pt-5">
+      <div className="mt-5 border-t border-white/10 pt-5 space-y-3">
+        {totalSaved > 0 ? (
+          <div className="flex items-center justify-between gap-3 text-xs font-bold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-3 py-2">
+            <span>Total Promo Savings ({promo?.discountPercent}% OFF)</span>
+            <span>-{formatPrice(totalSaved)}</span>
+          </div>
+        ) : null}
+
         <div className="flex items-center justify-between gap-3 text-sm font-bold">
-          <span>Subtotal</span>
+          <span>Total Payable</span>
           <span className="text-2xl">{formatPrice(subtotal)}</span>
         </div>
-        <p className="mt-3 text-xs leading-5 text-white/62">
+        <p className="mt-2 text-xs leading-5 text-white/62">
           Final total, stock, and order status are confirmed by server.
         </p>
       </div>
