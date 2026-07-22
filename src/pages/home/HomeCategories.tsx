@@ -1,3 +1,4 @@
+import { ErrorState } from '../../components/loaders'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -103,9 +104,11 @@ function HomeCategories({
       </div>
 
       {hasError ? (
-        <div className="mt-8 border border-[#7a3f1d]/20 bg-white px-5 py-4 text-sm font-semibold text-[#7a3f1d]">
-          Could not load categories.
-        </div>
+        <ErrorState
+          title="Could not load categories"
+          message="We failed to retrieve craft categories."
+          onRetry={() => window.location.reload()}
+        />
       ) : null}
 
       <div className="relative mt-8">

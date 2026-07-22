@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { ErrorState, SkeletonTable } from '../../../components/loaders'
 import { Package } from 'lucide-react'
 
 import { useGetCategoriesQuery } from '../../../features/categories/categoryApi'
@@ -343,17 +344,14 @@ function ProductTable() {
         status={status}
       />
 
-      {(isProductsLoading || hasProductsError) && (
-        <div
-          className={`border-b border-black/10 px-5 py-3 text-sm font-semibold ${
-            hasProductsError
-              ? 'bg-[#fff5ef] text-[#8f3f1d]'
-              : 'bg-[#f8f3ea] text-[#6b5f53]'
-          }`}
-        >
-          {hasProductsError ? 'Failed to load products.' : 'Loading products...'}
-        </div>
-      )}
+      {hasProductsError ? (
+        <ErrorState
+          title="Failed to load products"
+          message="We could not fetch product records from the server. Please verify server status."
+          onRetry={() => window.location.reload()}
+          className="mx-5"
+        />
+      ) : null}
 
       <ProductFilters
         categories={categories}
@@ -370,17 +368,23 @@ function ProductTable() {
         sortFilter={sortFilter}
       />
 
-      <ProductRowsTable
-        onDelete={openDeleteModal}
-        onEdit={openEditModal}
-        products={products}
-        resultEnd={resultEnd}
-        resultStart={resultStart}
-        safeCurrentPage={safeCurrentPage}
-        setCurrentPage={setCurrentPage}
-        totalPages={totalPages}
-        totalProducts={totalProducts}
-      />
+      {isProductsLoading ? (
+        <div className="p-5">
+          <SkeletonTable rows={pageSize} cols={7} />
+        </div>
+      ) : (
+        <ProductRowsTable
+          onDelete={openDeleteModal}
+          onEdit={openEditModal}
+          products={products}
+          resultEnd={resultEnd}
+          resultStart={resultStart}
+          safeCurrentPage={safeCurrentPage}
+          setCurrentPage={setCurrentPage}
+          totalPages={totalPages}
+          totalProducts={totalProducts}
+        />
+      )}
 
       {productToEdit ? (
         <ProductEditModal

@@ -1,3 +1,4 @@
+import { EmptyState, ErrorState, SkeletonTable } from '../../../components/loaders'
 import { useState, type Dispatch, type SetStateAction } from 'react'
 import { useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
@@ -170,36 +171,53 @@ function MyOrdersTableSection({
       </div>
 
       {isError ? (
-        <div className="border-b border-[#c85f2f]/30 bg-[#fff5ef] px-5 py-3 text-sm font-bold text-[#8f3f1d]">
-          Failed to load orders.
-        </div>
+        <ErrorState
+          title="Could not retrieve order history"
+          message="We encountered an issue fetching your orders. Please try again."
+          onRetry={() => window.location.reload()}
+          className="mx-5"
+        />
       ) : null}
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[960px] border-collapse text-left text-sm">
-          <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
-            <tr>
-              <th className="px-5 py-3">Order</th>
-              <th className="px-5 py-3">Items</th>
-              <th className="px-5 py-3">Order status</th>
-              <th className="px-5 py-3">Payment</th>
-              <th className="px-5 py-3">Tracking</th>
-              <th className="px-5 py-3">Total</th>
-              <th className="px-5 py-3">Placed</th>
-              <th className="px-5 py-3 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <tr className="border-t border-black/10" key={index}>
-                  <td className="px-5 py-5" colSpan={8}>
-                    <div className="h-5 animate-pulse bg-[#f8f3ea]" />
-                  </td>
-                </tr>
-              ))
-            ) : visibleOrders.length ? (
-              visibleOrders.map((order) => (
+      {isLoading ? (
+        <div className="p-5">
+          <SkeletonTable rows={5} cols={8} />
+        </div>
+      ) : !visibleOrders.length ? (
+        <EmptyState
+          title="No orders found"
+          message={
+            orderStatusFilter !== 'all'
+              ? 'No orders match the selected status filter.'
+              : 'You have not placed any orders yet. Browse our artisan collection!'
+          }
+          icon={<ShoppingBag className="h-7 w-7" />}
+          action={
+            <Link
+              to="/shop"
+              className="inline-flex items-center justify-center rounded-xl bg-[#5c3d2e] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2d1810]"
+            >
+              Explore Shop
+            </Link>
+          }
+        />
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[960px] border-collapse text-left text-sm">
+            <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
+              <tr>
+                <th className="px-5 py-3">Order</th>
+                <th className="px-5 py-3">Items</th>
+                <th className="px-5 py-3">Order status</th>
+                <th className="px-5 py-3">Payment</th>
+                <th className="px-5 py-3">Tracking</th>
+                <th className="px-5 py-3">Total</th>
+                <th className="px-5 py-3">Placed</th>
+                <th className="px-5 py-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleOrders.map((order) => (
                 <tr
                   className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
                   key={order._id}
@@ -276,20 +294,11 @@ function MyOrdersTableSection({
                     </div>
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr className="border-t border-black/10">
-                <td
-                  className="px-5 py-8 text-center font-semibold text-[#6b5f53]"
-                  colSpan={8}
-                >
-                  No orders found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
         <p className="text-sm font-semibold text-[#6b5f53]">

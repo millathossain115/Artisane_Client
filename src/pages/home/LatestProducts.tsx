@@ -1,3 +1,4 @@
+import { SkeletonCard } from '../../components/loaders'
 import ProductTile from '../../components/product/ProductTile'
 import type { Product } from '../../features/products/productApi'
 
@@ -27,15 +28,12 @@ function LatestProducts({ isLoading, products }: LatestProductsProps) {
           </p>
         </div>
 
-        <div className="mt-8 grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-          {isLoading
-            ? Array.from({ length: 8 }).map((_, index) => (
-                <div
-                  className="h-52 animate-pulse bg-white/10 sm:h-[438px]"
-                  key={index}
-                />
-              ))
-            : products.map((product) => (
+        <div className="mt-8">
+          {isLoading ? (
+            <SkeletonCard count={8} gridCols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {products.map((product) => (
                 <ProductTile
                   key={product._id}
                   product={product}
@@ -43,6 +41,8 @@ function LatestProducts({ isLoading, products }: LatestProductsProps) {
                   variant="compact"
                 />
               ))}
+            </div>
+          )}
         </div>
       </div>
     </section>

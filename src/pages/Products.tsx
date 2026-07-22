@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
+import { ErrorState, SkeletonCard } from '../components/loaders'
 import Footer from '../components/layout/Footer'
 import Navbar from '../components/layout/Navbar'
 import ProductTile from '../components/product/ProductTile'
@@ -206,9 +207,11 @@ function Products() {
         />
 
         {hasProductsError ? (
-          <div className="mt-6 border border-[#c85f2f]/30 bg-[#fff5ef] px-5 py-4 text-sm font-bold text-[#8f3f1d]">
-            Could not load products.
-          </div>
+          <ErrorState
+            title="Unable to load catalog"
+            message="We encountered an issue retrieving the products catalog. Please check your connection or try again."
+            onRetry={() => window.location.reload()}
+          />
         ) : null}
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
@@ -227,18 +230,15 @@ function Products() {
           />
 
           <div className="min-w-0" ref={productGridRef}>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
-              {isProductsLoading
-                ? Array.from({ length: DEFAULT_LIMIT }).map((_, index) => (
-                    <div
-                      className="h-52 animate-pulse bg-white sm:h-[472px]"
-                      key={index}
-                    />
-                  ))
-                : products.map((product) => (
-                    <ProductTile key={product._id} product={product} />
-                  ))}
-            </div>
+            {isProductsLoading ? (
+              <SkeletonCard count={DEFAULT_LIMIT} gridCols="grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" />
+            ) : (
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                {products.map((product) => (
+                  <ProductTile key={product._id} product={product} />
+                ))}
+              </div>
+            )}
 
             {!isProductsLoading && !products.length ? (
               <ProductCatalogEmptyState

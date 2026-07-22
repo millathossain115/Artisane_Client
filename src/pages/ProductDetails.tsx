@@ -2,6 +2,7 @@ import { ArrowLeft, BadgeCheck } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
+import { ErrorState, PageSpinner } from '../components/loaders'
 import Footer from '../components/layout/Footer'
 import Navbar from '../components/layout/Navbar'
 import { getAccessToken, getStoredUser } from '../features/auth/authApi'
@@ -338,27 +339,14 @@ function ProductDetails() {
         </div>
 
         {isLoading ? (
-          <div className="grid min-h-[460px] place-items-center border border-black/10 bg-white p-8">
-            <div className="text-center font-semibold text-[#6b5f53]">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[#7a3f1d] border-t-transparent" />
-              <p className="mt-3">Loading product details...</p>
-            </div>
-          </div>
+          <PageSpinner message="Loading product details..." className="min-h-[400px]" />
         ) : isError || !product ? (
-          <div className="border border-[#c85f2f]/30 bg-[#fff5ef] p-8 text-center text-[#8f3f1d]">
-            <h2 className="text-2xl font-bold">Product unavailable</h2>
-            <p className="mt-2 text-sm font-medium">
-              The product you are looking for does not exist or has been
-              removed.
-            </p>
-            <Link
-              className="mt-5 inline-flex min-h-11 items-center justify-center bg-[#181512] px-5 text-xs font-bold text-white transition hover:bg-[#7a3f1d]"
-              to="/shop"
-            >
-              Browse catalog
-            </Link>
-          </div>
-        ) : product ? (
+          <ErrorState
+            title="Product unavailable"
+            message="The product you are looking for does not exist or has been removed from the catalog."
+            onRetry={() => navigate('/shop')}
+          />
+        ) : (
           <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
             <ProductGallery
               images={galleryImages}
@@ -535,7 +523,7 @@ function ProductDetails() {
               )}
             </section>
           </section>
-        ) : null}
+        )}
 
         <ProductShelfSection
           eyebrow="Similar products"

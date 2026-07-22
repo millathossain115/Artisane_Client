@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { EmptyState, ErrorState, SkeletonTable } from '../../../../components/loaders'
 import {
   ChevronLeft,
   ChevronRight,
@@ -150,32 +151,52 @@ function OrdersTableSection({
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[1220px] border-collapse text-left text-sm">
-          <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
-            <tr>
-              <th className="px-5 py-3">Order</th>
-              <th className="px-5 py-3">Customer</th>
-              <th className="px-5 py-3">Items</th>
-              <th className="px-5 py-3">Order status</th>
-              <th className="px-5 py-3">Payment</th>
-              <th className="px-5 py-3">Total</th>
-              <th className="px-5 py-3">Shipment</th>
-              <th className="px-5 py-3">Placed</th>
-              <th className="px-5 py-3 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              Array.from({ length: 6 }).map((_, index) => (
-                <tr className="border-t border-black/10" key={index}>
-                  <td className="px-5 py-5" colSpan={9}>
-                    <div className="h-5 animate-pulse bg-[#f8f3ea]" />
-                  </td>
-                </tr>
-              ))
-            ) : visibleOrders.length ? (
-              visibleOrders.map((order) => (
+      {isError ? (
+        <ErrorState
+          title="Could not load admin orders"
+          message="An error occurred while communicating with orders database."
+          onRetry={() => window.location.reload()}
+          className="mx-5"
+        />
+      ) : null}
+
+      {isLoading ? (
+        <div className="p-5">
+          <SkeletonTable rows={6} cols={9} />
+        </div>
+      ) : !visibleOrders.length ? (
+        <EmptyState
+          title="No orders found"
+          message="No customer orders match the current search query or filter parameters."
+          icon={<Package className="h-7 w-7" />}
+          action={
+            <button
+              onClick={onResetFilters}
+              type="button"
+              className="inline-flex items-center justify-center rounded-xl bg-[#5c3d2e] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2d1810]"
+            >
+              Reset Filters
+            </button>
+          }
+        />
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1220px] border-collapse text-left text-sm">
+            <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
+              <tr>
+                <th className="px-5 py-3">Order</th>
+                <th className="px-5 py-3">Customer</th>
+                <th className="px-5 py-3">Items</th>
+                <th className="px-5 py-3">Order status</th>
+                <th className="px-5 py-3">Payment</th>
+                <th className="px-5 py-3">Total</th>
+                <th className="px-5 py-3">Shipment</th>
+                <th className="px-5 py-3">Placed</th>
+                <th className="px-5 py-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleOrders.map((order) => (
                 <tr
                   className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
                   key={order._id}
@@ -267,20 +288,11 @@ function OrdersTableSection({
                     </div>
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr className="border-t border-black/10">
-                <td
-                  className="px-5 py-8 text-center font-semibold text-[#6b5f53]"
-                  colSpan={9}
-                >
-                  No orders found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
         <p className="text-sm font-semibold text-[#6b5f53]">

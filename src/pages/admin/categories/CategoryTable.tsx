@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { ErrorState, SkeletonTable } from '../../../components/loaders'
 import {
   ChevronLeft,
   ChevronRight,
@@ -443,19 +444,14 @@ function CategoryTable() {
         </div>
       )}
 
-      {(isCategoriesLoading || hasCategoriesError) && (
-        <div
-          className={`border-b border-black/10 px-5 py-3 text-sm font-semibold ${
-            hasCategoriesError
-              ? 'bg-[#fff5ef] text-[#8f3f1d]'
-              : 'bg-[#f8f3ea] text-[#6b5f53]'
-          }`}
-        >
-          {hasCategoriesError
-            ? 'Failed to load categories.'
-            : 'Loading categories...'}
-        </div>
-      )}
+      {hasCategoriesError ? (
+        <ErrorState
+          title="Failed to load categories"
+          message="Could not retrieve categories list. Please try refreshing."
+          onRetry={() => window.location.reload()}
+          className="mx-5"
+        />
+      ) : null}
 
       <div className="grid gap-3 border-b border-black/10 p-5 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:items-end">
         <label className="grid gap-2 text-sm font-bold">
@@ -523,7 +519,12 @@ function CategoryTable() {
         </button>
       </div>
 
-      <div className="overflow-x-auto">
+      {isCategoriesLoading ? (
+        <div className="p-5">
+          <SkeletonTable rows={pageSize} cols={8} />
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
         <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
@@ -649,6 +650,7 @@ function CategoryTable() {
           </tbody>
         </table>
       </div>
+      )}
 
       <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
         <p className="text-sm font-semibold text-[#6b5f53]">
