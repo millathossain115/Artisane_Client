@@ -147,6 +147,11 @@ function ProfilePage() {
     }
   }
 
+  const isFormChanged =
+    profileForm.name !== loadedProfileForm.name ||
+    profileForm.phone !== loadedProfileForm.phone ||
+    Boolean(profileForm.avatarFile)
+
   return (
     <DashboardLayout
       actions={[{ label: 'Back to dashboard', to: '/dashboard' }]}
@@ -179,51 +184,17 @@ function ProfilePage() {
         </div>
       )}
 
-      <form
-        className="grid gap-6 xl:grid-cols-[1fr_0.48fr]"
-        onSubmit={(event: FormEvent<HTMLFormElement>) =>
-          event.preventDefault()
-        }
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3 border border-black/10 bg-white p-4 xl:col-span-2">
-          <div>
-            <p className="text-sm font-bold text-[#7a3f1d]">
-              {isEditing ? 'Editing profile' : 'Profile is read-only'}
-            </p>
-            <p className="mt-1 text-sm text-[#6b5f53]">
-              {isEditing
-                ? 'Update fields below, then save changes.'
-                : 'Click edit to update profile details.'}
-            </p>
-          </div>
-
-          {isEditing ? (
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={isSaving}
-              onClick={handleRequestSave}
-              type="button"
-            >
-              <Save className="h-4 w-4" />
-              Save profile
-            </button>
-          ) : (
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
-              onClick={handleStartEditing}
-              type="button"
-            >
-              <Pencil className="h-4 w-4" />
-              Edit profile
-            </button>
-          )}
-        </div>
-
+      <div className="grid gap-6 xl:grid-cols-[1fr_0.48fr]">
         <div className="grid gap-6">
           <ProfileDetailsSection
             fieldClass={fieldClass}
             isEditing={isEditing}
+            isFormChanged={isFormChanged}
+            isSaving={isSaving}
+            onCancelEdit={() => setIsEditing(false)}
             onFieldChange={updateField}
+            onRequestSave={handleRequestSave}
+            onStartEditing={handleStartEditing}
             profileForm={visibleProfileForm}
             readonlyClass={readonlyClass}
           />
@@ -243,7 +214,7 @@ function ProfilePage() {
           profileForm={visibleProfileForm}
           status={status}
         />
-      </form>
+      </div>
 
       {isConfirmOpen ? (
         <ConfirmSaveModal

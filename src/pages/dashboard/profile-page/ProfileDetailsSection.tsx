@@ -1,22 +1,32 @@
-import { CircleUserRound, Upload } from 'lucide-react'
+import { CircleUserRound, Pencil, Save, Upload } from 'lucide-react'
 
 import { getReadableValue, type ProfileForm } from './profilePageUtils'
 
 type ProfileDetailsSectionProps = {
   fieldClass: string
   isEditing: boolean
-  profileForm: ProfileForm
-  readonlyClass: string
+  isFormChanged: boolean
+  isSaving: boolean
+  onCancelEdit: () => void
   onFieldChange: <K extends keyof ProfileForm>(
     field: K,
     value: ProfileForm[K],
   ) => void
+  onRequestSave: () => void
+  onStartEditing: () => void
+  profileForm: ProfileForm
+  readonlyClass: string
 }
 
 function ProfileDetailsSection({
   fieldClass,
   isEditing,
+  isFormChanged,
+  isSaving,
+  onCancelEdit,
   onFieldChange,
+  onRequestSave,
+  onStartEditing,
   profileForm,
   readonlyClass,
 }: ProfileDetailsSectionProps) {
@@ -26,16 +36,55 @@ function ProfileDetailsSection({
 
   return (
     <section className="border border-black/10 bg-white p-5 transition">
-      <div className="flex items-center gap-3 border-b border-black/10 pb-4">
-        <span className="grid h-10 w-10 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
-          <CircleUserRound className="h-5 w-5" />
-        </span>
-        <div>
-          <h2 className="text-2xl font-bold">Profile details</h2>
-          <p className="mt-1 text-sm text-[#6b5f53]">
-            Name, email, phone, and profile photo from your account.
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/10 pb-4">
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
+            <CircleUserRound className="h-5 w-5" />
+          </span>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold">Profile details</h2>
+              <span className="text-xs font-bold text-[#7a3f1d]">
+                ({isEditing ? 'Editing' : 'Read-only'})
+              </span>
+            </div>
+            <p className="mt-1 text-sm text-[#6b5f53]">
+              {isEditing
+                ? 'Update fields below, then save changes.'
+                : 'Name, email, phone, and profile photo from your account.'}
+            </p>
+          </div>
         </div>
+
+        {isEditing ? (
+          <div className="flex items-center gap-2">
+            <button
+              className="inline-flex min-h-10 items-center justify-center border border-black/10 bg-white px-3 text-sm font-bold text-[#6b5f53] transition hover:border-[#181512]"
+              onClick={onCancelEdit}
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              className="inline-flex min-h-10 items-center justify-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isSaving || !isFormChanged}
+              onClick={onRequestSave}
+              type="button"
+            >
+              <Save className="h-4 w-4" />
+              Save profile
+            </button>
+          </div>
+        ) : (
+          <button
+            className="inline-flex min-h-10 items-center justify-center gap-2 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
+            onClick={onStartEditing}
+            type="button"
+          >
+            <Pencil className="h-4 w-4" />
+            Edit profile
+          </button>
+        )}
       </div>
 
       {isEditing ? (

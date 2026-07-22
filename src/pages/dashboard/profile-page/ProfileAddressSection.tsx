@@ -43,6 +43,20 @@ function ProfileAddressSection({
     isDefault: false,
   })
 
+  const [pendingConfirm, setPendingConfirm] = useState<'save' | 'delete' | 'setDefault' | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [defaultingId, setDefaultingId] = useState<string | null>(null)
+
+  const isFormChanged = editingAddress
+    ? formState.label !== editingAddress.label ||
+      formState.recipientName !== editingAddress.recipientName ||
+      formState.phone !== editingAddress.phone ||
+      formState.streetAddress !== editingAddress.streetAddress ||
+      formState.city !== editingAddress.city ||
+      formState.postalCode !== (editingAddress.postalCode || '') ||
+      formState.isDefault !== editingAddress.isDefault
+    : true
+
   useEffect(() => {
     if (isAdminProfile) return
     loadAddresses()
@@ -88,8 +102,14 @@ function ProfileAddressSection({
     setIsModalOpen(true)
   }
 
-  async function handleSave(e: React.FormEvent) {
+  function handleSaveClick(e: React.FormEvent) {
     e.preventDefault()
+    if (!isFormChanged) return
+    setPendingConfirm('save')
+  }
+
+  async function executeSave() {
+    setPendingConfirm(null)
     try {
       if (editingAddress) {
         await updateAddress(editingAddress._id, formState)
@@ -103,8 +123,16 @@ function ProfileAddressSection({
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Are you sure you want to delete this address?')) return
+  function requestDelete(id: string) {
+    setDeletingId(id)
+    setPendingConfirm('delete')
+  }
+
+  async function executeDelete() {
+    if (!deletingId) return
+    const id = deletingId
+    setPendingConfirm(null)
+    setDeletingId(null)
     try {
       await deleteAddress(id)
       await loadAddresses()
@@ -113,7 +141,16 @@ function ProfileAddressSection({
     }
   }
 
-  async function handleSetDefault(id: string) {
+  function requestSetDefault(id: string) {
+    setDefaultingId(id)
+    setPendingConfirm('setDefault')
+  }
+
+  async function executeSetDefault() {
+    if (!defaultingId) return
+    const id = defaultingId
+    setPendingConfirm(null)
+    setDefaultingId(null)
     try {
       await setDefaultAddress(id)
       await loadAddresses()
@@ -198,7 +235,7 @@ function ProfileAddressSection({
                 {!addr.isDefault ? (
                   <button
                     className="font-bold text-[#7a3f1d] underline hover:text-[#181512]"
-                    onClick={() => handleSetDefault(addr._id)}
+                    onClick={() => requestSetDefault(addr._id)}
                     type="button"
                   >
                     Set as default
@@ -216,7 +253,7 @@ function ProfileAddressSection({
                   </button>
                   <button
                     className="flex items-center gap-1 text-red-600 hover:text-red-800"
-                    onClick={() => handleDelete(addr._id)}
+                    onClick={() => requestDelete(addr._id)}
                     type="button"
                   >
                     <Trash2 className="h-3.5 w-3.5" /> Delete
@@ -234,7 +271,7 @@ function ProfileAddressSection({
             <h3 className="text-xl font-bold text-[#181512]">
               {editingAddress ? 'Edit address' : 'Add new address'}
             </h3>
-            <form className="mt-4 grid gap-4" onSubmit={handleSave}>
+            <form className="mt-4 grid gap-4" onSubmit={handleSaveClick}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1 text-xs font-bold">
                   Label (e.g. Home, Office)
@@ -337,13 +374,101 @@ function ProfileAddressSection({
                   Cancel
                 </button>
                 <button
-                  className="bg-[#181512] px-5 py-2 text-sm font-bold text-white transition hover:bg-[#7a3f1d]"
+                  className="bg-[#181512] px-5 py-2 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={editingAddress ? !isFormChanged : false}
                   type="submit"
                 >
                   Save Address
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      ) : null}
+
+      {pendingConfirm === 'save' ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md border border-black/10 bg-white p-6 shadow-xl">
+            <h4 className="text-lg font-bold text-[#181512]">Confirm Save Address</h4>
+            <p className="mt-2 text-sm text-[#6b5f53]">
+              Are you sure you want to {editingAddress ? 'update' : 'add'} this address?
+            </p>
+            <div className="mt-5 flex justify-end gap-3 border-t border-black/10 pt-4">
+              <button
+                className="px-4 py-2 text-sm font-bold text-[#6b5f53] hover:text-[#181512]"
+                onClick={() => setPendingConfirm(null)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-[#181512] px-5 py-2 text-sm font-bold text-white transition hover:bg-[#7a3f1d]"
+                onClick={executeSave}
+                type="button"
+              >
+                Confirm Save
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {pendingConfirm === 'setDefault' ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md border border-black/10 bg-white p-6 shadow-xl">
+            <h4 className="text-lg font-bold text-[#181512]">Set Default Address</h4>
+            <p className="mt-2 text-sm text-[#6b5f53]">
+              Are you sure you want to make this your primary delivery address?
+            </p>
+            <div className="mt-5 flex justify-end gap-3 border-t border-black/10 pt-4">
+              <button
+                className="px-4 py-2 text-sm font-bold text-[#6b5f53] hover:text-[#181512]"
+                onClick={() => {
+                  setPendingConfirm(null)
+                  setDefaultingId(null)
+                }}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-[#181512] px-5 py-2 text-sm font-bold text-white transition hover:bg-[#7a3f1d]"
+                onClick={executeSetDefault}
+                type="button"
+              >
+                Confirm Set Default
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {pendingConfirm === 'delete' ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md border border-red-200 bg-white p-6 shadow-xl">
+            <h4 className="text-lg font-bold text-red-600">Delete Address Warning</h4>
+            <p className="mt-2 text-sm text-[#6b5f53]">
+              Are you sure you want to delete this address? Action cannot be undone.
+            </p>
+            <div className="mt-5 flex justify-end gap-3 border-t border-black/10 pt-4">
+              <button
+                className="px-4 py-2 text-sm font-bold text-[#6b5f53] hover:text-[#181512]"
+                onClick={() => {
+                  setPendingConfirm(null)
+                  setDeletingId(null)
+                }}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-red-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-red-800"
+                onClick={executeDelete}
+                type="button"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
