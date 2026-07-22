@@ -55,6 +55,7 @@ function FlashDealModal() {
 
   if (
     isLoading ||
+    !promo ||
     !isPromoValid ||
     isDismissed ||
     isAlreadyDismissed ||
