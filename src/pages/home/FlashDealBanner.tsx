@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Copy, Check, Flame, ArrowRight } from 'lucide-react'
+import { Flame, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useGetActivePromoQuery } from '../../features/promo/promoApi'
 
@@ -23,7 +23,6 @@ function calculateTimeLeft(endsAt?: string) {
 function FlashDealBanner() {
   const { data: promo, isLoading } = useGetActivePromoQuery()
   const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(promo?.endsAt))
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!promo?.endsAt) return
@@ -39,7 +38,13 @@ function FlashDealBanner() {
     return () => clearInterval(timer)
   }, [promo?.endsAt])
 
-  if (isLoading || !promo || !promo.isActive || timeLeft.isExpired) {
+  if (
+    isLoading ||
+    !promo ||
+    !promo.isActive ||
+    promo.enableAutoDiscount === false ||
+    timeLeft.isExpired
+  ) {
     return null
   }
 
@@ -95,23 +100,7 @@ function FlashDealBanner() {
             </span>
           </div>
 
-          {/* Copy Code */}
-          <button
-            className="inline-flex items-center gap-2 border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/20"
-            onClick={handleCopyCode}
-            title="Click to copy code"
-            type="button"
-          >
-            <span>Code:</span>
-            <code className="font-bold uppercase tracking-wider text-[#f1c9a6]">
-              {promo.code}
-            </code>
-            {copied ? (
-              <Check className="h-3.5 w-3.5 text-green-400" />
-            ) : (
-              <Copy className="h-3.5 w-3.5" />
-            )}
-          </button>
+
 
           {/* CTA Link */}
           {promo.buttonLink && (

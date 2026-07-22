@@ -10,6 +10,13 @@ export type PromoBannerData = {
   isActive: boolean
   buttonText?: string
   buttonLink?: string
+  displayMode?: 'single' | 'separate'
+  // Distinct stacking discounts
+  autoDiscountPercent?: number
+  enableAutoDiscount?: boolean
+  voucherCode?: string
+  voucherDiscountPercent?: number
+  enableVoucher?: boolean
   createdAt?: string
   updatedAt?: string
 }

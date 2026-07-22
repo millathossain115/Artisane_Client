@@ -11,6 +11,7 @@ import {
 } from '../features/products/productApi'
 import FeaturedProducts from './home/FeaturedProducts'
 import FlashDealBanner from './home/FlashDealBanner'
+import VoucherBanner from './home/VoucherBanner'
 import FlashDealModal from './home/FlashDealModal'
 import HomeCategories from './home/HomeCategories'
 import HomeHero from './home/HomeHero'
@@ -81,6 +82,7 @@ function Home() {
       <main>
         <HomeHero image={homeWallArtBanner} />
         <FlashDealBanner />
+        <VoucherBanner />
         <HomeStats
           isCategoriesLoading={isCategoriesLoading}
           isProductsLoading={isProductsLoading}

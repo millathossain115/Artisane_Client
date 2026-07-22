@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import type { CartItem } from '../../features/cart/cartSlice'
 import { useGetActivePromoQuery } from '../../features/promo/promoApi'
 import { formatPrice, getAssetUrl } from '../../utils/productDisplay'
+import { Ticket, Check } from 'lucide-react'
 
 type CheckoutSummaryProps = {
   cartItems: CartItem[]
@@ -9,10 +11,50 @@ type CheckoutSummaryProps = {
 
 function CheckoutSummary({ cartItems, subtotal }: CheckoutSummaryProps) {
   const { data: promo } = useGetActivePromoQuery()
-  
-  const totalSaved = promo && promo.isActive && promo.discountPercent && promo.discountPercent > 0
-    ? Math.round((subtotal / (100 - promo.discountPercent)) * promo.discountPercent)
+  const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; percent: number } | null>(null)
+  const [couponError, setCouponError] = useState('')
+
+  // 1. Automatic Site-Wide Flash Discount
+  const autoDiscountPercent = (promo && promo.isActive && promo.enableAutoDiscount !== false)
+    ? (promo.autoDiscountPercent ?? promo.discountPercent ?? 10)
     : 0
+
+  const autoDiscountAmount = Math.round((subtotal * autoDiscountPercent) / 100)
+  const priceAfterAutoDiscount = Math.max(0, subtotal - autoDiscountAmount)
+
+  const handleApplyCoupon = (e: React.FormEvent) => {
+    e.preventDefault()
+    setCouponError('')
+
+    if (!couponCode.trim()) return
+
+    const validVoucherCode = promo?.voucherCode || promo?.code
+    const validVoucherPercent = promo?.voucherDiscountPercent ?? promo?.discountPercent ?? 15
+
+    if (
+      promo &&
+      promo.isActive &&
+      promo.enableVoucher !== false &&
+      validVoucherCode &&
+      validVoucherCode.toUpperCase() === couponCode.trim().toUpperCase()
+    ) {
+      setAppliedCoupon({
+        code: validVoucherCode,
+        percent: validVoucherPercent,
+      })
+      setCouponError('')
+    } else {
+      setCouponError('Invalid coupon code')
+    }
+  }
+
+  // 2. Voucher Coupon Discount (Calculated on top)
+  const couponDiscountAmount = appliedCoupon
+    ? Math.round((priceAfterAutoDiscount * appliedCoupon.percent) / 100)
+    : 0
+
+  const finalTotal = Math.max(0, priceAfterAutoDiscount - couponDiscountAmount)
 
   return (
     <aside className="border border-black/10 bg-[#181512] p-5 text-white lg:sticky lg:top-28">
@@ -61,17 +103,72 @@ function CheckoutSummary({ cartItems, subtotal }: CheckoutSummaryProps) {
         )}
       </div>
 
+      {/* Coupon Code Input */}
+      <div className="mt-5 border-t border-white/10 pt-4">
+        <label className="block text-xs font-bold uppercase tracking-wider text-[#f1c9a6] mb-2">
+          Promo / Voucher Coupon
+        </label>
+        {appliedCoupon ? (
+          <div className="flex items-center justify-between bg-emerald-950/60 border border-emerald-500/40 p-2.5 text-xs text-emerald-300 font-bold">
+            <span className="flex items-center gap-1.5">
+              <Check className="h-4 w-4" /> Coupon '{appliedCoupon.code}' Applied ({appliedCoupon.percent}% OFF)
+            </span>
+            <button
+              onClick={() => setAppliedCoupon(null)}
+              className="text-white/60 hover:text-white underline text-[11px]"
+              type="button"
+            >
+              Remove
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleApplyCoupon} className="flex gap-2">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                placeholder="Enter Code (e.g. ARTISANE10)"
+                className="w-full bg-white/10 border border-white/20 px-3 py-2 text-xs text-white placeholder-white/40 focus:border-[#f1c9a6] focus:outline-none uppercase font-mono"
+              />
+            </div>
+            <button
+              type="submit"
+              className="inline-flex items-center gap-1 bg-[#8f3f1d] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#a64b23]"
+            >
+              <Ticket className="h-3.5 w-3.5" />
+              Apply
+            </button>
+          </form>
+        )}
+        {couponError && (
+          <p className="mt-1 text-[11px] text-red-400 font-medium">{couponError}</p>
+        )}
+      </div>
+
       <div className="mt-5 border-t border-white/10 pt-5 space-y-3">
-        {totalSaved > 0 ? (
-          <div className="flex items-center justify-between gap-3 text-xs font-bold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-3 py-2">
-            <span>Total Promo Savings ({promo?.discountPercent}% OFF)</span>
-            <span>-{formatPrice(totalSaved)}</span>
+        <div className="flex items-center justify-between gap-3 text-xs text-white/70">
+          <span>Subtotal</span>
+          <span>{formatPrice(subtotal)}</span>
+        </div>
+
+        {autoDiscountAmount > 0 ? (
+          <div className="flex items-center justify-between gap-3 text-xs font-bold text-amber-400 bg-amber-950/40 border border-amber-500/30 px-3 py-2">
+            <span>Site-Wide Flash Deal ({autoDiscountPercent}% OFF)</span>
+            <span>-{formatPrice(autoDiscountAmount)}</span>
           </div>
         ) : null}
 
-        <div className="flex items-center justify-between gap-3 text-sm font-bold">
+        {appliedCoupon ? (
+          <div className="flex items-center justify-between gap-3 text-xs font-bold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-3 py-2">
+            <span>Coupon Voucher '{appliedCoupon.code}' ({appliedCoupon.percent}% OFF)</span>
+            <span>-{formatPrice(couponDiscountAmount)}</span>
+          </div>
+        ) : null}
+
+        <div className="flex items-center justify-between gap-3 text-sm font-bold border-t border-white/10 pt-3">
           <span>Total Payable</span>
-          <span className="text-2xl">{formatPrice(subtotal)}</span>
+          <span className="text-2xl text-[#f1c9a6]">{formatPrice(finalTotal)}</span>
         </div>
         <p className="mt-2 text-xs leading-5 text-white/62">
           Final total, stock, and order status are confirmed by server.
