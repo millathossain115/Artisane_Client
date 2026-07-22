@@ -22,42 +22,50 @@ function calculateTimeLeft(endsAt?: string) {
 
 function FlashDealModal() {
   const { data: promo, isLoading } = useGetActivePromoQuery()
-  const [isOpen, setIsOpen] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(promo?.endsAt))
+  const [isDismissed, setIsDismissed] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  // Derive initial validity
+  const isPromoValid = Boolean(
+    promo &&
+    promo.isActive &&
+    promo.enableAutoDiscount !== false &&
+    promo.endsAt
+  )
+
+  const isAlreadyDismissed = Boolean(
+    promo?._id && sessionStorage.getItem(`promo_dismissed_${promo._id}`) === 'true'
+  )
+
+  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(promo?.endsAt))
+
   useEffect(() => {
-    if (!promo || !promo.isActive || promo.enableAutoDiscount === false || !promo.endsAt) return
+    if (!promo?.endsAt) return
 
-    const initialTime = calculateTimeLeft(promo.endsAt)
-    if (initialTime.isExpired) return
-
-    setIsOpen(true)
-  }, [promo])
-
-  useEffect(() => {
-    if (!promo?.endsAt || !isOpen) return
-
-    setTimeLeft(calculateTimeLeft(promo.endsAt))
     const timer = setInterval(() => {
       const nextTime = calculateTimeLeft(promo.endsAt)
       setTimeLeft(nextTime)
       if (nextTime.isExpired) {
-        setIsOpen(false)
         clearInterval(timer)
       }
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [promo?.endsAt, isOpen])
+  }, [promo?.endsAt])
 
-  if (isLoading || !promo || !promo.isActive || promo.enableAutoDiscount === false || !isOpen || timeLeft.isExpired) {
+  if (
+    isLoading ||
+    !isPromoValid ||
+    isDismissed ||
+    isAlreadyDismissed ||
+    timeLeft.isExpired
+  ) {
     return null
   }
 
   const handleDismiss = () => {
-    setIsOpen(false)
-    if (promo._id) {
+    setIsDismissed(true)
+    if (promo?._id) {
       sessionStorage.setItem(`promo_dismissed_${promo._id}`, 'true')
     }
   }
