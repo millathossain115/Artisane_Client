@@ -49,7 +49,7 @@ function FlashDealBanner() {
   }
 
   return (
-    <section className="border-y border-black/10 bg-[#181512] px-4 py-3.5 text-white sm:px-6 lg:px-8">
+    <section className="border-y border-black/10 bg-[#181512] px-4 py-6 sm:py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-center md:flex-row md:text-left">
         {/* Left: Icon + Title */}
         <div className="flex items-center gap-3">

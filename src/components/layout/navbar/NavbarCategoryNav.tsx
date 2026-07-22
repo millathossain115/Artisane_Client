@@ -100,38 +100,52 @@ function NavbarCategoryNav() {
 
   return (
     <div
-      className="relative hidden border-t border-black/10 bg-[#eee2d3]/70 sm:block"
+      className="relative hidden border-t border-[#e2d5c5] bg-[#f4ebe1]/90 backdrop-blur-sm sm:block"
       onMouseLeave={() => setActivePanel('')}
     >
-      <nav className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-2 sm:overflow-x-auto sm:px-6 lg:px-8">
+      <nav className="mx-auto flex max-w-7xl items-center gap-1 px-4 py-1.5 sm:overflow-x-auto sm:px-6 lg:px-8">
         <Link
-          className="inline-flex shrink-0 items-center gap-1.5 px-3.5 py-2 text-sm font-bold text-[#4f463d] transition hover:bg-white hover:text-[#181512]"
+          className="group relative inline-flex shrink-0 items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#4a3528] transition-colors duration-200 hover:text-[#181512]"
           onClick={() => setActivePanel('')}
           onFocus={() => setActivePanel('all-categories')}
           onMouseEnter={() => setActivePanel('all-categories')}
           to="/categories"
         >
-          Categories
-          <ChevronDown className="h-4 w-4" />
+          <span>Categories</span>
+          <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-180" />
+          <span
+            className={`absolute bottom-0 left-3 right-3 h-[2px] bg-[#5c3d2e] transition-transform duration-300 origin-left ${
+              activePanel === 'all-categories'
+                ? 'scale-x-100'
+                : 'scale-x-0 group-hover:scale-x-100'
+            }`}
+          />
         </Link>
 
         {isCategoriesLoading
           ? Array.from({ length: 5 }).map((_, index) => (
               <span
-                className="hidden h-9 w-24 shrink-0 animate-pulse bg-white/70 sm:block"
+                className="hidden h-8 w-24 shrink-0 animate-pulse bg-[#e8ded5] sm:block"
                 key={index}
               />
             ))
           : featuredCategories.map((category) => (
               <Link
-                className="hidden shrink-0 px-3 py-2 text-sm font-bold text-[#4f463d] transition hover:bg-white hover:text-[#181512] sm:block"
+                className="group relative hidden shrink-0 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#4a3528] transition-colors duration-200 hover:text-[#181512] sm:block"
                 key={category._id}
                 onClick={() => setActivePanel('')}
                 onFocus={() => setActivePanel(category._id)}
                 onMouseEnter={() => setActivePanel(category._id)}
                 to={getCategoryUrl(category._id)}
               >
-                {category.name}
+                <span>{category.name}</span>
+                <span
+                  className={`absolute bottom-0 left-3 right-3 h-[2px] bg-[#5c3d2e] transition-transform duration-300 origin-left ${
+                    activePanel === category._id
+                      ? 'scale-x-100'
+                      : 'scale-x-0 group-hover:scale-x-100'
+                  }`}
+                />
               </Link>
             ))}
       </nav>

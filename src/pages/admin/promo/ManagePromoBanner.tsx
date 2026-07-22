@@ -315,20 +315,27 @@ function ManagePromoBanner() {
                 <div className="flex items-center gap-2 text-xs font-bold text-[#8f3f1d] mb-2">
                   <Sparkles className="h-4 w-4" /> Live Preview
                 </div>
-                <div className="bg-[#8f3f1d] text-white p-3 rounded flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <div>
-                    <span className="bg-yellow-400 text-black px-1.5 py-0.5 rounded font-bold mr-2">
+                <div className="bg-[#181512] text-white p-6 sm:p-7 flex flex-wrap items-center justify-between gap-4 text-xs shadow-md border-y border-black/10">
+                  <div className="flex items-center gap-3">
+                    <span className="bg-[#8f3f1d] text-white px-2 py-1 rounded font-bold uppercase tracking-wider text-[11px]">
                       Flash Deal
                     </span>
-                    <span className="font-bold">{formState.title || 'Banner Title'}</span>
+                    <div>
+                      <h4 className="font-bold text-sm text-white">{formState.title || 'Banner Title'}</h4>
+                      {formState.description && (
+                        <p className="text-xs text-[#f1c9a6] mt-0.5">{formState.description}</p>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="bg-black/30 px-2 py-0.5 rounded font-mono font-bold">
-                      02D : 14H : 30M
-                    </span>
-                    <span className="border border-white/40 px-2 py-0.5 rounded font-mono">
-                      {formState.code || 'CODE'}
-                    </span>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-1.5 border border-white/15 bg-white/5 px-3 py-1.5 font-mono text-xs font-bold text-[#f1c9a6]">
+                      02d : 14h : 30m : 45s
+                    </div>
+                    {formState.buttonText && (
+                      <span className="bg-[#8f3f1d] px-4 py-1.5 font-bold text-white text-xs">
+                        {formState.buttonText}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

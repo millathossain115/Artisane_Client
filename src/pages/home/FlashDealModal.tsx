@@ -4,7 +4,9 @@ import { Link } from 'react-router-dom'
 import { useGetActivePromoQuery } from '../../features/promo/promoApi'
 
 function calculateTimeLeft(endsAt?: string) {
-  if (!endsAt) return { days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true }
+  if (!endsAt) {
+    return { days: 2, hours: 14, minutes: 30, seconds: 0, isExpired: false }
+  }
 
   const difference = new Date(endsAt).getTime() - new Date().getTime()
   if (difference <= 0) {
@@ -25,17 +27,8 @@ function FlashDealModal() {
   const [isDismissed, setIsDismissed] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  // Derive initial validity
-  const isPromoValid = Boolean(
-    promo &&
-    promo.isActive &&
-    promo.enableAutoDiscount !== false &&
-    promo.endsAt
-  )
-
-  const isAlreadyDismissed = Boolean(
-    promo?._id && sessionStorage.getItem(`promo_dismissed_${promo._id}`) === 'true'
-  )
+  // Derive promo validity
+  const isPromoValid = Boolean(promo && promo.isActive !== false)
 
   const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(promo?.endsAt))
 
@@ -58,7 +51,6 @@ function FlashDealModal() {
     !promo ||
     !isPromoValid ||
     isDismissed ||
-    isAlreadyDismissed ||
     timeLeft.isExpired
   ) {
     return null
