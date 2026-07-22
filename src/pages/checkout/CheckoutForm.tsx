@@ -11,6 +11,7 @@ import {
   X,
 } from 'lucide-react'
 
+import type { UserAddress } from '../../features/address/addressApi'
 import type { LocationOption } from '../../features/locations/locationApi'
 import type { PaymentMethod } from '../../features/orders/orderApi'
 import { paymentOptions, type CheckoutMessage } from './checkoutUtils'
@@ -25,6 +26,9 @@ type CheckoutFormProps = {
   message: CheckoutMessage | null
   messageRef: RefObject<HTMLDivElement | null>
   notes: string
+  savedAddresses?: UserAddress[]
+  selectedAddressId?: string
+  onSelectAddress?: (address: UserAddress) => void
   onDistrictChange: (value: string) => void
   onDismissMessage: () => void
   onFullAddressChange: (value: string) => void
@@ -52,6 +56,9 @@ function CheckoutForm({
   message,
   messageRef,
   notes,
+  savedAddresses = [],
+  selectedAddressId,
+  onSelectAddress,
   onDistrictChange,
   onDismissMessage,
   onFullAddressChange,
@@ -86,6 +93,46 @@ function CheckoutForm({
           </p>
         </div>
       </div>
+
+      {savedAddresses.length > 0 ? (
+        <div className="mt-6 border border-black/10 bg-[#f8f3ea]/30 p-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-[#7a3f1d]">
+            Select Saved Address
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {savedAddresses.map((addr) => {
+              const isSelected = selectedAddressId === addr._id
+              return (
+                <button
+                  key={addr._id}
+                  type="button"
+                  onClick={() => onSelectAddress?.(addr)}
+                  className={`text-left p-3 border transition ${
+                    isSelected
+                      ? 'border-[#7a3f1d] bg-white ring-1 ring-[#7a3f1d]'
+                      : 'border-black/10 bg-white hover:border-[#181512]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-[#7a3f1d]">{addr.label}</span>
+                    {addr.isDefault && (
+                      <span className="text-[10px] bg-[#7a3f1d] text-white px-1.5 py-0.5 rounded">
+                        Default
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-xs font-bold text-[#181512]">
+                    {addr.recipientName} ({addr.phone})
+                  </p>
+                  <p className="mt-0.5 text-xs text-[#6b5f53] truncate">
+                    {addr.streetAddress}, {addr.city}
+                  </p>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ) : null}
 
       {message ? (
         <div

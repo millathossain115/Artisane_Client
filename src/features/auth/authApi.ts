@@ -107,6 +107,11 @@ export function getAccessToken() {
   return localStorage.getItem(ACCESS_TOKEN_KEY)
 }
 
+export function getAuthHeader(): Record<string, string> {
+  const token = getAccessToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 export function getStoredUser() {
   const user = localStorage.getItem(USER_KEY)
 

@@ -1,9 +1,13 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { ArrowLeft } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 
 import Footer from '../../components/layout/Footer'
 import Navbar from '../../components/layout/Navbar'
+import {
+  fetchMyAddresses,
+  type UserAddress,
+} from '../../features/address/addressApi'
 import { getAccessToken, getStoredUser } from '../../features/auth/authApi'
 import { useGetMyProfileQuery } from '../../features/auth/profileApi'
 import { clearCart } from '../../features/cart/cartSlice'
@@ -12,8 +16,8 @@ import {
   useGetZonesQuery,
 } from '../../features/locations/locationApi'
 import {
-  type PaymentMethod,
   useCreateOrderMutation,
+  type PaymentMethod,
 } from '../../features/orders/orderApi'
 import { useAppDispatch, useAppSelector } from '../../redux/hooks'
 import CheckoutConfirmModal from './CheckoutConfirmModal'
@@ -21,12 +25,12 @@ import CheckoutForm from './CheckoutForm'
 import CheckoutSummary from './CheckoutSummary'
 import {
   CHECKOUT_MESSAGE_SCROLL_OFFSET,
-  PAYMENT_REDIRECT_TIMEOUT_MS,
-  type CheckoutMessage,
-  type PendingCheckoutOrder,
   getCheckoutErrorMessage,
   getPaymentRedirectUrl,
+  PAYMENT_REDIRECT_TIMEOUT_MS,
   withTimeout,
+  type CheckoutMessage,
+  type PendingCheckoutOrder,
 } from './checkoutUtils'
 
 function Checkout() {
@@ -50,10 +54,24 @@ function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod')
   const [notes, setNotes] = useState('')
   const [message, setMessage] = useState<CheckoutMessage | null>(null)
-  const [pendingOrder, setPendingOrder] =
-    useState<PendingCheckoutOrder | null>(null)
+  const [pendingOrder, setPendingOrder] = useState<PendingCheckoutOrder | null>(
+    null,
+  )
   const [isConfirmingOrder, setIsConfirmingOrder] = useState(false)
-  const [hasPrefilledProfile, setHasPrefilledProfile] = useState(false)
+  const [prefilledProfileId, setPrefilledProfileId] = useState<string | null>(null)
+
+  if (profile && prefilledProfileId !== (profile._id || 'loaded')) {
+    setPrefilledProfileId(profile._id || 'loaded')
+    setDeliveryForm((current) => ({
+      ...current,
+      fullAddress: current.fullAddress || profile.address || '',
+      recipientName:
+        current.recipientName || profile.name || storedUser?.name || '',
+      recipientPhone:
+        current.recipientPhone || profile.phone || storedUser?.phone || '',
+    }))
+  }
+
   const { data: districts = [], isLoading: isDistrictsLoading } =
     useGetDistrictsQuery(undefined, {
       skip: !accessToken,
@@ -70,8 +88,7 @@ function Checkout() {
     [cartItems],
   )
   const selectedDistrict = useMemo(
-    () =>
-      districts.find((district) => district.id === deliveryForm.districtId),
+    () => districts.find((district) => district.id === deliveryForm.districtId),
     [deliveryForm.districtId, districts],
   )
   const selectedZone = useMemo(
@@ -98,23 +115,10 @@ function Checkout() {
     })
   }, [message])
 
-  useEffect(() => {
-    if (!profile || hasPrefilledProfile) {
-      return
-    }
-
-    setDeliveryForm((current) => ({
-      ...current,
-      fullAddress: current.fullAddress || profile.address || '',
-      recipientName:
-        current.recipientName || profile.name || storedUser?.name || '',
-      recipientPhone:
-        current.recipientPhone || profile.phone || storedUser?.phone || '',
-    }))
-    setHasPrefilledProfile(true)
-  }, [hasPrefilledProfile, profile, storedUser?.name, storedUser?.phone])
-
-  function updateDeliveryField(field: keyof typeof deliveryForm, value: string) {
+  function updateDeliveryField(
+    field: keyof typeof deliveryForm,
+    value: string,
+  ) {
     setDeliveryForm((current) => ({
       ...current,
       [field]: value,
@@ -128,6 +132,28 @@ function Checkout() {
       zoneId: '',
     }))
   }
+
+  const [savedAddresses, setSavedAddresses] = useState<UserAddress[]>([])
+  const [selectedAddressId, setSelectedAddressId] = useState<string>('')
+
+  useEffect(() => {
+    if (!accessToken) return
+    fetchMyAddresses()
+      .then((data) => {
+        setSavedAddresses(data)
+        const defaultAddr = data.find((a) => a.isDefault) || data[0]
+        if (defaultAddr) {
+          setSelectedAddressId(defaultAddr._id)
+          setDeliveryForm((curr) => ({
+            ...curr,
+            recipientName: defaultAddr.recipientName,
+            recipientPhone: defaultAddr.phone,
+            fullAddress: `${defaultAddr.streetAddress}, ${defaultAddr.city}${defaultAddr.postalCode ? ' - ' + defaultAddr.postalCode : ''}`,
+          }))
+        }
+      })
+      .catch(() => {})
+  }, [accessToken])
 
   if (!accessToken) {
     return <Navigate replace to="/login" />
@@ -228,6 +254,16 @@ function Checkout() {
     }
   }
 
+  function handleSelectSavedAddress(addr: UserAddress) {
+    setSelectedAddressId(addr._id)
+    setDeliveryForm((curr) => ({
+      ...curr,
+      recipientName: addr.recipientName,
+      recipientPhone: addr.phone,
+      fullAddress: `${addr.streetAddress}, ${addr.city}${addr.postalCode ? ' - ' + addr.postalCode : ''}`,
+    }))
+  }
+
   return (
     <div className="min-h-screen bg-[#f6f0e5] text-[#181512]">
       <Navbar />
@@ -243,6 +279,9 @@ function Checkout() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_420px] lg:items-start">
           <CheckoutForm
+            savedAddresses={savedAddresses}
+            selectedAddressId={selectedAddressId}
+            onSelectAddress={handleSelectSavedAddress}
             districts={districts}
             fullAddress={deliveryForm.fullAddress}
             hasCartItems={cartItems.length > 0}
