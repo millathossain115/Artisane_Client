@@ -69,8 +69,8 @@ function ReviewsPage() {
   }, [myOrdersData?.data])
 
   const reviewableItems = useMemo(
-    () => reviewableProducts?.data ?? [],
-    [reviewableProducts?.data],
+    () => reviewableProducts ?? [],
+    [reviewableProducts],
   )
   const myReviews = useMemo(() => reviewList?.data ?? [], [reviewList?.data])
 
