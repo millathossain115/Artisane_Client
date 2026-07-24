@@ -14,6 +14,7 @@ import { useGetMyOrdersQuery } from '../../../features/orders/orderApi'
 import { userNavItems } from '../user-dashboard/userNavItems'
 import ReviewMessageBanner from './components/ReviewMessageBanner'
 import UserReviewsPanel from './components/UserReviewsPanel'
+import DeleteReviewModal from './components/DeleteReviewModal'
 import {
   clampRating,
   getApiErrorMessage,
@@ -47,6 +48,8 @@ function ReviewsPage() {
   const [deleteReview, { isLoading: isDeletingReview }] =
     useDeleteReviewMutation()
 
+  const [deletingReview, setDeletingReview] = useState<Review | null>(null)
+
   const { data: myOrdersData } = useGetMyOrdersQuery(
     { limit: 100 },
     { refetchOnMountOrArgChange: true },
@@ -63,48 +66,51 @@ function ReviewsPage() {
       })
     })
     return map
-  }, [myOrdersData?.data])
+  }, [myOrdersData])
 
-  const reviewableItems = reviewableProducts ?? []
-  const myReviews = useMemo(() => reviewList?.data ?? [], [reviewList?.data])
+  const reviewableItems = useMemo(() => {
+    return (reviewableProducts?.data ?? []).map((item) => ({
+      ...item,
+      orderId: productOrderMap[item._id],
+    }))
+  }, [reviewableProducts, productOrderMap])
 
-  function updateDraft(productId: string, patch: Partial<ReviewDraft>) {
-    setDrafts((current) => {
-      const currentDraft = current[productId] ?? { comment: '', rating: 5 }
+  const myReviews = reviewList?.data ?? []
 
-      return {
-        ...current,
-        [productId]: {
-          ...currentDraft,
-          ...patch,
-        },
-      }
-    })
+  function updateDraft(productId: string, nextDraft: Partial<ReviewDraft>) {
+    setDrafts((current) => ({
+      ...current,
+      [productId]: {
+        comment: nextDraft.comment ?? current[productId]?.comment ?? '',
+        rating: nextDraft.rating ?? current[productId]?.rating ?? 5,
+      },
+    }))
   }
 
-  async function handleCreateReview(product: ReviewableProduct) {
-    const draft = drafts[product._id] ?? { comment: '', rating: 5 }
+  async function handleCreateReview(productId: string, orderId?: string) {
+    const draft = drafts[productId] ?? { comment: '', rating: 5 }
 
     try {
       await createReview({
-        comment: draft.comment.trim() || undefined,
-        product: product._id,
-        rating: clampRating(draft.rating),
+        comment: draft.comment.trim(),
+        product: productId,
+        rating: draft.rating,
       }).unwrap()
 
       setDrafts((current) => {
         const next = { ...current }
-        delete next[product._id]
+        delete next[productId]
         return next
       })
+
       await refetchMyReviews()
       setMessage({
-        text: `${product.name} sent to review.`,
+        text: 'Review published successfully.',
         type: 'success',
       })
     } catch (error) {
       setMessage({
-        text: getApiErrorMessage(error, 'Failed to create review.'),
+        text: getApiErrorMessage(error, 'Failed to submit review.'),
         type: 'error',
       })
     }
@@ -126,9 +132,9 @@ function ReviewsPage() {
   async function handleSaveEdit(review: Review) {
     try {
       await updateReview({
-        comment: editDraft.comment.trim() || undefined,
+        comment: editDraft.comment.trim(),
         id: review._id,
-        rating: clampRating(editDraft.rating),
+        rating: editDraft.rating,
       }).unwrap()
 
       setEditingReviewId('')
@@ -145,18 +151,20 @@ function ReviewsPage() {
     }
   }
 
-  async function handleDeleteReview(review: Review) {
-    const shouldDelete = window.confirm('Delete this review?')
+  function handleRequestDelete(review: Review) {
+    setDeletingReview(review)
+  }
 
-    if (!shouldDelete) {
+  async function handleConfirmDelete() {
+    if (!deletingReview) {
       return
     }
 
     try {
-      await deleteReview(review._id).unwrap()
+      await deleteReview(deletingReview._id).unwrap()
       await refetchMyReviews()
       setMessage({
-        text: `${getReviewProductName(review)} review deleted.`,
+        text: `${getReviewProductName(deletingReview)} review deleted.`,
         type: 'success',
       })
     } catch (error) {
@@ -164,6 +172,8 @@ function ReviewsPage() {
         text: getApiErrorMessage(error, 'Failed to delete review.'),
         type: 'error',
       })
+    } finally {
+      setDeletingReview(null)
     }
   }
 
@@ -199,7 +209,7 @@ function ReviewsPage() {
         onCancelEdit={handleCancelEdit}
         onChangeEditDraft={setEditDraft}
         onCreateReview={handleCreateReview}
-        onDeleteReview={handleDeleteReview}
+        onDeleteReview={handleRequestDelete}
         onSaveEdit={handleSaveEdit}
         onStartEdit={handleStartEdit}
         productOrderMap={productOrderMap}
@@ -207,6 +217,15 @@ function ReviewsPage() {
         setMode={setMode}
         updateDraft={updateDraft}
       />
+
+      {deletingReview && (
+        <DeleteReviewModal
+          isDeleting={isDeletingReview}
+          onClose={() => setDeletingReview(null)}
+          onConfirm={handleConfirmDelete}
+          review={deletingReview}
+        />
+      )}
     </DashboardLayout>
   )
 }
