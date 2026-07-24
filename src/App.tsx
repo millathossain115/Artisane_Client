@@ -22,6 +22,8 @@ import UserReviewsPage from './pages/dashboard/reviews/ReviewsPage'
 import WishlistPage from './pages/dashboard/user-dashboard/WishlistPage'
 import AdminReviewsPage from './pages/admin/reviews/ReviewsPage'
 import ManagePromoBanner from './pages/admin/promo/ManagePromoBanner'
+import ManagePaymentLogs from './pages/admin/paymentLog/ManagePaymentLogs'
+import PaymentLogDetailPage from './pages/admin/paymentLog/PaymentLogDetailPage'
 import Home from './pages/Home'
 import InfoPage from './pages/info/InfoPage'
 import NotFound from './pages/NotFound'
@@ -144,6 +146,22 @@ function App() {
           element={
             <AdminRoute>
               <ManagePromoBanner />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/payment-logs"
+          element={
+            <AdminRoute>
+              <ManagePaymentLogs />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/payment-logs/:ref"
+          element={
+            <AdminRoute>
+              <PaymentLogDetailPage />
             </AdminRoute>
           }
         />

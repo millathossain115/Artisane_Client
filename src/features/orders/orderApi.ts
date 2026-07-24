@@ -39,6 +39,12 @@ export type Order = {
   _id: string
   contactPhone?: string
   createdAt?: string
+  currency?: string
+  customerInfo?: {
+    email?: string
+    name?: string
+    phone?: string
+  }
   courierOrderId?: string
   courierProvider?: CourierProvider
   courierStatus?: string
@@ -52,6 +58,7 @@ export type Order = {
   orderStatus?: OrderStatus
   paymentMethod?: PaymentMethod
   paymentStatus?: PaymentStatus
+  publicRef?: string
   shippingAddress?: string
   shippedAt?: string
   shippingCharge?: number
@@ -61,9 +68,13 @@ export type Order = {
   updatedAt?: string
   deliveredAt?: string
   lastCourierSyncAt?: string
+  gatewayResponse?: Record<string, unknown>
+  paymentGatewayData?: Record<string, unknown>
   trackingCode?: string
   trackingUrl?: string
+  transactionId?: string
   user?: AdminUser | string
+  viewToken?: string
 }
 
 export type CreateOrderPayload = {

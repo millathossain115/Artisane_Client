@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Heart, ImageOff, ShieldCheck, Star, Trash2 } from 'lucide-react'
+import { Heart, ImageOff, LoaderCircle, ShieldCheck, Star, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import type { UserDashboardStats } from '../../../features/dashboard/dashboardApi'
@@ -9,7 +9,7 @@ import {
   useGetWishlistDashboardQuery,
 } from '../../../features/wishlists/wishlistApi'
 import { formatPrice, getProductImage } from '../../../utils/productDisplay'
-import { formatCount } from '../dashboardFormat'
+import { formatCount, formatDate } from '../dashboardFormat'
 
 type UserWishlistReviewsSectionProps = {
   stats: UserDashboardStats | null
@@ -19,6 +19,10 @@ function UserWishlistReviewsSection({
   stats,
 }: UserWishlistReviewsSectionProps) {
   const [removingId, setRemovingId] = useState('')
+  const [removeTarget, setRemoveTarget] = useState<{
+    id: string
+    name: string
+  } | null>(null)
   const {
     data: wishlistList,
     isError: hasWishlistError,
@@ -38,7 +42,24 @@ function UserWishlistReviewsSection({
       await deleteWishlistItem(id).unwrap()
     } finally {
       setRemovingId('')
+      setRemoveTarget(null)
     }
+  }
+
+  function renderReviewStars(rating?: number) {
+    const safeRating = Math.max(0, Math.min(5, Math.round(rating ?? 0)))
+
+    return Array.from({ length: 5 }).map((_, index) => (
+      <Star
+        aria-hidden="true"
+        className={`h-3.5 w-3.5 ${
+          index < safeRating
+            ? 'fill-[#7a3f1d] text-[#7a3f1d]'
+            : 'text-[#d2c5b5]'
+        }`}
+        key={index}
+      />
+    ))
   }
 
   return (
@@ -113,7 +134,12 @@ function UserWishlistReviewsSection({
                       aria-label={`Remove ${product?.name ?? 'product'} from wishlist`}
                       className="grid h-9 w-9 place-items-center border border-black/10 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef] disabled:cursor-not-allowed disabled:opacity-50"
                       disabled={removingId === item._id}
-                      onClick={() => handleRemoveWishlistItem(item._id)}
+                      onClick={() =>
+                        setRemoveTarget({
+                          id: item._id,
+                          name: product?.name ?? 'this product',
+                        })
+                      }
                       type="button"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -152,17 +178,29 @@ function UserWishlistReviewsSection({
         <div className="mt-5 space-y-4">
           {stats?.recentReviews.length ? (
             stats.recentReviews.map((review) => (
-              <div className="flex gap-4" key={review._id}>
+              <div className="flex gap-4 border-t border-black/10 pt-4" key={review._id}>
                 <span className="grid h-10 w-10 shrink-0 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
                   <Star className="h-5 w-5" />
                 </span>
-                <div>
-                  <p className="font-bold">
-                    {review.product?.name ?? 'Product review'}
-                  </p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-4">
+                    <p className="font-bold">
+                      {review.product?.name ?? 'Product review'}
+                    </p>
+                    <div className="shrink-0 text-right">
+                      <p className="text-xs font-bold text-[#6b5f53]">
+                        {formatDate(review.createdAt)}
+                      </p>
+                      <div
+                        aria-label={`${formatCount(review.rating)} star rating`}
+                        className="mt-1 flex justify-end gap-0.5"
+                      >
+                        {renderReviewStars(review.rating)}
+                      </div>
+                    </div>
+                  </div>
                   <p className="mt-1 text-sm text-[#6b5f53]">
-                    {formatCount(review.rating)} stars
-                    {review.comment ? ` - ${review.comment}` : ''}
+                    {review.comment || 'No comment added.'}
                   </p>
                 </div>
               </div>
@@ -182,6 +220,49 @@ function UserWishlistReviewsSection({
           )}
         </div>
       </div>
+
+      {removeTarget ? (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-[#181512]/55 px-4"
+          role="presentation"
+        >
+          <div
+            aria-modal="true"
+            className="w-full max-w-md border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
+            role="dialog"
+          >
+            <p className="text-sm font-bold text-[#8f3f1d]">Remove wishlist item</p>
+            <h2 className="mt-2 text-2xl font-bold">Remove {removeTarget.name}?</h2>
+            <p className="mt-3 text-sm leading-6 text-[#6b5f53]">
+              This product will be removed from your saved wishlist.
+            </p>
+
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button
+                className="btn-secondary"
+                disabled={removingId === removeTarget.id}
+                onClick={() => setRemoveTarget(null)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-danger disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={removingId === removeTarget.id}
+                onClick={() => handleRemoveWishlistItem(removeTarget.id)}
+                type="button"
+              >
+                {removingId === removeTarget.id ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+                {removingId === removeTarget.id ? 'Removing...' : 'Remove item'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   )
 }

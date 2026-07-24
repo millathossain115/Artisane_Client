@@ -59,18 +59,26 @@ function TrackingCodeLink({ order }: { order: Order }) {
   }
 
   if (!trackingUrl) {
-    return <span className="font-bold">{trackingCode}</span>
+    return (
+      <span
+        className="block max-w-[150px] truncate font-bold"
+        title={trackingCode}
+      >
+        {trackingCode}
+      </span>
+    )
   }
 
   return (
     <a
-      className="inline-flex items-center gap-1 font-bold text-[#7a3f1d] underline"
+      className="inline-flex max-w-[170px] items-center gap-1 font-bold text-[#7a3f1d] underline"
       href={trackingUrl}
       rel="noreferrer"
       target="_blank"
+      title={trackingCode}
     >
-      {trackingCode}
-      <ExternalLink className="h-3.5 w-3.5" />
+      <span className="min-w-0 truncate">{trackingCode}</span>
+      <ExternalLink className="h-3.5 w-3.5 shrink-0" />
     </a>
   )
 }
@@ -233,7 +241,8 @@ function MyOrdersTableSection({
                   </td>
                   <td className="px-5 py-4 text-[#6b5f53]">
                     <Link
-                      className="hover:text-[#181512] hover:underline"
+                      className="block max-w-[260px] truncate hover:text-[#181512] hover:underline"
+                      title={getOrderPrimaryItem(order)}
                       to={getOrderUrl(order)}
                     >
                       {getOrderPrimaryItem(order)}
@@ -263,7 +272,7 @@ function MyOrdersTableSection({
                       <Link
                         aria-label={`View ${formatOrderId(order._id)}`}
                         className="inline-flex min-h-9 items-center gap-1.5 border border-black/10 bg-white px-3 text-xs font-bold text-[#181512] transition hover:border-[#181512]"
-                        to={`/dashboard/orders/${order._id}`}
+                        to={getOrderUrl(order)}
                       >
                         <Eye className="h-3.5 w-3.5" />
                         <span>Details</span>

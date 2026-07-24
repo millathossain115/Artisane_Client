@@ -1,5 +1,6 @@
 import { AlertTriangle, RefreshCw, X } from 'lucide-react'
 import { useState, type Dispatch, type SetStateAction } from 'react'
+import { Link } from 'react-router-dom'
 
 import type {
   Order,
@@ -15,6 +16,7 @@ import {
   getOrderCustomer,
   getOrderItemImage,
   getOrderItemName,
+  getOrderItemUrl,
 } from '../../../../utils/orderDisplay'
 import {
   getEmptyShipmentForm,
@@ -506,23 +508,45 @@ function OrderDetailPanelContent({
 
         {(order.items ?? []).map((item, index) => {
           const imageUrl = getAssetUrl(getOrderItemImage(item))
+          const productUrl = getOrderItemUrl(item)
 
           return (
             <article
               className="grid grid-cols-[64px_1fr_auto] gap-3 border border-black/10 p-3 text-sm"
               key={item._id ?? index}
             >
-              <div className="h-16 overflow-hidden bg-[#f8f3ea]">
-                {imageUrl ? (
-                  <img
-                    alt={getOrderItemName(item)}
-                    className="h-full w-full object-cover"
-                    src={imageUrl}
-                  />
-                ) : null}
-              </div>
+              {productUrl ? (
+                <Link
+                  className="h-16 overflow-hidden bg-[#f8f3ea] transition hover:opacity-80"
+                  to={productUrl}
+                >
+                  {imageUrl ? (
+                    <img
+                      alt={getOrderItemName(item)}
+                      className="h-full w-full object-cover"
+                      src={imageUrl}
+                    />
+                  ) : null}
+                </Link>
+              ) : (
+                <div className="h-16 overflow-hidden bg-[#f8f3ea]">
+                  {imageUrl ? (
+                    <img
+                      alt={getOrderItemName(item)}
+                      className="h-full w-full object-cover"
+                      src={imageUrl}
+                    />
+                  ) : null}
+                </div>
+              )}
               <div>
-                <p className="font-bold">{getOrderItemName(item)}</p>
+                {productUrl ? (
+                  <Link className="font-bold hover:underline" to={productUrl}>
+                    {getOrderItemName(item)}
+                  </Link>
+                ) : (
+                  <p className="font-bold">{getOrderItemName(item)}</p>
+                )}
                 <p className="mt-1 text-[#6b5f53]">
                   Qty {item.quantity ?? 1}
                 </p>

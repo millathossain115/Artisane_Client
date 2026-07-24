@@ -32,6 +32,7 @@ import {
   getDeliveryIssueLabel,
   getOrderItemImage,
   getOrderItemName,
+  getOrderItemUrl,
   getOrderProgressIndex,
   getOrderTrackingUrl,
 } from '../../utils/orderDisplay'
@@ -39,6 +40,7 @@ import { formatPrice, getAssetUrl } from '../../utils/productDisplay'
 import MyOrdersCancelModal from './components/MyOrdersCancelModal'
 import MyOrdersMessageBanner from './components/MyOrdersMessageBanner'
 import { getApiErrorMessage, type OrderMessage } from './myOrdersUtils'
+import { getDashboardOrderLookupRef } from './orderRouteState'
 import { userNavItems } from './user-dashboard/userNavItems'
 
 function TrackingCodeLink({ order }: { order: Order }) {
@@ -67,20 +69,21 @@ function TrackingCodeLink({ order }: { order: Order }) {
 }
 
 function OrderDetailPage() {
-  const { id = '' } = useParams<{ id: string }>()
+  const { id: routeRef = '' } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [message, setMessage] = useState<OrderMessage | null>(null)
   const [isReorderingAll, setIsReorderingAll] = useState(false)
   const [reorderingItemId, setReorderingItemId] = useState<string | null>(null)
+  const orderLookupRef = getDashboardOrderLookupRef(routeRef)
 
   const {
     data: order,
     isError,
     isLoading,
-  } = useGetOrderByIdQuery(id, {
-    skip: !id,
+  } = useGetOrderByIdQuery(orderLookupRef, {
+    skip: !orderLookupRef,
   })
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation()
   const [fetchProduct] = useLazyGetProductByIdQuery()
@@ -251,7 +254,7 @@ function OrderDetailPage() {
         <div className="border border-[#c85f2f]/30 bg-[#fff5ef] p-6 text-center text-[#8f3f1d]">
           <h3 className="text-xl font-bold">Order not found</h3>
           <p className="mt-2 text-sm font-medium">
-            Could not retrieve order details for ID: {id}
+            Could not retrieve order details for this secure order reference.
           </p>
           <button
             className="mt-4 inline-flex min-h-10 items-center justify-center bg-[#181512] px-4 text-xs font-bold text-white transition hover:bg-[#7a3f1d]"
@@ -432,22 +435,42 @@ function OrderDetailPage() {
                 const itemKey = item._id || productId || String(index)
                 const isItemReordering = reorderingItemId === itemKey
 
+                const productUrl = getOrderItemUrl(item)
+
                 return (
                   <article
                     className="grid grid-cols-[64px_1fr_auto_auto] items-center gap-4 border border-black/10 p-3 text-sm"
                     key={item._id ?? index}
                   >
-                    <div className="h-16 w-16 overflow-hidden bg-[#f8f3ea]">
-                      {imageUrl ? (
-                        <img
-                          alt={getOrderItemName(item)}
-                          className="h-full w-full object-cover"
-                          src={imageUrl}
-                        />
-                      ) : null}
-                    </div>
+                    {productUrl ? (
+                      <Link className="h-16 w-16 overflow-hidden bg-[#f8f3ea] transition hover:opacity-80" to={productUrl}>
+                        {imageUrl ? (
+                          <img
+                            alt={getOrderItemName(item)}
+                            className="h-full w-full object-cover"
+                            src={imageUrl}
+                          />
+                        ) : null}
+                      </Link>
+                    ) : (
+                      <div className="h-16 w-16 overflow-hidden bg-[#f8f3ea]">
+                        {imageUrl ? (
+                          <img
+                            alt={getOrderItemName(item)}
+                            className="h-full w-full object-cover"
+                            src={imageUrl}
+                          />
+                        ) : null}
+                      </div>
+                    )}
                     <div>
-                      <p className="font-bold">{getOrderItemName(item)}</p>
+                      {productUrl ? (
+                        <Link className="font-bold hover:underline" to={productUrl}>
+                          {getOrderItemName(item)}
+                        </Link>
+                      ) : (
+                        <p className="font-bold">{getOrderItemName(item)}</p>
+                      )}
                       <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
                         Quantity: {item.quantity ?? 1}
                       </p>

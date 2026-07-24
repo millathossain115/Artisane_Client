@@ -28,6 +28,7 @@ const TITLE_MAP: Record<string, string> = {
   '/dashboard/reviews': 'My Reviews',
   '/dashboard/wishlist': 'My Wishlist',
   '/dashboard/admin/orders': 'Manage Orders',
+  '/dashboard/admin/payment-logs': 'Payment Logs',
   '/dashboard/admin/reviews': 'Manage Reviews',
   '/dashboard/admin/promo': 'Manage Promo',
   '/dashboard/categories': 'Manage Categories',
@@ -50,6 +51,9 @@ function getDynamicTitle(pathname: string): string {
   }
   if (pathname.startsWith('/dashboard/admin/orders/')) {
     return 'Admin Order Details'
+  }
+  if (pathname.startsWith('/dashboard/admin/payment-logs/')) {
+    return 'Payment Log Details'
   }
 
   return 'Page Not Found'

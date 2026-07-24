@@ -6,6 +6,7 @@ import {
   FolderTree,
   LayoutDashboard,
   MessageSquareText,
+  Receipt,
   Settings,
   Star,
   UsersRound,
@@ -14,6 +15,7 @@ import {
 export const adminNavItems = [
   { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
   { label: 'Orders', to: '/dashboard/admin/orders', icon: ClipboardList },
+  { label: 'Payment Logs', to: '/dashboard/admin/payment-logs', icon: Receipt },
   {
     label: 'Product',
     items: [

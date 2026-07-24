@@ -2,6 +2,7 @@ import { Edit3, ImageOff, Loader2, Save, Star, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { getProductUrl } from '../../../../utils/productDisplay'
+import { getOrderUrl } from '../../../../utils/orderDisplay'
 import type { Review } from '../../../../features/reviews/reviewApi'
 import { formatDate } from '../../dashboardFormat'
 import {
@@ -97,7 +98,7 @@ function ReviewCard({
         <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
           <Link
             className="inline-flex h-9 shrink-0 items-center justify-center border border-black/10 px-3 text-xs font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
-            to={orderId ? `/dashboard/orders/${orderId}` : '/dashboard/orders'}
+            to={getOrderUrl(orderId)}
           >
             View order details
           </Link>

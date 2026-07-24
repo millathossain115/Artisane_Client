@@ -1,5 +1,6 @@
 import type { Order, OrderItem } from '../features/orders/orderApi'
 import type { Product } from '../features/products/productApi'
+import { getDashboardOrderRouteRef } from '../pages/dashboard/orderRouteState'
 
 export function formatOrderId(id: string) {
   return `#${id.slice(-6).toUpperCase()}`
@@ -107,6 +108,31 @@ export function getOrderItemImage(item?: OrderItem) {
   return undefined
 }
 
+export function getOrderItemUrl(item?: OrderItem) {
+  if (!item) {
+    return undefined
+  }
+
+  if (item.productSlug) {
+    return `/products/${item.productSlug}`
+  }
+
+  if (item.product) {
+    if (typeof item.product === 'object' && item.product) {
+      return `/products/${item.product.slug || item.product._id}`
+    }
+    if (typeof item.product === 'string' && item.product) {
+      return `/products/${item.product}`
+    }
+  }
+
+  if (item._id) {
+    return `/products/${item._id}`
+  }
+
+  return undefined
+}
+
 export function canCancelOrder(order: Order) {
   return ['pending', 'confirmed'].includes(order.orderStatus ?? '')
 }
@@ -167,13 +193,12 @@ export function getOrderTrackingUrl(order: Order) {
   return ''
 }
 
-export function getOrderUrl(order: { _id: string; transactionId?: string }) {
-  const ref = order.transactionId || order._id
-  return `/dashboard/orders/${ref}`
+export function getOrderUrl(
+  order:
+    | { _id: string; publicRef?: string; transactionId?: string; viewToken?: string }
+    | string
+    | undefined,
+) {
+  const ref = getDashboardOrderRouteRef(order)
+  return ref ? `/dashboard/orders/${ref}` : '/dashboard/orders'
 }
-
-export function getAdminOrderUrl(order: { _id: string; transactionId?: string }) {
-  const ref = order.transactionId || order._id
-  return `/dashboard/admin/orders/${ref}`
-}
-

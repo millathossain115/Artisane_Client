@@ -10,6 +10,7 @@ import {
   getProductImage,
   getProductUrl,
 } from '../../../../utils/productDisplay'
+import { getOrderUrl } from '../../../../utils/orderDisplay'
 import { renderStars } from '../reviewPageUtils'
 
 type ReviewableProductCardProps = {
@@ -83,7 +84,7 @@ function ReviewableProductCard({
 
         <Link
           className="inline-flex h-9 shrink-0 items-center justify-center border border-black/10 px-3 text-xs font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
-          to={orderId ? `/dashboard/orders/${orderId}` : '/dashboard/orders'}
+          to={getOrderUrl(orderId)}
         >
           View order details
         </Link>

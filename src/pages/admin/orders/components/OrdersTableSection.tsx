@@ -25,7 +25,6 @@ import {
   formatOrderDate,
   formatOrderId,
   formatOrderStatus,
-  getAdminOrderUrl,
   getOrderCustomer,
   getOrderCustomerEmail,
   getOrderPrimaryItem,
@@ -35,6 +34,7 @@ import {
   orderStatusOptions,
   paymentStatusOptions,
 } from '../orderAdminUtils'
+import { getAdminOrderRouteRef } from '../orderRouteState'
 
 type OrdersTableSectionProps = {
   isError: boolean
@@ -72,6 +72,10 @@ function OrdersTableSection({
   setSearchTerm,
   visibleOrders,
 }: Omit<OrdersTableSectionProps, 'setSelectedOrderId'>) {
+  function getAdminOrderDetailUrl(order: Order) {
+    return `/dashboard/admin/orders/${getAdminOrderRouteRef(order)}`
+  }
+
   return (
     <section className="border border-black/10 bg-white">
       <div className="flex items-center gap-3 border-b border-black/10 p-5">
@@ -205,7 +209,7 @@ function OrdersTableSection({
                   <td className="px-5 py-4 font-bold">
                     <Link
                       className="text-[#7a3f1d] hover:underline"
-                      to={getAdminOrderUrl(order)}
+                      to={getAdminOrderDetailUrl(order)}
                     >
                       {formatOrderId(order._id)}
                     </Link>
@@ -219,7 +223,7 @@ function OrdersTableSection({
                   <td className="px-5 py-4 text-[#6b5f53]">
                     <Link
                       className="hover:text-[#181512] hover:underline"
-                      to={getAdminOrderUrl(order)}
+                      to={getAdminOrderDetailUrl(order)}
                     >
                       {getOrderPrimaryItem(order)}
                     </Link>
@@ -264,7 +268,7 @@ function OrdersTableSection({
                       <Link
                         aria-label={`View ${formatOrderId(order._id)}`}
                         className="inline-flex min-h-9 items-center gap-1.5 border border-black/10 bg-white px-3 text-xs font-bold text-[#181512] transition hover:border-[#181512]"
-                        to={`/dashboard/admin/orders/${order._id}`}
+                        to={getAdminOrderDetailUrl(order)}
                       >
                         <Eye className="h-3.5 w-3.5" />
                         <span>Details</span>

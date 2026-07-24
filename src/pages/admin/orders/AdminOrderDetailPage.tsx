@@ -26,9 +26,11 @@ import {
   type ShipmentFormState,
   type StatusFormState,
 } from './orderAdminUtils'
+import { getAdminOrderLookupRef } from './orderRouteState'
 
 function AdminOrderDetailPage() {
-  const { id = '' } = useParams<{ id: string }>()
+  const { id: routeRef = '' } = useParams<{ id: string }>()
+  const orderLookupRef = getAdminOrderLookupRef(routeRef)
   const navigate = useNavigate()
   const [confirmTarget, setConfirmTarget] = useState<ConfirmTarget | null>(null)
   const [message, setMessage] = useState<AdminOrderMessage | null>(null)
@@ -47,8 +49,8 @@ function AdminOrderDetailPage() {
     isFetching: isFetchingOrderDetail,
     isLoading,
     refetch: refetchOrderDetail,
-  } = useGetOrderByIdQuery(id, {
-    skip: !id,
+  } = useGetOrderByIdQuery(orderLookupRef, {
+    skip: !orderLookupRef,
   })
 
   const [createShipment, { isLoading: isCreatingShipment }] =
@@ -252,7 +254,7 @@ function AdminOrderDetailPage() {
         <div className="border border-[#c85f2f]/30 bg-[#fff5ef] p-6 text-center text-[#8f3f1d]">
           <h3 className="text-xl font-bold">Order not found</h3>
           <p className="mt-2 text-sm font-medium">
-            Could not retrieve order details for ID: {id}
+            Could not retrieve order details for this secure order reference.
           </p>
           <button
             className="mt-4 inline-flex min-h-10 items-center justify-center bg-[#181512] px-4 text-xs font-bold text-white transition hover:bg-[#7a3f1d]"
