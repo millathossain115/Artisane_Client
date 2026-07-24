@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useGetActivePromoQuery } from '../../features/promo/promoApi'
 import type { Product } from '../../features/products/productApi'
 import { getProductPriceInfo } from '../../utils/priceUtils'
+import ProductBadge from './ProductBadge'
 import {
   formatPrice,
   getAssetUrl,
@@ -24,7 +25,7 @@ function ProductShelfCard({ product }: ProductShelfCardProps) {
       className="group block overflow-hidden border border-black/10 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(24,21,18,0.12)]"
       to={getProductUrl(product)}
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#e4d8c8]">
+      <div className="relative aspect-[4/5] overflow-hidden bg-[#f8f3ea]">
         {imageUrl ? (
           <img
             alt={product.name}
@@ -37,8 +38,10 @@ function ProductShelfCard({ product }: ProductShelfCardProps) {
           </div>
         )}
         {priceInfo.hasDiscount && (
-          <div className="absolute left-1.5 top-1.5 bg-[#8f3f1d] px-1.5 py-0.5 text-[10px] font-bold text-white shadow sm:left-3 sm:top-3 sm:px-2 sm:py-1 sm:text-xs">
-            -{priceInfo.discountPercent}% OFF
+          <div className="absolute left-1.5 top-1.5 sm:left-3 sm:top-3">
+            <ProductBadge variant="danger">
+              -{priceInfo.discountPercent}% OFF
+            </ProductBadge>
           </div>
         )}
       </div>

@@ -219,17 +219,17 @@ function WishlistSection({
                       <div className="flex justify-end gap-2">
                         <button
                           aria-label={`Add ${product?.name ?? 'product'} to cart`}
-                          className="inline-flex min-h-9 items-center justify-center gap-2 bg-[#181512] px-3 text-xs font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-45"
+                          className="btn-primary !py-1.5 !px-3"
                           disabled={!canAddToCart}
                           onClick={() => onAddProductToCart(product)}
                           type="button"
                         >
-                          <ShoppingBag className="h-4 w-4" />
+                          <ShoppingBag className="h-3.5 w-3.5" />
                           Cart
                         </button>
                         {product ? (
                           <Link
-                            className="inline-flex min-h-9 items-center justify-center border border-black/10 px-3 text-xs font-bold transition hover:border-[#181512] hover:bg-white"
+                            className="btn-secondary !py-1.5 !px-3"
                             to={`/products/${product._id}`}
                           >
                             View
@@ -237,14 +237,14 @@ function WishlistSection({
                         ) : null}
                         <button
                           aria-label={`Remove ${product?.name ?? 'product'} from wishlist`}
-                          className="grid h-9 w-9 place-items-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef] disabled:cursor-not-allowed disabled:opacity-45"
+                          className="btn-danger grid h-8 w-8 !p-0"
                           disabled={removingId === item._id}
                           onClick={() =>
                             onRemoveWishlistItem(item._id, product?.name)
                           }
                           type="button"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     </td>

@@ -21,6 +21,7 @@ import {
   getProductImage,
   getProductUrl,
 } from '../../utils/productDisplay'
+import ProductBadge from './ProductBadge'
 
 type ProductTileProps = {
   product: Product
@@ -130,7 +131,7 @@ function ProductTile({
       role="link"
       tabIndex={0}
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#e4d8c8]">
+      <div className="relative aspect-[4/5] overflow-hidden bg-[#f8f3ea]">
         {imageUrl ? (
           <img
             alt={product.name}
@@ -145,13 +146,13 @@ function ProductTile({
 
         <div className="absolute left-1.5 top-1.5 flex flex-col gap-1 sm:left-3 sm:top-3">
           {priceInfo.hasDiscount && (
-            <span className="bg-[#8f3f1d] px-1.5 py-0.5 text-[10px] font-bold text-white shadow sm:px-2.5 sm:py-1 sm:text-xs">
+            <ProductBadge variant="danger">
               -{priceInfo.discountPercent}% OFF
-            </span>
+            </ProductBadge>
           )}
-          <span className="bg-white px-1.5 py-0.5 text-[10px] font-bold text-[#7a3f1d] sm:px-3 sm:py-1 sm:text-xs">
+          <ProductBadge variant="neutral">
             {getProductBadge(product)}
-          </span>
+          </ProductBadge>
         </div>
         {!isAdmin ? (
           <button
@@ -161,13 +162,13 @@ function ProductTile({
                 : `Add ${product.name} to wishlist`
             }
             aria-pressed={isWishlisted}
-            className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center bg-white text-[#181512] transition hover:bg-[#181512] hover:text-white disabled:cursor-not-allowed disabled:opacity-70 sm:right-3 sm:top-3 sm:h-10 sm:w-10"
+            className="btn-secondary absolute right-1.5 top-1.5 grid h-8 w-8 !p-0 sm:right-3 sm:top-3 sm:h-9 sm:w-9"
             disabled={isWishlistLoading}
             onClick={handleWishlistClick}
             type="button"
           >
             <Heart
-              className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
+              className={`h-4 w-4 ${
                 isWishlisted ? 'fill-[#8f3f1d] text-[#8f3f1d]' : ''
               }`}
             />
@@ -219,7 +220,7 @@ function ProductTile({
           <div className="mt-2 sm:mt-4">
             <button
               aria-label={`Add ${product.name} to cart`}
-              className="inline-flex min-h-9 w-full items-center justify-center gap-1 bg-[#181512] px-2 text-xs font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-11 sm:gap-2 sm:px-3 sm:text-sm"
+              className="btn-primary w-full"
               disabled={product.stock <= 0}
               onClick={handleAddToCart}
               type="button"
