@@ -1,6 +1,6 @@
 import { LoaderCircle, Trash2 } from 'lucide-react'
 
-import type { Review } from '../../../features/reviews/reviewApi'
+import type { Review } from '../../../../features/reviews/reviewApi'
 import { getReviewProductName } from '../reviewPageUtils'
 
 type DeleteReviewModalProps = {

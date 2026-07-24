@@ -66,51 +66,52 @@ function ReviewsPage() {
       })
     })
     return map
-  }, [myOrdersData])
+  }, [myOrdersData?.data])
 
-  const reviewableItems = useMemo(() => {
-    return (reviewableProducts?.data ?? []).map((item) => ({
-      ...item,
-      orderId: productOrderMap[item._id],
-    }))
-  }, [reviewableProducts, productOrderMap])
+  const reviewableItems = useMemo(
+    () => reviewableProducts?.data ?? [],
+    [reviewableProducts?.data],
+  )
+  const myReviews = useMemo(() => reviewList?.data ?? [], [reviewList?.data])
 
-  const myReviews = reviewList?.data ?? []
+  function updateDraft(productId: string, patch: Partial<ReviewDraft>) {
+    setDrafts((current) => {
+      const currentDraft = current[productId] ?? { comment: '', rating: 5 }
 
-  function updateDraft(productId: string, nextDraft: Partial<ReviewDraft>) {
-    setDrafts((current) => ({
-      ...current,
-      [productId]: {
-        comment: nextDraft.comment ?? current[productId]?.comment ?? '',
-        rating: nextDraft.rating ?? current[productId]?.rating ?? 5,
-      },
-    }))
+      return {
+        ...current,
+        [productId]: {
+          ...currentDraft,
+          ...patch,
+        },
+      }
+    })
   }
 
-  async function handleCreateReview(productId: string, orderId?: string) {
-    const draft = drafts[productId] ?? { comment: '', rating: 5 }
+  async function handleCreateReview(product: ReviewableProduct) {
+    const draft = drafts[product._id] ?? { comment: '', rating: 5 }
 
     try {
       await createReview({
-        comment: draft.comment.trim(),
-        product: productId,
-        rating: draft.rating,
+        comment: draft.comment.trim() || undefined,
+        product: product._id,
+        rating: clampRating(draft.rating),
       }).unwrap()
 
       setDrafts((current) => {
         const next = { ...current }
-        delete next[productId]
+        delete next[product._id]
         return next
       })
 
       await refetchMyReviews()
       setMessage({
-        text: 'Review published successfully.',
+        text: `${product.name} sent to review.`,
         type: 'success',
       })
     } catch (error) {
       setMessage({
-        text: getApiErrorMessage(error, 'Failed to submit review.'),
+        text: getApiErrorMessage(error, 'Failed to create review.'),
         type: 'error',
       })
     }
@@ -132,9 +133,9 @@ function ReviewsPage() {
   async function handleSaveEdit(review: Review) {
     try {
       await updateReview({
-        comment: editDraft.comment.trim(),
+        comment: editDraft.comment.trim() || undefined,
         id: review._id,
-        rating: editDraft.rating,
+        rating: clampRating(editDraft.rating),
       }).unwrap()
 
       setEditingReviewId('')
