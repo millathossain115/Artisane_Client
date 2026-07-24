@@ -122,10 +122,10 @@ function DashboardLayout({
 
   function getSidebarItemClass(isActive: boolean) {
     const baseClass =
-      'flex items-center gap-3 px-4 py-3 text-sm font-bold transition'
+      'flex items-center gap-3 px-4 py-3 text-sm font-medium tracking-wide transition'
 
     return isActive
-      ? `${baseClass} bg-white text-[#181512] hover:bg-white hover:text-[#181512]`
+      ? `${baseClass} bg-white text-[#181512] font-semibold hover:bg-white hover:text-[#181512]`
       : `${baseClass} text-white/70 hover:bg-white/10 hover:text-white`
   }
 
@@ -166,13 +166,13 @@ function DashboardLayout({
           </span>
           <div className="min-w-0">
             <Link
-              className="font-display text-3xl font-bold"
+              className="font-display text-3xl font-bold tracking-tight"
               onClick={() => setIsSidebarOpen(false)}
               to="/"
             >
               Artisane
             </Link>
-            <p className="truncate text-xs font-semibold text-white/55">
+            <p className="truncate text-xs font-medium tracking-wider uppercase text-white/55">
               {workspaceLabel}
             </p>
           </div>
@@ -197,7 +197,7 @@ function DashboardLayout({
 
             return (
               <div className="pt-3 first:pt-0" key={item.label}>
-                <p className="px-4 pb-2 text-xs font-bold uppercase text-[#f1c9a6]">
+                <p className="px-4 pb-2 text-xs font-semibold tracking-wider uppercase text-[#f1c9a6]">
                   {item.label}
                 </p>
                 <div className="space-y-1">
@@ -212,7 +212,7 @@ function DashboardLayout({
 
         <div className="border-t border-white/10 p-4">
           <div className="border border-white/10 bg-white/5 p-4">
-            <p className="text-xs font-semibold uppercase text-[#f1c9a6]">
+            <p className="text-xs font-semibold tracking-wider uppercase text-[#f1c9a6]">
               {helperTitle}
             </p>
             <p className="mt-2 text-sm leading-6 text-white/70">
