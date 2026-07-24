@@ -1,15 +1,4 @@
-import {
-  FileText,
-  HelpCircle,
-  Info,
-  Layers,
-  Lock,
-  Mail,
-  MapPin,
-  Package,
-  Phone,
-  Truck,
-} from 'lucide-react'
+import { FileText, Lock, Mail, MapPin, Phone } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import steadfastLogo from '../../assets/Delivery partner/SteadFast.png'
 import amexLogo from '../../assets/Payment Partner/American Express.png'

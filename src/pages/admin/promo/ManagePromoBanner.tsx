@@ -15,13 +15,15 @@ const PRESET_REDIRECT_OPTIONS = [
   { label: 'Custom URL Path...', value: 'custom' },
 ]
 
+function getDefaultEndDate() {
+  return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 16)
+}
+
 function ManagePromoBanner() {
   const { data: promo, isLoading, refetch } = useGetActivePromoQuery()
   const [updatePromo, { isLoading: isSaving }] = useUpdatePromoMutation()
-
-  const defaultEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 16)
 
   const [formState, setFormState] = useState(() => ({
     // Global
@@ -37,7 +39,7 @@ function ManagePromoBanner() {
       promo?.autoDiscountPercent ?? promo?.discountPercent ?? 10,
     endsAt: promo?.endsAt
       ? new Date(promo.endsAt).toISOString().slice(0, 16)
-      : defaultEndDate,
+      : getDefaultEndDate(),
     buttonText: promo?.buttonText || 'Shop Starter Kits',
     buttonLink: promo?.buttonLink || '/products',
 
@@ -53,7 +55,7 @@ function ManagePromoBanner() {
       ? new Date(promo.voucherEndsAt).toISOString().slice(0, 16)
       : promo?.endsAt
         ? new Date(promo.endsAt).toISOString().slice(0, 16)
-        : defaultEndDate,
+        : getDefaultEndDate(),
     voucherButtonText: promo?.voucherButtonText || 'Claim Voucher',
     voucherButtonLink: promo?.voucherButtonLink || '/products',
   }))
@@ -81,7 +83,7 @@ function ManagePromoBanner() {
         ? new Date(promo.endsAt).toISOString().slice(0, 16)
         : promo.flashSaleEndsAt
           ? new Date(promo.flashSaleEndsAt).toISOString().slice(0, 16)
-          : defaultEndDate,
+          : getDefaultEndDate(),
       buttonText: promo.buttonText || 'Shop Starter Kits',
       buttonLink: promo.buttonLink || '/products',
 
@@ -92,7 +94,7 @@ function ManagePromoBanner() {
       voucherDiscountPercent: promo.voucherDiscountPercent ?? 15,
       voucherEndsAt: promo.voucherEndsAt
         ? new Date(promo.voucherEndsAt).toISOString().slice(0, 16)
-        : defaultEndDate,
+        : getDefaultEndDate(),
       voucherButtonText: promo.voucherButtonText || 'Claim Voucher',
       voucherButtonLink: promo.voucherButtonLink || '/products',
     })
