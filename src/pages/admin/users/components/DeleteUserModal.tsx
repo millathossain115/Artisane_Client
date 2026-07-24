@@ -41,7 +41,7 @@ function DeleteUserModal({
 
         <div className="mt-5 flex flex-wrap justify-end gap-2">
           <button
-            className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
+            className="btn-secondary"
             disabled={isDeleting}
             onClick={onClose}
             type="button"
@@ -49,7 +49,7 @@ function DeleteUserModal({
             Cancel
           </button>
           <button
-            className="inline-flex min-h-11 items-center gap-2 bg-[#8f3f1d] px-4 text-sm font-bold text-white transition hover:bg-[#181512] disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn-danger disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isDeleting}
             onClick={onConfirm}
             type="button"

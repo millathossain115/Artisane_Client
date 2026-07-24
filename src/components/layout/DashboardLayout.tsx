@@ -393,8 +393,8 @@ function DashboardLayout({
                 {actions.map((action) => {
                   const className =
                     action.variant === 'primary'
-                      ? 'bg-[#181512] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#7a3f1d]'
-                      : 'border border-black/10 bg-white px-4 py-2 text-sm font-bold transition hover:border-[#181512]'
+                      ? 'btn-primary'
+                      : 'btn-secondary'
 
                   return action.to ? (
                     <Link
