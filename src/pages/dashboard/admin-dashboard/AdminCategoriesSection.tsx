@@ -44,6 +44,14 @@ function AdminCategoriesSection({
             </p>
           </div>
         </div>
+
+        <Link
+          className="inline-flex min-h-10 items-center justify-center gap-2 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+          to="/dashboard/categories"
+        >
+          View all categories
+          <ArrowUpRight className="h-4 w-4" />
+        </Link>
       </div>
 
       {(isLoading || hasError) && (
@@ -63,7 +71,6 @@ function AdminCategoriesSection({
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
               <th className="px-5 py-3">Category</th>
-              <th className="px-5 py-3">Slug</th>
               <th className="px-5 py-3">Description</th>
               <th className="px-5 py-3">Created</th>
               <th className="px-5 py-3">Updated</th>
@@ -81,7 +88,10 @@ function AdminCategoriesSection({
                   >
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]">
+                        <Link
+                          className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d] transition hover:opacity-80"
+                          to={`/products?category=${encodeURIComponent(category._id)}`}
+                        >
                           {imageUrl ? (
                             <img
                               alt=""
@@ -91,19 +101,20 @@ function AdminCategoriesSection({
                           ) : (
                             <ImageOff className="h-5 w-5" />
                           )}
-                        </span>
-                        <span>
-                          <span className="block font-bold">
+                        </Link>
+                        <span className="min-w-0">
+                          <Link
+                            className="block max-w-[200px] truncate font-bold hover:underline"
+                            title={category.name}
+                            to={`/products?category=${encodeURIComponent(category._id)}`}
+                          >
                             {category.name}
-                          </span>
+                          </Link>
                           <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
                             {category._id.slice(-8).toUpperCase()}
                           </span>
                         </span>
                       </div>
-                    </td>
-                    <td className="px-5 py-4 font-semibold text-[#7a3f1d]">
-                      {category.slug}
                     </td>
                     <td className="max-w-xs px-5 py-4 text-[#6b5f53]">
                       <span className="line-clamp-2">
@@ -131,7 +142,7 @@ function AdminCategoriesSection({
               <tr className="border-t border-black/10">
                 <td
                   className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
-                  colSpan={5}
+                  colSpan={4}
                 >
                   No categories found.
                 </td>
@@ -146,13 +157,6 @@ function AdminCategoriesSection({
           Showing {formatCount(categories.length, '0')} of{' '}
           {formatCount(totalCategories, '0')} categories.
         </p>
-        <Link
-          className="inline-flex min-h-10 items-center justify-center gap-2 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
-          to="/dashboard/categories"
-        >
-          View all categories
-          <ArrowUpRight className="h-4 w-4" />
-        </Link>
       </div>
     </section>
   )

@@ -1,9 +1,31 @@
 import { AlertTriangle, ArrowUpRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import { inventory, sampleOrders } from './adminDashboardData'
+import type { Order } from '../../../features/orders/orderApi'
+import { getAdminOrderRouteRef } from '../../admin/orders/orderRouteState'
+import {
+  formatOrderDate,
+  formatOrderId,
+  formatOrderStatus,
+  getOrderCustomer,
+  getOrderPrimaryItem,
+} from '../../../utils/orderDisplay'
+import { formatPrice } from '../../../utils/productDisplay'
+import { inventory } from './adminDashboardData'
 
-function AdminOperationsSection() {
+type AdminOperationsSectionProps = {
+  hasError?: boolean
+  isLoading?: boolean
+  orders?: Order[]
+}
+
+function AdminOperationsSection({
+  hasError = false,
+  isLoading = false,
+  orders = [],
+}: AdminOperationsSectionProps) {
+  const displayOrders = orders.slice(0, 5)
+
   return (
     <section className="mt-6 grid gap-6 xl:grid-cols-[1.5fr_0.9fr]">
       <div className="border border-black/10 bg-white" id="orders">
@@ -23,6 +45,18 @@ function AdminOperationsSection() {
           </Link>
         </div>
 
+        {(isLoading || hasError) && (
+          <div
+            className={`border-b border-black/10 px-5 py-3 text-sm font-semibold ${
+              hasError
+                ? 'bg-[#fff5ef] text-[#8f3f1d]'
+                : 'bg-[#f8f3ea] text-[#6b5f53]'
+            }`}
+          >
+            {hasError ? 'Failed to load recent orders.' : 'Loading orders...'}
+          </div>
+        )}
+
         <div className="overflow-x-auto">
           <table className="w-full min-w-[680px] border-collapse text-left text-sm">
             <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
@@ -36,23 +70,47 @@ function AdminOperationsSection() {
               </tr>
             </thead>
             <tbody>
-              {sampleOrders.map((order) => (
-                <tr
-                  className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
-                  key={order.id}
-                >
-                  <td className="px-5 py-4 font-bold">{order.id}</td>
-                  <td className="px-5 py-4">{order.customer}</td>
-                  <td className="px-5 py-4 text-[#6b5f53]">{order.item}</td>
-                  <td className="px-5 py-4">
-                    <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
-                      {order.status}
-                    </span>
+              {displayOrders.length ? (
+                displayOrders.map((order) => (
+                  <tr
+                    className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
+                    key={order._id}
+                  >
+                    <td className="px-5 py-4 font-bold">
+                      <Link
+                        className="hover:underline"
+                        to={`/dashboard/admin/orders/${getAdminOrderRouteRef(order)}`}
+                      >
+                        {formatOrderId(order._id)}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-4">{getOrderCustomer(order)}</td>
+                    <td className="px-5 py-4 text-[#6b5f53]">
+                      {getOrderPrimaryItem(order)}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
+                        {formatOrderStatus(order.orderStatus)}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 font-bold">
+                      {formatPrice(order.totalPrice ?? 0)}
+                    </td>
+                    <td className="px-5 py-4 text-[#6b5f53]">
+                      {formatOrderDate(order.createdAt)}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr className="border-t border-black/10">
+                  <td
+                    className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
+                    colSpan={6}
+                  >
+                    No recent orders.
                   </td>
-                  <td className="px-5 py-4 font-bold">{order.total}</td>
-                  <td className="px-5 py-4 text-[#6b5f53]">{order.time}</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

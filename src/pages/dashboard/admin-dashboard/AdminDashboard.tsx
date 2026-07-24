@@ -3,6 +3,7 @@ import { useState } from 'react'
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import { useGetCategoriesQuery } from '../../../features/categories/categoryApi'
 import { useGetAdminStatsQuery } from '../../../features/dashboard/dashboardApi'
+import { useGetAllOrdersQuery } from '../../../features/orders/orderApi'
 import { adminNavItems } from '../../admin/adminNavItems'
 import DashboardMetricGrid from '../DashboardMetricGrid'
 import DashboardNotice from '../DashboardNotice'
@@ -20,12 +21,18 @@ function AdminDashboard() {
     isLoading: isStatsLoading,
   } = useGetAdminStatsQuery()
   const {
+    data: orderList,
+    isError: hasOrdersError,
+    isLoading: isOrdersLoading,
+  } = useGetAllOrdersQuery({ limit: 5, page: 1 })
+  const {
     data: categoryList,
     isError: hasCategoriesError,
     isLoading: isCategoriesLoading,
   } = useGetCategoriesQuery({ limit: 5, page: 1 })
   const previewCategories = categoryList?.data ?? []
   const totalCategories = categoryList?.meta.total ?? previewCategories.length
+  const previewOrders = orderList?.data ?? []
 
   return (
     <DashboardLayout
@@ -54,7 +61,11 @@ function AdminDashboard() {
         isLoading={isCategoriesLoading}
         totalCategories={totalCategories}
       />
-      <AdminOperationsSection />
+      <AdminOperationsSection
+        hasError={hasOrdersError}
+        isLoading={isOrdersLoading}
+        orders={previewOrders}
+      />
       <AdminReviewActivitySection stats={adminStats} />
       <AdminSummaryTiles totalCategories={totalCategories} />
     </DashboardLayout>

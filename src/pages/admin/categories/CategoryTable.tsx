@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { ErrorState, SkeletonTable } from '../../../components/loaders'
 import {
   ChevronLeft,
@@ -37,6 +38,17 @@ type SortFilter = 'newest' | 'oldest' | 'name-asc' | 'name-desc'
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20]
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024
+
+function truncateWords(text: string, maxWords = 10) {
+  if (!text) {
+    return ''
+  }
+  const words = text.trim().split(/\s+/)
+  if (words.length <= maxWords) {
+    return text
+  }
+  return `${words.slice(0, maxWords).join(' ')}..`
+}
 
 function formatDate(value?: string) {
   if (!value) {
@@ -196,6 +208,8 @@ function CategoryTable() {
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
     null,
   )
+  const [categoryToToggleStatus, setCategoryToToggleStatus] =
+    useState<Category | null>(null)
   const [showUpdateConfirm, setShowUpdateConfirm] = useState(false)
   const [imageWarning, setImageWarning] = useState('')
   const [editForm, setEditForm] = useState<CategoryEditForm>({
@@ -358,24 +372,35 @@ function CategoryTable() {
     }
   }
 
-  async function handleToggleCategoryStatus(category: Category) {
+  async function handleConfirmToggleStatus() {
+    if (!categoryToToggleStatus) {
+      return
+    }
+
     setStatus('')
     setError('')
 
-    const nextStatus = !isCategoryActive(category)
+    const nextStatus = !isCategoryActive(categoryToToggleStatus)
 
     try {
       await updateCategory({
-        id: category._id,
+        id: categoryToToggleStatus._id,
         isActive: nextStatus,
       }).unwrap()
 
       setStatus(`Category marked ${nextStatus ? 'active' : 'inactive'}.`)
+      setCategoryToToggleStatus(null)
     } catch (caughtError) {
       setError(
         getErrorMessage(caughtError, 'Failed to update category status.'),
       )
     }
+  }
+
+  function handleToggleCategoryStatus(category: Category) {
+    setStatus('')
+    setError('')
+    setCategoryToToggleStatus(category)
   }
 
   async function handleConfirmDelete() {
@@ -521,7 +546,7 @@ function CategoryTable() {
 
       {isCategoriesLoading ? (
         <div className="p-5">
-          <SkeletonTable rows={pageSize} cols={8} />
+          <SkeletonTable rows={pageSize} cols={7} />
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -529,7 +554,6 @@ function CategoryTable() {
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
               <th className="px-5 py-3">Category</th>
-              <th className="px-5 py-3">Slug</th>
               <th className="px-5 py-3">Description</th>
               <th className="px-5 py-3">Products</th>
               <th className="px-5 py-3">Created</th>
@@ -551,7 +575,10 @@ function CategoryTable() {
                   >
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]">
+                        <Link
+                          className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d] transition hover:opacity-80"
+                          to={`/products?category=${encodeURIComponent(category._id)}`}
+                        >
                           {imageUrl ? (
                             <img
                               alt=""
@@ -561,23 +588,29 @@ function CategoryTable() {
                           ) : (
                             <Globe2 className="h-5 w-5" />
                           )}
-                        </span>
-                        <span>
-                          <span className="block font-bold">
+                        </Link>
+                        <span className="min-w-0">
+                          <Link
+                            className="block max-w-[200px] truncate font-bold hover:underline"
+                            title={category.name}
+                            to={`/products?category=${encodeURIComponent(category._id)}`}
+                          >
                             {category.name}
-                          </span>
+                          </Link>
                           <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
                             {category._id.slice(-8).toUpperCase()}
                           </span>
                         </span>
                       </div>
                     </td>
-                    <td className="px-5 py-4 font-semibold text-[#7a3f1d]">
-                      {category.slug}
-                    </td>
                     <td className="max-w-xs px-5 py-4 text-[#6b5f53]">
-                      <span className="line-clamp-2">
-                        {category.description || 'No description added.'}
+                      <span
+                        className="line-clamp-2"
+                        title={category.description || ''}
+                      >
+                        {category.description
+                          ? truncateWords(category.description, 10)
+                          : 'No description added.'}
                       </span>
                     </td>
                     <td className="px-5 py-4">
@@ -639,7 +672,7 @@ function CategoryTable() {
               <tr className="border-t border-black/10">
                 <td
                   className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
-                  colSpan={8}
+                  colSpan={7}
                 >
                   {totalCategories
                     ? 'No categories match the current filters.'
@@ -874,6 +907,62 @@ function CategoryTable() {
                   <Save className="h-4 w-4" />
                 )}
                 {isUpdating ? 'Updating...' : 'Confirm update'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {categoryToToggleStatus && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-[#181512]/55 px-4"
+          role="presentation"
+        >
+          <div
+            aria-modal="true"
+            className="w-full max-w-md border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
+            role="dialog"
+          >
+            <div className="flex items-center gap-2 text-[#c85f2f]">
+              <AlertTriangle className="h-5 w-5" />
+              <p className="text-sm font-bold">Status change warning</p>
+            </div>
+            <h2 className="mt-2 text-2xl font-bold">
+              {isCategoryActive(categoryToToggleStatus) ? 'Deactivate' : 'Activate'}{' '}
+              {categoryToToggleStatus.name}?
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-[#6b5f53]">
+              Are you sure you want to mark this category as{' '}
+              <strong className="text-[#181512]">
+                {isCategoryActive(categoryToToggleStatus) ? 'Inactive' : 'Active'}
+              </strong>
+              ?{' '}
+              {isCategoryActive(categoryToToggleStatus)
+                ? 'Deactivating will hide products associated with this category from storefront filters.'
+                : 'Activating will make this category visible across storefront search and navigation.'}
+            </p>
+
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button
+                className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
+                disabled={isUpdating}
+                onClick={() => setCategoryToToggleStatus(null)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isUpdating}
+                onClick={handleConfirmToggleStatus}
+                type="button"
+              >
+                {isUpdating ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                {isUpdating ? 'Updating...' : 'Confirm status change'}
               </button>
             </div>
           </div>

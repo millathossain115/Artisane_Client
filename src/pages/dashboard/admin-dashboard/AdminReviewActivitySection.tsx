@@ -70,19 +70,19 @@ function AdminReviewActivitySection({ stats }: AdminReviewActivitySectionProps) 
                     {getReviewerLabel(review)}
                     {review.comment ? ` - ${review.comment}` : ''}
                   </p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="flex gap-1">{renderStars(review.rating ?? 0)}</div>
-                    {review.isHidden ? (
-                      <span className="inline-flex items-center gap-1 bg-[#fff5ef] px-2 py-1 text-xs font-bold text-[#8f3f1d]">
-                        <EyeOff className="h-3.5 w-3.5" />
-                        Hidden
-                      </span>
-                    ) : null}
-                  </div>
                 </div>
-                <span className="shrink-0 text-xs font-semibold text-[#6b5f53]">
-                  {formatDate(review.createdAt)}
-                </span>
+                <div className="flex shrink-0 flex-col items-end gap-1.5 text-right">
+                  <div className="flex gap-1">{renderStars(review.rating ?? 0)}</div>
+                  <span className="text-xs font-semibold text-[#6b5f53]">
+                    {formatDate(review.createdAt)}
+                  </span>
+                  {review.isHidden ? (
+                    <span className="inline-flex items-center gap-1 bg-[#fff5ef] px-2 py-0.5 text-xs font-bold text-[#8f3f1d]">
+                      <EyeOff className="h-3.5 w-3.5" />
+                      Hidden
+                    </span>
+                  ) : null}
+                </div>
               </div>
             ))
           ) : (

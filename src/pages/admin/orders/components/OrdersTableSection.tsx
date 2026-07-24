@@ -220,9 +220,10 @@ function OrdersTableSection({
                       {getOrderCustomerEmail(order) || order.contactPhone}
                     </p>
                   </td>
-                  <td className="px-5 py-4 text-[#6b5f53]">
+                  <td className="max-w-[200px] px-5 py-4 text-[#6b5f53]">
                     <Link
-                      className="hover:text-[#181512] hover:underline"
+                      className="block truncate hover:text-[#181512] hover:underline"
+                      title={getOrderPrimaryItem(order)}
                       to={getAdminOrderDetailUrl(order)}
                     >
                       {getOrderPrimaryItem(order)}
@@ -241,7 +242,7 @@ function OrdersTableSection({
                   <td className="px-5 py-4 font-bold">
                     {formatPrice(order.totalPrice ?? 0)}
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="max-w-[180px] px-5 py-4">
                     {order.courierProvider || order.trackingCode ? (
                       <div className="grid gap-1">
                         <span className="bg-[#eef3ff] px-2 py-1 text-xs font-bold text-[#27408b]">
@@ -249,7 +250,10 @@ function OrdersTableSection({
                             order.courierStatus ?? 'shipment_created',
                           )}
                         </span>
-                        <span className="text-xs font-semibold text-[#6b5f53]">
+                        <span
+                          className="block truncate text-xs font-semibold text-[#6b5f53]"
+                          title={`${formatCourierProvider(order.courierProvider)}${order.trackingCode ? ` - ${order.trackingCode}` : ''}`}
+                        >
                           {formatCourierProvider(order.courierProvider)}
                           {order.trackingCode ? ` - ${order.trackingCode}` : ''}
                         </span>
