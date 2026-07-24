@@ -1,4 +1,31 @@
-import { ArrowRight, Mail, MapPin, PackageCheck, Phone } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  CreditCard,
+  Database,
+  FileText,
+  HardDrive,
+  HeartHandshake,
+  HelpCircle,
+  Lock,
+  Mail,
+  MapPin,
+  Package,
+  PackageCheck,
+  Phone,
+  RefreshCw,
+  RotateCcw,
+  ShieldAlert,
+  ShieldCheck,
+  ShoppingBag,
+  Sparkles,
+  Truck,
+  UserCheck,
+  XCircle,
+} from 'lucide-react'
+import type { ComponentType } from 'react'
 import { Link } from 'react-router-dom'
 
 import studioImage from '../../assets/paint-table-optimized.jpg'
@@ -20,14 +47,17 @@ const infoPages = {
     sections: [
       {
         heading: 'What we carry',
+        icon: Sparkles,
         body: 'We focus on art, home craft, creative tools, gifts, and studio-made pieces with clear materials and honest product details.',
       },
       {
         heading: 'How we choose',
+        icon: CheckCircle2,
         body: 'Products are selected for finish, everyday use, visual character, and fit for collectors, gift buyers, and craft lovers.',
       },
       {
         heading: 'What customers can expect',
+        icon: HeartHandshake,
         body: 'Clear pricing, secure checkout, order tracking, and support before shipping starts.',
       },
     ],
@@ -40,18 +70,22 @@ const infoPages = {
     sections: [
       {
         heading: 'How do I track my order?',
+        icon: Truck,
         body: 'Open My Orders from your dashboard. Orders show confirmed, processing, shipped, and delivered progress. Courier details appear after shipment is created.',
       },
       {
         heading: 'Can I cancel an order?',
+        icon: XCircle,
         body: 'You can cancel before shipping starts. Once an order is shipped, cancellation is no longer available from your account.',
       },
       {
         heading: 'Which payment methods are supported?',
+        icon: CreditCard,
         body: 'Cash on delivery and supported online payment methods may appear at checkout based on server configuration.',
       },
       {
         heading: 'What if a product arrives damaged?',
+        icon: AlertTriangle,
         body: 'Contact support with order id, product photo, package photo, and a short note. The support team will review return or replacement eligibility.',
       },
     ],
@@ -64,18 +98,22 @@ const infoPages = {
     sections: [
       {
         heading: 'Delivery partners',
+        icon: Truck,
         body: 'Artisane can use RedX, Steadfast, or Pathao. Courier name, tracking code, and tracking link appear after shipment is created.',
       },
       {
         heading: 'Delivery timeline',
+        icon: Clock,
         body: 'Delivery time depends on destination, courier load, holidays, and product handling needs. Dashboard tracking shows latest available status.',
       },
       {
         heading: 'Returns',
+        icon: RotateCcw,
         body: 'Return requests should be made soon after delivery. Items must be unused, complete, and returned with original packaging where possible.',
       },
       {
         heading: 'Refunds',
+        icon: RefreshCw,
         body: 'Approved refunds are processed after returned goods are checked. Paid orders may require payment-provider processing time.',
       },
     ],
@@ -88,18 +126,22 @@ const infoPages = {
     sections: [
       {
         heading: 'Orders',
+        icon: ShoppingBag,
         body: 'Order acceptance depends on product availability, payment status, shipping coverage, and fraud or abuse checks.',
       },
       {
         heading: 'Product details',
+        icon: FileText,
         body: 'Artisane aims to keep product names, prices, images, stock, and descriptions accurate. Minor handmade variation can happen.',
       },
       {
         heading: 'Accounts',
+        icon: UserCheck,
         body: 'Customers are responsible for correct account, phone, address, and order information.',
       },
       {
         heading: 'Liability',
+        icon: ShieldAlert,
         body: 'Artisane is not responsible for delays caused by courier disruption, incorrect customer details, or events outside normal control.',
       },
     ],
@@ -112,18 +154,22 @@ const infoPages = {
     sections: [
       {
         heading: 'Information collected',
+        icon: Database,
         body: 'Name, email, phone, address, cart, order history, payment status, and support messages may be stored.',
       },
       {
         heading: 'How data is used',
+        icon: Lock,
         body: 'Data is used for login, checkout, delivery, order tracking, fraud prevention, support, and service improvement.',
       },
       {
         heading: 'Courier sharing',
+        icon: Truck,
         body: 'Delivery details may be shared with RedX, Steadfast, Pathao, or another selected courier to deliver orders.',
       },
       {
         heading: 'Local storage',
+        icon: HardDrive,
         body: 'The app may use browser storage for cart and login session behavior. Customers can clear browser data to remove local data.',
       },
     ],
@@ -133,7 +179,7 @@ const infoPages = {
   {
     eyebrow: string
     intro: string
-    sections: { body: string; heading: string }[]
+    sections: { body: string; heading: string; icon?: ComponentType<{ className?: string }> }[]
     title: string
   }
 >
@@ -169,17 +215,31 @@ function InfoPage({ page }: InfoPageProps) {
 
         <section className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8">
           <div className="grid gap-4">
-            {content.sections.map((section) => (
-              <article
-                className="border border-black/10 bg-white px-5 py-5"
-                key={section.heading}
-              >
-                <h2 className="text-xl font-bold">{section.heading}</h2>
-                <p className="mt-3 text-sm leading-6 text-[#6b5f53]">
-                  {section.body}
-                </p>
-              </article>
-            ))}
+            {content.sections.map((section) => {
+              const SectionIcon = section.icon
+              return (
+                <article
+                  className="border border-black/10 bg-white p-5 transition hover:border-black/20 sm:p-6"
+                  key={section.heading}
+                >
+                  <div className="flex items-start gap-4">
+                    {SectionIcon ? (
+                      <div className="grid h-10 w-10 shrink-0 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
+                        <SectionIcon className="h-5 w-5" />
+                      </div>
+                    ) : null}
+                    <div>
+                      <h2 className="text-lg font-bold text-[#181512] sm:text-xl">
+                        {section.heading}
+                      </h2>
+                      <p className="mt-2 text-sm leading-6 text-[#6b5f53]">
+                        {section.body}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
           </div>
 
           <aside className="border border-black/10 bg-white p-5 lg:sticky lg:top-28 lg:self-start">

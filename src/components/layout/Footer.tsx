@@ -1,5 +1,22 @@
-import { Mail, MapPin, Phone } from 'lucide-react'
+import {
+  FileText,
+  HelpCircle,
+  Info,
+  Layers,
+  Lock,
+  Mail,
+  MapPin,
+  Package,
+  Phone,
+  Truck,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
+import steadfastLogo from '../../assets/Delivery partner/SteadFast.png'
+import amexLogo from '../../assets/Payment Partner/American Express.png'
+import bkashLogo from '../../assets/Payment Partner/Bkash.png'
+import nagadLogo from '../../assets/Payment Partner/Nagad.png'
+import rocketLogo from '../../assets/Payment Partner/Rocket.webp'
+import visaLogo from '../../assets/Payment Partner/VISA.png'
 
 function FacebookIcon() {
   return (
@@ -35,11 +52,11 @@ function InstagramIcon() {
 }
 
 const paymentMethods = [
-  { label: 'Visa', src: '/payment-logos/visa.svg' },
-  { label: 'American Express', src: '/payment-logos/amex.png' },
-  { label: 'bKash', src: '/payment-logos/bkash.svg' },
-  { label: 'Nagad', src: '/payment-logos/nagad.svg' },
-  { label: 'Rocket', src: '/payment-logos/rocket.svg' },
+  { label: 'Visa', src: visaLogo },
+  { label: 'American Express', src: amexLogo },
+  { label: 'bKash', src: bkashLogo },
+  { label: 'Nagad', src: nagadLogo },
+  { label: 'Rocket', src: rocketLogo },
   { label: 'SSLCommerz', src: '/payment-logos/sslcommerz.png' },
 ] as const
 
@@ -58,6 +75,18 @@ function Footer() {
             A curated marketplace for useful, beautiful craft made by small
             studios.
           </p>
+
+          <div className="mt-5">
+            <h2 className="font-bold">Delivery partner</h2>
+            <div className="mt-2 inline-flex h-10 items-center justify-center border border-black/10 bg-white px-3 py-1 shadow-sm">
+              <img
+                alt="SteadFast Courier"
+                className="max-h-7 max-w-full object-contain"
+                loading="lazy"
+                src={steadfastLogo}
+              />
+            </div>
+          </div>
         </div>
 
         <div>
@@ -161,11 +190,11 @@ function Footer() {
           <div className="mt-4 grid grid-cols-2 gap-1.5">
             {paymentMethods.map((method) => (
               <div
-                className="grid min-h-10 place-items-center border border-black/10 bg-white/70 px-2 py-1"
+                className="flex h-10 flex-col items-center justify-center border border-black/10 bg-white px-2 py-1 shadow-sm"
                 key={method.label}
               >
                 {method.label === 'SSLCommerz' ? (
-                  <span className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#7a3f1d]">
+                  <span className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-[#7a3f1d]">
                     Powered by
                   </span>
                 ) : null}
@@ -173,8 +202,8 @@ function Footer() {
                   alt={method.label}
                   className={`max-w-full object-contain ${
                     method.label === 'SSLCommerz'
-                      ? 'max-h-6'
-                      : 'max-h-8'
+                      ? 'max-h-5'
+                      : 'max-h-6 sm:max-h-7'
                   }`}
                   loading="lazy"
                   src={method.src}
@@ -187,10 +216,18 @@ function Footer() {
       <div className="mx-auto mt-8 flex max-w-7xl flex-col justify-between gap-3 border-t border-black/10 pt-5 text-sm text-[#6b5f53] sm:flex-row">
         <p>© 2026 Artisane. All rights reserved.</p>
         <div className="flex gap-5">
-          <Link className="hover:text-[#181512]" to="/privacy">
+          <Link
+            className="inline-flex items-center gap-1.5 transition hover:text-[#181512]"
+            to="/privacy"
+          >
+            <Lock className="h-3.5 w-3.5 text-[#7a3f1d]" />
             Privacy
           </Link>
-          <Link className="hover:text-[#181512]" to="/terms">
+          <Link
+            className="inline-flex items-center gap-1.5 transition hover:text-[#181512]"
+            to="/terms"
+          >
+            <FileText className="h-3.5 w-3.5 text-[#7a3f1d]" />
             Terms
           </Link>
         </div>
