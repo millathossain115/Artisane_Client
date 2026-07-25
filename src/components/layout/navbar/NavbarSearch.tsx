@@ -104,7 +104,7 @@ function NavbarSearch({ className = '' }: NavbarSearchProps) {
             setIsSearchOpen(trimmedSearchValue.length >= 2)
           }}
           placeholder="Search handmade products..."
-          type="search"
+          type="text"
           value={searchValue}
         />
         {searchValue ? (
@@ -119,7 +119,7 @@ function NavbarSearch({ className = '' }: NavbarSearchProps) {
         ) : null}
       </form>
 
-      {isSearchOpen ? (
+      {isSearchOpen && shouldFetchSearch ? (
         <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 border border-black/10 bg-white shadow-[0_22px_44px_rgba(24,21,18,0.16)]">
           {isSearchingProducts ? (
             <div className="grid gap-3 p-3">
@@ -174,7 +174,7 @@ function NavbarSearch({ className = '' }: NavbarSearchProps) {
             </div>
           ) : (
             <div className="p-4 text-sm font-semibold text-[#6b5f53]">
-              No quick results found.
+              No product found.
             </div>
           )}
         </div>
