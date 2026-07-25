@@ -154,6 +154,7 @@ function WishlistPage() {
     <DashboardLayout
       actions={[{ label: 'Continue shopping', to: '/', variant: 'primary' }]}
       helperText="Saved products stay here until you remove them or buy them."
+      layoutVariant="customer"
       sidebarItems={userNavItems}
       subtitle="Review saved products, open product details, or remove items you no longer want to keep."
       title="Wishlist"

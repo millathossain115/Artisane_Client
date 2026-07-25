@@ -36,7 +36,6 @@ function Register() {
   function handleAuthSuccess(message: string) {
     dispatch(syncCartForCurrentUser())
     setStatus(message)
-    toast.success('Account created! Welcome to Artisane.')
 
     window.setTimeout(() => {
       navigate('/')

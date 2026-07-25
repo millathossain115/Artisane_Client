@@ -105,7 +105,7 @@ function NavbarProfileMenu() {
                   to="/dashboard"
                 >
                   <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
+                  {user.role === 'admin' ? 'Dashboard' : 'My account'}
                 </Link>
                 <Link
                   className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"

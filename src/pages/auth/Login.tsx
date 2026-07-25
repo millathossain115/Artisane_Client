@@ -60,7 +60,6 @@ function Login() {
       dispatch(addToCart(locationState.buyNowItem))
     }
     setStatus(message)
-    toast.success(`Welcome back, ${authData.user.name || 'Maker'}!`)
 
     window.setTimeout(() => {
       const redirectPath =

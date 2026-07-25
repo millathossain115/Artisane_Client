@@ -188,6 +188,7 @@ function ReviewsPage() {
       actions={[{ label: 'Back to dashboard', to: '/dashboard' }]}
       eyebrow="Reviews"
       helperText="Only delivered, paid products appear here. Hidden or deleted review stays out of public pages."
+      layoutVariant="customer"
       sidebarItems={userNavItems}
       subtitle="Review completed purchases and manage every review you already wrote."
       title="Reviews"

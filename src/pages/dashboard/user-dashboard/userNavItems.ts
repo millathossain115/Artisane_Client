@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 
 export const userNavItems = [
-  { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
+  { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
   { label: 'My orders', to: '/dashboard/orders', icon: ReceiptText },
   { label: 'Wishlist', to: '/dashboard/wishlist', icon: Heart },
   { label: 'Profile', to: '/dashboard/profile', icon: CircleUserRound },

@@ -21,6 +21,7 @@ import {
 } from '../../features/auth/authApi'
 import { syncCartForCurrentUser } from '../../features/cart/cartSlice'
 import { useAppDispatch } from '../../redux/hooks'
+import Navbar from './Navbar'
 
 type SidebarLinkItem = {
   label: string
@@ -50,6 +51,7 @@ type DashboardLayoutProps = {
   eyebrow?: string
   helperTitle?: string
   helperText?: string
+  layoutVariant?: 'admin' | 'customer'
   workspaceLabel?: string
 }
 
@@ -59,6 +61,7 @@ function DashboardLayout({
   eyebrow = 'Control room',
   helperText,
   helperTitle = 'Today',
+  layoutVariant = 'admin',
   sidebarItems = [],
   subtitle,
   title,
@@ -75,6 +78,7 @@ function DashboardLayout({
   const displayName = user?.name ?? 'Dashboard User'
   const displayEmail = user?.email ?? 'No email loaded'
   const isAdmin = user?.role === 'admin'
+  const isCustomerLayout = layoutVariant === 'customer'
 
   useEffect(() => {
     if (!location.hash) {
@@ -160,34 +164,49 @@ function DashboardLayout({
   function renderSidebarContent(showCloseButton = false) {
     return (
       <>
-        <div className="flex h-20 items-center gap-3 border-b border-white/10 px-6">
-          <span className="grid h-11 w-11 place-items-center bg-white text-base font-bold text-[#181512]">
-            A
-          </span>
-          <div className="min-w-0">
-            <Link
-              className="font-display text-3xl font-bold tracking-tight"
-              onClick={() => setIsSidebarOpen(false)}
-              to="/"
-            >
-              Artisane
-            </Link>
-            <p className="truncate text-xs font-medium tracking-wider uppercase text-white/55">
-              {workspaceLabel}
-            </p>
-          </div>
+        {isCustomerLayout ? (
+          showCloseButton ? (
+            <div className="flex h-16 items-center justify-end border-b border-white/10 px-4">
+              <button
+                className="grid h-10 w-10 place-items-center border border-white/10 text-white transition hover:bg-white hover:text-[#181512]"
+                aria-label="Close dashboard menu"
+                onClick={() => setIsSidebarOpen(false)}
+                type="button"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          ) : null
+        ) : (
+          <div className="flex h-20 items-center gap-3 border-b border-white/10 px-6">
+            <span className="grid h-11 w-11 place-items-center bg-white text-base font-bold text-[#181512]">
+              A
+            </span>
+            <div className="min-w-0">
+              <Link
+                className="font-display text-3xl font-bold tracking-tight"
+                onClick={() => setIsSidebarOpen(false)}
+                to="/"
+              >
+                Artisane
+              </Link>
+              <p className="truncate text-xs font-medium tracking-wider uppercase text-white/55">
+                {workspaceLabel}
+              </p>
+            </div>
 
-          {showCloseButton && (
-            <button
-              className="ml-auto grid h-10 w-10 place-items-center border border-white/10 text-white transition hover:bg-white hover:text-[#181512]"
-              aria-label="Close dashboard menu"
-              onClick={() => setIsSidebarOpen(false)}
-              type="button"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          )}
-        </div>
+            {showCloseButton && (
+              <button
+                className="ml-auto grid h-10 w-10 place-items-center border border-white/10 text-white transition hover:bg-white hover:text-[#181512]"
+                aria-label="Close dashboard menu"
+                onClick={() => setIsSidebarOpen(false)}
+                type="button"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
+          </div>
+        )}
 
         <nav className="dashboard-sidebar-scroll flex-1 space-y-1 overflow-y-auto px-4 py-5">
           {sidebarItems.map((item) => {
@@ -227,7 +246,15 @@ function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-[#f8f3ea] text-[#181512]">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-black/10 bg-[#181512] text-white lg:flex lg:flex-col">
+      {isCustomerLayout ? <Navbar /> : null}
+
+      <aside
+        className={`fixed bottom-0 left-0 z-40 hidden w-72 border-r border-black/10 bg-[#181512] text-white lg:flex lg:flex-col ${
+          isCustomerLayout
+            ? 'lg:bottom-4 lg:top-[120px] lg:shadow-[0_18px_36px_rgba(24,21,18,0.16)]'
+            : 'top-0'
+        }`}
+      >
         {renderSidebarContent()}
       </aside>
 
@@ -254,8 +281,22 @@ function DashboardLayout({
         </aside>
       </div>
 
-      <div className="lg:pl-72">
-        <header className="sticky top-0 z-30 border-b border-black/10 bg-[#f8f3ea]/95 backdrop-blur">
+      <div className={`lg:pl-72 ${isCustomerLayout ? 'pt-3 lg:pt-4' : ''}`}>
+        {isCustomerLayout ? (
+          <div className="mx-4 border border-black/10 bg-white px-3 py-3 shadow-sm backdrop-blur lg:hidden">
+            <button
+              className="inline-flex min-h-10 items-center gap-2 border border-black/10 bg-white px-3 text-sm font-bold text-[#181512] transition hover:border-[#181512]"
+              aria-label="Open dashboard menu"
+              aria-expanded={isSidebarOpen}
+              onClick={() => setIsSidebarOpen(true)}
+              type="button"
+            >
+              <Menu className="h-5 w-5" />
+              Dashboard menu
+            </button>
+          </div>
+        ) : (
+          <header className="sticky top-0 z-30 border-b border-black/10 bg-[#f8f3ea]/95 backdrop-blur">
           <div className="flex min-h-20 items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
             <button
               className="grid h-10 w-10 shrink-0 place-items-center border border-black/10 bg-white text-[#181512] transition hover:border-[#181512] lg:hidden"
@@ -376,7 +417,8 @@ function DashboardLayout({
               </button>
             </div>
           </div>
-        </header>
+          </header>
+        )}
 
         <main className="px-4 py-6 sm:px-6 lg:px-8">
           <div className="mb-6 flex flex-col justify-between gap-4 border-b border-black/10 pb-6 md:flex-row md:items-end">

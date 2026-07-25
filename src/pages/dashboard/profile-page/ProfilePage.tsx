@@ -164,6 +164,7 @@ function ProfilePage() {
           ? 'Keep admin contact details current for marketplace operations.'
           : 'Keep contact and address details ready for faster checkout.'
       }
+      layoutVariant={isAdminProfile ? 'admin' : 'customer'}
       sidebarItems={sidebarItems}
       subtitle={
         isAdminProfile

@@ -71,6 +71,7 @@ function MyOrdersPage() {
   return (
     <DashboardLayout
       helperText="Review order status and cancel orders before shipping starts."
+      layoutVariant="customer"
       sidebarItems={userNavItems}
       subtitle="Track placed orders, payment status, delivery address, and item details."
       title="My orders"

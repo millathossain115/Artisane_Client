@@ -189,6 +189,7 @@ function OrderDetailPage() {
       actions={[{ label: 'All orders', to: '/dashboard/orders' }]}
       eyebrow="Order management"
       helperText="Track delivery progress, shipping details, courier tracking, and itemized receipt."
+      layoutVariant="customer"
       sidebarItems={userNavItems}
       subtitle={order ? `Order details for ${formatOrderId(order._id)}` : 'Order details'}
       title={order ? formatOrderId(order._id) : 'Order details'}
