@@ -1,3 +1,4 @@
+import { Toaster } from 'sonner'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import AdminRoute from './components/routes/AdminRoute'
@@ -35,6 +36,33 @@ import Products from './pages/Products'
 function App() {
   return (
     <BrowserRouter>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: '#f8f3ea',
+            color: '#181512',
+            border: '1px solid rgba(24, 21, 18, 0.18)',
+            borderRadius: '0px',
+            boxShadow: '0 12px 30px -5px rgba(24, 21, 18, 0.15)',
+            fontFamily: 'inherit',
+            fontSize: '14px',
+            fontWeight: '600',
+            padding: '14px 18px',
+          },
+          classNames: {
+            toast: 'font-sans bg-[#f8f3ea] text-[#181512] border border-[#181512]/20 shadow-xl rounded-none p-4 font-semibold text-sm',
+            title: 'text-[#181512] font-bold text-sm',
+            description: 'text-[#6b5f53] text-xs mt-0.5',
+            actionButton: '!bg-[#7a3f1d] !text-white font-bold rounded-none',
+            cancelButton: '!bg-[#e5dcd0] !text-[#181512] font-bold rounded-none',
+            success: '!bg-[#f3f7f2] !text-[#2d5a27] !border-[#2d5a27]/30',
+            error: '!bg-[#fcf2f0] !text-[#8c2a1c] !border-[#8c2a1c]/30',
+            info: '!bg-[#f8f3ea] !text-[#7a3f1d] !border-[#7a3f1d]/30',
+            warning: '!bg-[#fbf4e6] !text-[#784f17] !border-[#b47818]/30',
+          },
+        }}
+      />
       <ScrollToTop />
       <PageTitleUpdater />
       <Routes>

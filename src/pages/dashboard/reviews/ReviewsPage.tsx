@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import {
@@ -105,15 +106,19 @@ function ReviewsPage() {
       })
 
       await refetchMyReviews()
+      const msg = `${product.name} sent to review.`
       setMessage({
-        text: `${product.name} sent to review.`,
+        text: msg,
         type: 'success',
       })
+      toast.success(msg)
     } catch (error) {
+      const msg = getApiErrorMessage(error, 'Failed to create review.')
       setMessage({
-        text: getApiErrorMessage(error, 'Failed to create review.'),
+        text: msg,
         type: 'error',
       })
+      toast.error(msg)
     }
   }
 

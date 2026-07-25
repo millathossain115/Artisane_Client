@@ -1,6 +1,7 @@
 import { ArrowLeft, BadgeCheck } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 
 import { ErrorState, PageSpinner } from '../components/loaders'
 import Footer from '../components/layout/Footer'
@@ -123,10 +124,6 @@ function ProductDetails() {
   const [deleteWishlistProduct, { isLoading: isDeletingWishlist }] =
     useDeleteWishlistProductMutation()
 
-  const [status, setStatus] = useState<{
-    message: string
-    productId?: string
-  } | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [recentProducts] = useState<RecentProduct[]>(() =>
@@ -224,10 +221,7 @@ function ProductDetails() {
     const availableStock = Math.max(0, product.stock - cartQuantity)
 
     if (availableStock <= 0) {
-      setStatus({
-        message: 'No more items available in stock.',
-        productId: product._id,
-      })
+      toast.error('No more items available in stock.')
       return
     }
 
@@ -244,10 +238,7 @@ function ProductDetails() {
         ),
       ),
     )
-    setStatus({
-      message: `${product.name} added to cart.`,
-      productId: product._id,
-    })
+    toast.success(`${product.name} added to cart.`)
   }
 
   function handleBuyNow() {
@@ -275,32 +266,20 @@ function ProductDetails() {
     }
 
     if (isAdmin) {
-      setStatus({
-        message: 'Wishlist is available for customer accounts.',
-        productId: product._id,
-      })
+      toast.info('Wishlist is available for customer accounts.')
       return
     }
 
     try {
       if (isWishlisted && wishlistEntryId) {
         await deleteWishlistProduct(wishlistEntryId).unwrap()
-        setStatus({
-          message: `${product.name} removed from wishlist.`,
-          productId: product._id,
-        })
+        toast.success(`${product.name} removed from wishlist.`)
       } else {
         await addWishlistProduct(product._id).unwrap()
-        setStatus({
-          message: `${product.name} saved to wishlist.`,
-          productId: product._id,
-        })
+        toast.success(`${product.name} saved to wishlist.`)
       }
     } catch {
-      setStatus({
-        message: 'Unable to update wishlist right now.',
-        productId: product._id,
-      })
+      toast.error('Unable to update wishlist right now.')
     }
   }
 
@@ -315,9 +294,6 @@ function ProductDetails() {
       .map((img) => getAssetUrl(img))
       .filter((img): img is string => Boolean(img))
   }, [product])
-
-  const visibleStatus =
-    status?.productId === product?._id ? status?.message ?? '' : ''
 
   return (
     <div className="min-h-screen bg-[#faf7f2] font-sans text-[#181512]">
@@ -368,14 +344,10 @@ function ProductDetails() {
                 isWishlistLoading={isAddingWishlist || isDeletingWishlist}
                 onAddToCart={handleAddToCart}
                 onBuyNow={handleBuyNow}
-                onDismissStatus={() =>
-                  setStatus({ message: '', productId: '' })
-                }
                 onToggleWishlist={handleToggleWishlist}
                 onUpdateQuantity={updateQuantity}
                 product={product}
                 quantity={safeQuantity}
-                statusMessage={visibleStatus}
               />
             </div>
 

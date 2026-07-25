@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import { addToCart, createCartItem } from '../../../features/cart/cartSlice'
@@ -11,11 +12,9 @@ import {
 } from '../../../features/wishlists/wishlistApi'
 import { useAppDispatch } from '../../../redux/hooks'
 import { userNavItems } from './userNavItems'
-import WishlistMessageBanner from './components/WishlistMessageBanner'
 import WishlistSection from './components/WishlistSection'
 import {
   getApiErrorMessage,
-  type WishlistMessage,
 } from './wishlistUtils'
 
 function WishlistPage() {
@@ -23,7 +22,6 @@ function WishlistPage() {
   const [page, setPage] = useState(1)
   const [removingId, setRemovingId] = useState('')
   const [selectedWishlistIds, setSelectedWishlistIds] = useState<string[]>([])
-  const [message, setMessage] = useState<WishlistMessage | null>(null)
   const {
     data: wishlistList,
     isError,
@@ -107,12 +105,11 @@ function WishlistPage() {
     })
 
     if (selectedProducts.length) {
-      setMessage({
-        text: `${selectedProducts.length} selected ${
+      toast.success(
+        `${selectedProducts.length} selected ${
           selectedProducts.length === 1 ? 'product' : 'products'
         } sent to cart.`,
-        type: 'success',
-      })
+      )
       setSelectedWishlistIds([])
     }
   }
@@ -122,15 +119,9 @@ function WishlistPage() {
 
     try {
       await deleteWishlistItem(id).unwrap()
-      setMessage({
-        text: `${productName ?? 'Product'} removed from wishlist.`,
-        type: 'success',
-      })
+      toast.success(`${productName ?? 'Product'} removed from wishlist.`)
     } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(error, 'Failed to remove wishlist item.'),
-        type: 'error',
-      })
+      toast.error(getApiErrorMessage(error, 'Failed to remove wishlist item.'))
     } finally {
       setRemovingId('')
     }
@@ -153,15 +144,9 @@ function WishlistPage() {
       await clearMyWishlist().unwrap()
       setPage(1)
       setSelectedWishlistIds([])
-      setMessage({
-        text: 'Wishlist cleared.',
-        type: 'success',
-      })
+      toast.success('Wishlist cleared.')
     } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(error, 'Failed to clear wishlist.'),
-        type: 'error',
-      })
+      toast.error(getApiErrorMessage(error, 'Failed to clear wishlist.'))
     }
   }
 
@@ -174,12 +159,6 @@ function WishlistPage() {
       title="Wishlist"
       workspaceLabel="Collector account"
     >
-      {message ? (
-        <WishlistMessageBanner
-          message={message}
-          onClose={() => setMessage(null)}
-        />
-      ) : null}
 
       <WishlistSection
         areAllWishlistItemsSelected={areAllWishlistItemsSelected}

@@ -141,8 +141,11 @@ function ProfilePage() {
       setIsEditing(false)
       setIsConfirmOpen(false)
       setStatus('Profile details saved.')
+      toast.success('Profile details saved successfully.')
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError))
+      const message = getErrorMessage(caughtError)
+      setError(message)
+      toast.error(message)
     }
   }
 

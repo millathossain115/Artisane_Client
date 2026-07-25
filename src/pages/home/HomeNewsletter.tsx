@@ -1,6 +1,20 @@
+import { useState } from 'react'
 import { Mail } from 'lucide-react'
+import { toast } from 'sonner'
 
 function HomeNewsletter() {
+  const [email, setEmail] = useState('')
+
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault()
+    if (!email.trim() || !email.includes('@')) {
+      toast.error('Please enter a valid email address.')
+      return
+    }
+    toast.success('Thank you for joining the Artisane studio list!')
+    setEmail('')
+  }
+
   return (
     <section className="px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-7xl gap-8 border-y border-black/10 py-10 md:grid-cols-[1fr_0.9fr] md:items-center">
@@ -14,16 +28,18 @@ function HomeNewsletter() {
         </div>
         <form
           className="flex flex-col gap-3 sm:flex-row"
-          onSubmit={(event) => event.preventDefault()}
+          onSubmit={handleSubmit}
         >
           <input
             className="min-h-12 flex-1 border border-black/10 bg-white px-4 text-sm outline-none placeholder:text-[#8a7d71] focus:border-[#181512]"
             placeholder="Email address"
             type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <button
             className="inline-flex min-h-12 items-center justify-center gap-2 bg-[#181512] px-5 text-sm font-bold text-white transition hover:bg-[#7a3f1d]"
-            type="button"
+            type="submit"
           >
             Join list
             <Mail className="h-4 w-4" />

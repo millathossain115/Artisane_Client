@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 import Footer from '../../components/layout/Footer'
 import Navbar from '../../components/layout/Navbar'
@@ -24,19 +25,16 @@ import CheckoutConfirmModal from './CheckoutConfirmModal'
 import CheckoutForm from './CheckoutForm'
 import CheckoutSummary from './CheckoutSummary'
 import {
-  CHECKOUT_MESSAGE_SCROLL_OFFSET,
   getCheckoutErrorMessage,
   getPaymentRedirectUrl,
   PAYMENT_REDIRECT_TIMEOUT_MS,
   withTimeout,
-  type CheckoutMessage,
   type PendingCheckoutOrder,
 } from './checkoutUtils'
 
 function Checkout() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const messageRef = useRef<HTMLDivElement | null>(null)
   const accessToken = getAccessToken()
   const storedUser = getStoredUser()
   const cartItems = useAppSelector((state) => state.cart.items)
@@ -53,12 +51,13 @@ function Checkout() {
   })
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod')
   const [notes, setNotes] = useState('')
-  const [message, setMessage] = useState<CheckoutMessage | null>(null)
   const [pendingOrder, setPendingOrder] = useState<PendingCheckoutOrder | null>(
     null,
   )
   const [isConfirmingOrder, setIsConfirmingOrder] = useState(false)
-  const [prefilledProfileId, setPrefilledProfileId] = useState<string | null>(null)
+  const [prefilledProfileId, setPrefilledProfileId] = useState<string | null>(
+    null,
+  )
 
   if (profile && prefilledProfileId !== (profile._id || 'loaded')) {
     setPrefilledProfileId(profile._id || 'loaded')
@@ -95,25 +94,6 @@ function Checkout() {
     () => zones.find((zone) => zone.id === deliveryForm.zoneId),
     [deliveryForm.zoneId, zones],
   )
-
-  useEffect(() => {
-    if (message?.type !== 'error') {
-      return
-    }
-
-    const target = messageRef.current
-
-    if (!target) {
-      return
-    }
-
-    const top = window.scrollY + target.getBoundingClientRect().top
-
-    window.scrollTo({
-      behavior: 'smooth',
-      top: Math.max(0, top - CHECKOUT_MESSAGE_SCROLL_OFFSET),
-    })
-  }, [message])
 
   function updateDeliveryField(
     field: keyof typeof deliveryForm,
@@ -168,10 +148,9 @@ function Checkout() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setPendingOrder(null)
-    setMessage(null)
 
     if (!cartItems.length) {
-      setMessage({ text: 'Cart is empty.', type: 'error' })
+      toast.error('Cart is empty.')
       return
     }
 
@@ -186,10 +165,9 @@ function Checkout() {
       !deliveryForm.districtId ||
       !deliveryForm.zoneId
     ) {
-      setMessage({
-        text: 'Recipient name, phone, address, district, and zone are required.',
-        type: 'error',
-      })
+      toast.error(
+        'Recipient name, phone, address, district, and zone are required.',
+      )
       return
     }
 
@@ -220,7 +198,6 @@ function Checkout() {
     }
 
     setIsConfirmingOrder(true)
-    setMessage(null)
 
     try {
       const orderResult = await withTimeout(
@@ -246,11 +223,11 @@ function Checkout() {
         return
       }
 
-      setMessage({ text: 'Order placed successfully.', type: 'success' })
+      toast.success('Order placed successfully.')
       navigate('/dashboard')
     } catch (error) {
       setPendingOrder(null)
-      setMessage({ text: getCheckoutErrorMessage(error), type: 'error' })
+      toast.error(getCheckoutErrorMessage(error))
     } finally {
       setIsConfirmingOrder(false)
     }
@@ -292,11 +269,8 @@ function Checkout() {
             isDistrictsLoading={isDistrictsLoading}
             isZonesLoading={isZonesLoading}
             isConfirmingOrder={isConfirmingOrder}
-            message={message}
-            messageRef={messageRef}
             notes={notes}
             onDistrictChange={updateDistrict}
-            onDismissMessage={() => setMessage(null)}
             onFullAddressChange={(value) =>
               updateDeliveryField('fullAddress', value)
             }

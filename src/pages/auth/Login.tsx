@@ -2,6 +2,7 @@ import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { ArrowLeft, Eye, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 import artistImage from '../../assets/artist-optimized.jpg'
 import {
@@ -23,11 +24,13 @@ const demoAccounts = [
     email: 'userdemo111@gmail.com',
     label: 'Login as user',
     password: 'user111',
+    role: 'Customer',
   },
   {
     email: 'admindemo111@gmail.com',
     label: 'Login as admin',
     password: 'admin111',
+    role: 'Admin',
   },
 ]
 
@@ -42,7 +45,7 @@ function Login() {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
-  const locationState = location.state as LoginLocationState | null
+  const locationState = location.state as LoginLocationState | undefined
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -57,6 +60,7 @@ function Login() {
       dispatch(addToCart(locationState.buyNowItem))
     }
     setStatus(message)
+    toast.success(`Welcome back, ${authData.user.name || 'Maker'}!`)
 
     window.setTimeout(() => {
       const redirectPath =
@@ -87,11 +91,12 @@ function Login() {
 
       handleLoginSuccess(response.data, response.message)
     } catch (caughtError) {
-      setError(
+      const msg =
         caughtError instanceof Error
           ? caughtError.message
-          : 'Unable to login right now.',
-      )
+          : 'Unable to login right now.'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setIsSubmitting(false)
     }
@@ -111,11 +116,12 @@ function Login() {
 
       handleLoginSuccess(response.data, response.message)
     } catch (caughtError) {
-      setError(
+      const msg =
         caughtError instanceof Error
           ? caughtError.message
-          : 'Unable to login with Google right now.',
-      )
+          : 'Unable to login with Google right now.'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setIsSubmitting(false)
     }

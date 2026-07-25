@@ -3,6 +3,7 @@ import type { CartItem } from '../../features/cart/cartSlice'
 import { useGetActivePromoQuery } from '../../features/promo/promoApi'
 import { formatPrice, getAssetUrl } from '../../utils/productDisplay'
 import { Ticket, Check } from 'lucide-react'
+import { toast } from 'sonner'
 
 type CheckoutSummaryProps = {
   cartItems: CartItem[]
@@ -44,8 +45,10 @@ function CheckoutSummary({ cartItems, subtotal }: CheckoutSummaryProps) {
         percent: validVoucherPercent,
       })
       setCouponError('')
+      toast.success(`Coupon '${validVoucherCode}' applied! (${validVoucherPercent}% OFF)`)
     } else {
       setCouponError('Invalid coupon code')
+      toast.error('Invalid coupon code')
     }
   }
 

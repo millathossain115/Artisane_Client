@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Check, Edit, MapPin, Plus, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 import {
   createAddress,
@@ -30,6 +31,10 @@ type ProfileAddressSectionProps = {
 function ProfileAddressSection({
   fieldClass,
   isAdminProfile,
+  isEditing,
+  profileForm,
+  readonlyClass,
+  onFieldChange,
 }: ProfileAddressSectionProps) {
   const [addresses, setAddresses] = useState<UserAddress[]>([])
   const [loading, setLoading] = useState(true)
@@ -136,13 +141,17 @@ function ProfileAddressSection({
     try {
       if (editingAddress) {
         await updateAddress(editingAddress._id, formState)
+        toast.success('Address updated successfully.')
       } else {
         await createAddress(formState)
+        toast.success('Address saved successfully.')
       }
       setIsModalOpen(false)
       await loadAddresses()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save address')
+      const msg = err instanceof Error ? err.message : 'Failed to save address'
+      setError(msg)
+      toast.error(msg)
     }
   }
 
@@ -158,9 +167,12 @@ function ProfileAddressSection({
     setDeletingId(null)
     try {
       await deleteAddress(id)
+      toast.success('Address deleted successfully.')
       await loadAddresses()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to delete address')
+      const msg = err instanceof Error ? err.message : 'Failed to delete address'
+      setError(msg)
+      toast.error(msg)
     }
   }
 
@@ -176,9 +188,12 @@ function ProfileAddressSection({
     setDefaultingId(null)
     try {
       await setDefaultAddress(id)
+      toast.success('Default address updated.')
       await loadAddresses()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to set default address')
+      const msg = err instanceof Error ? err.message : 'Failed to set default address'
+      setError(msg)
+      toast.error(msg)
     }
   }
 

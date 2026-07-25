@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import {
@@ -158,22 +159,26 @@ function ManageOrders() {
       }
 
       await refetchOrders()
+      const msg = `${formatOrderId(confirmTarget.order._id)} ${
+        confirmTarget.type === 'cancel' ? 'cancelled' : 'deleted'
+      }.`
       setMessage({
-        text: `${formatOrderId(confirmTarget.order._id)} ${
-          confirmTarget.type === 'cancel' ? 'cancelled' : 'deleted'
-        }.`,
+        text: msg,
         type: 'success',
       })
+      toast.success(msg)
       setConfirmTarget(null)
       setSelectedOrderId('')
     } catch (error) {
+      const msg = getApiErrorMessage(
+        error,
+        `Failed to ${confirmTarget.type} order.`,
+      )
       setMessage({
-        text: getApiErrorMessage(
-          error,
-          `Failed to ${confirmTarget.type} order.`,
-        ),
+        text: msg,
         type: 'error',
       })
+      toast.error(msg)
     }
   }
 

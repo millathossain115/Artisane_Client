@@ -8,7 +8,6 @@ import {
   ShoppingBag,
   Star,
   Truck,
-  X,
 } from 'lucide-react'
 
 import type { Product } from '../../features/products/productApi'
@@ -21,12 +20,10 @@ type ProductPurchasePanelProps = {
   isOutOfStock: boolean
   onAddToCart: () => void
   onBuyNow: () => void
-  onDismissStatus?: () => void
   onToggleWishlist?: () => void
   onUpdateQuantity: (quantity: number) => void
   product: Product
   quantity: number
-  statusMessage: string
 }
 
 import { useGetActivePromoQuery } from '../../features/promo/promoApi'
@@ -39,12 +36,10 @@ function ProductPurchasePanel({
   isOutOfStock,
   onAddToCart,
   onBuyNow,
-  onDismissStatus,
   onToggleWishlist,
   onUpdateQuantity,
   product,
   quantity,
-  statusMessage,
 }: ProductPurchasePanelProps) {
   const { data: activePromo } = useGetActivePromoQuery()
   const priceInfo = getProductPriceInfo(product.price, activePromo)
@@ -160,20 +155,6 @@ function ProductPurchasePanel({
                 <Plus className="h-4 w-4" />
               </button>
             </div>
-          </div>
-        ) : null}
-
-        {statusMessage ? (
-          <div className="mt-4 flex items-start justify-between gap-3 bg-[#effaf3] px-4 py-3 text-sm font-bold text-[#1f6b43]">
-            <p>{statusMessage}</p>
-            <button
-              aria-label="Close product message"
-              className="grid h-6 w-6 shrink-0 place-items-center border border-[#1f6b43]/20 transition hover:border-[#1f6b43]"
-              onClick={onDismissStatus}
-              type="button"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
           </div>
         ) : null}
 

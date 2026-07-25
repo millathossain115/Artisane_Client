@@ -9,6 +9,7 @@ import {
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 import paletteImage from '../../assets/palette-optimized.jpg'
 import {
@@ -35,6 +36,7 @@ function Register() {
   function handleAuthSuccess(message: string) {
     dispatch(syncCartForCurrentUser())
     setStatus(message)
+    toast.success('Account created! Welcome to Artisane.')
 
     window.setTimeout(() => {
       navigate('/')
@@ -57,11 +59,12 @@ function Register() {
       saveAuthSession(response.data)
       handleAuthSuccess(response.message)
     } catch (caughtError) {
-      setError(
+      const msg =
         caughtError instanceof Error
           ? caughtError.message
-          : 'Unable to register right now.',
-      )
+          : 'Unable to register right now.'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setIsSubmitting(false)
     }
@@ -82,11 +85,12 @@ function Register() {
       saveAuthSession(response.data)
       handleAuthSuccess(response.message)
     } catch (caughtError) {
-      setError(
+      const msg =
         caughtError instanceof Error
           ? caughtError.message
-          : 'Unable to continue with Google right now.',
-      )
+          : 'Unable to continue with Google right now.'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setIsSubmitting(false)
     }
