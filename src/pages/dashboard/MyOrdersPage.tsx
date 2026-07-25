@@ -3,26 +3,29 @@ import { useMemo, useState } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import {
   type Order,
-  type OrderStatus,
   useCancelOrderMutation,
   useGetMyOrdersQuery,
 } from '../../features/orders/orderApi'
 import { formatOrderId } from '../../utils/orderDisplay'
 import { userNavItems } from './user-dashboard/userNavItems'
 import MyOrdersCancelModal from './components/MyOrdersCancelModal'
-import MyOrdersDetailModal from './components/MyOrdersDetailModal'
+import MyOrdersCardSection from './components/MyOrdersCardSection'
 import MyOrdersMessageBanner from './components/MyOrdersMessageBanner'
-import MyOrdersTableSection from './components/MyOrdersTableSection'
-import { getApiErrorMessage, orderStatusOptions, type OrderMessage } from './myOrdersUtils'
+import {
+  getApiErrorMessage,
+  getMyOrderTab,
+  matchesMyOrderTab,
+  myOrderTabs,
+  type MyOrderTabKey,
+  type OrderMessage,
+} from './myOrdersUtils'
 
 function MyOrdersPage() {
   const [page, setPage] = useState(1)
-  const [orderStatusFilter, setOrderStatusFilter] = useState<
-    'all' | OrderStatus
-  >('all')
-  const [selectedOrderId, setSelectedOrderId] = useState('')
+  const [selectedTabKey, setSelectedTabKey] = useState<MyOrderTabKey>('all')
   const [cancelTarget, setCancelTarget] = useState<Order | null>(null)
   const [message, setMessage] = useState<OrderMessage | null>(null)
+  const selectedTab = getMyOrderTab(selectedTabKey)
   const {
     data: orderList,
     isError,
@@ -31,20 +34,17 @@ function MyOrdersPage() {
     {
       limit: 10,
       page,
-      status: orderStatusFilter === 'all' ? undefined : orderStatusFilter,
+      paymentStatus: selectedTab.paymentStatus,
+      status: selectedTab.orderStatus,
     },
     { refetchOnMountOrArgChange: true },
   )
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation()
 
-  const orders = orderList?.data ?? []
-  const selectedOrder = useMemo(
-    () => orders.find((order) => order._id === selectedOrderId) ?? null,
-    [orders, selectedOrderId],
-  )
-  const visibleOrders = orders.filter(
-    (order) =>
-      orderStatusFilter === 'all' || order.orderStatus === orderStatusFilter,
+  const orders = useMemo(() => orderList?.data ?? [], [orderList?.data])
+  const visibleOrders = useMemo(
+    () => orders.filter((order) => matchesMyOrderTab(order, selectedTab)),
+    [orders, selectedTab],
   )
   const meta = orderList?.meta
 
@@ -81,29 +81,22 @@ function MyOrdersPage() {
         <MyOrdersMessageBanner message={message} onClose={() => setMessage(null)} />
       ) : null}
 
-      <MyOrdersTableSection
+      <MyOrdersCardSection
         isError={isError}
         isLoading={isLoading}
         meta={meta}
         onCancelOrder={setCancelTarget}
         onPageChange={setPage}
-        onStatusFilterChange={(value) => {
-          setOrderStatusFilter(value)
+        onTabChange={(value) => {
+          setSelectedTabKey(value)
           setPage(1)
         }}
-        orderStatusFilter={orderStatusFilter}
-        orderStatusOptions={orderStatusOptions}
-        page={page}
         orders={orders}
+        page={page}
+        selectedTabKey={selectedTabKey}
+        tabs={myOrderTabs}
         visibleOrders={visibleOrders}
       />
-
-      {selectedOrder ? (
-        <MyOrdersDetailModal
-          onClose={() => setSelectedOrderId('')}
-          order={selectedOrder}
-        />
-      ) : null}
 
       {cancelTarget ? (
         <MyOrdersCancelModal
