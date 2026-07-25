@@ -2,6 +2,27 @@ import type { Order, OrderItem } from '../features/orders/orderApi'
 import type { Product } from '../features/products/productApi'
 import { getDashboardOrderRouteRef } from '../pages/dashboard/orderRouteState'
 
+export type OrderTimelineStepKey =
+  | 'confirmed'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+
+export type OrderTimelineStepState =
+  | 'active'
+  | 'cancelled'
+  | 'complete'
+  | 'issue'
+  | 'pending'
+
+export type OrderTimelineStep = {
+  date?: string
+  description: string
+  key: OrderTimelineStepKey
+  label: string
+  state: OrderTimelineStepState
+}
+
 export function formatOrderId(id: string) {
   return `#${id.slice(-6).toUpperCase()}`
 }
@@ -19,6 +40,26 @@ export function formatOrderDate(value?: string) {
 
   return date.toLocaleDateString('en-US', {
     day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+export function formatOrderTimelineDate(value?: string) {
+  if (!value) {
+    return 'Not set'
+  }
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Not set'
+  }
+
+  return date.toLocaleString('en-US', {
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
     month: 'short',
     year: 'numeric',
   })
@@ -175,6 +216,64 @@ export function getDeliveryIssueLabel(order: Order) {
   }
 
   return ''
+}
+
+function getTimelineStepState(
+  order: Order,
+  stepIndex: number,
+): OrderTimelineStepState {
+  if (order.orderStatus === 'cancelled') {
+    return 'cancelled'
+  }
+
+  if (hasDeliveryIssue(order)) {
+    return stepIndex <= getOrderProgressIndex(order) ? 'issue' : 'pending'
+  }
+
+  const progressIndex = getOrderProgressIndex(order)
+
+  if (stepIndex < progressIndex) {
+    return 'complete'
+  }
+
+  if (stepIndex === progressIndex) {
+    return 'active'
+  }
+
+  return 'pending'
+}
+
+export function getOrderTimelineSteps(order: Order): OrderTimelineStep[] {
+  const steps = [
+    {
+      date: order.createdAt,
+      description: 'Order accepted and queued for fulfillment.',
+      key: 'confirmed',
+      label: 'Confirmed',
+    },
+    {
+      description: 'Studio team prepares and packs ordered pieces.',
+      key: 'processing',
+      label: 'Processing',
+    },
+    {
+      date: order.shippedAt || order.shipmentCreatedAt,
+      description: 'Courier shipment created and moving to destination.',
+      key: 'shipped',
+      label: 'Shipped',
+    },
+    {
+      date: order.deliveredAt,
+      description: 'Shipment completed at delivery address.',
+      key: 'delivered',
+      label: 'Delivered',
+    },
+  ] as const
+
+  return steps.map((step, index) => ({
+    ...step,
+    state: getTimelineStepState(order, index),
+  }))
 }
 
 export function getOrderTrackingUrl(order: Order) {

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import {
   ArrowLeft,
-  ExternalLink,
   LoaderCircle,
   PackageCheck,
   RotateCcw,
@@ -11,13 +10,13 @@ import { useDispatch } from 'react-redux'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import DashboardLayout from '../../components/layout/DashboardLayout'
+import OrderDeliveryStepper from '../../components/orders/OrderDeliveryStepper'
 import {
   addToCart,
   createCartItem,
   createCartItemFromOrderItem,
 } from '../../features/cart/cartSlice'
 import {
-  type Order,
   type OrderItem,
   useCancelOrderMutation,
   useGetOrderByIdQuery,
@@ -25,16 +24,12 @@ import {
 import { useLazyGetProductByIdQuery } from '../../features/products/productApi'
 import {
   canCancelOrder,
-  formatCourierProvider,
   formatOrderDate,
   formatOrderId,
   formatOrderStatus,
-  getDeliveryIssueLabel,
   getOrderItemImage,
   getOrderItemName,
   getOrderItemUrl,
-  getOrderProgressIndex,
-  getOrderTrackingUrl,
 } from '../../utils/orderDisplay'
 import { formatPrice, getAssetUrl } from '../../utils/productDisplay'
 import MyOrdersCancelModal from './components/MyOrdersCancelModal'
@@ -42,31 +37,6 @@ import MyOrdersMessageBanner from './components/MyOrdersMessageBanner'
 import { getApiErrorMessage, type OrderMessage } from './myOrdersUtils'
 import { getDashboardOrderLookupRef } from './orderRouteState'
 import { userNavItems } from './user-dashboard/userNavItems'
-
-function TrackingCodeLink({ order }: { order: Order }) {
-  const trackingCode = order.trackingCode?.trim()
-  const trackingUrl = getOrderTrackingUrl(order)
-
-  if (!trackingCode) {
-    return <span className="text-[#6b5f53]">Not set</span>
-  }
-
-  if (!trackingUrl) {
-    return <span className="font-bold">{trackingCode}</span>
-  }
-
-  return (
-    <a
-      className="inline-flex items-center gap-1 font-bold text-[#7a3f1d] underline"
-      href={trackingUrl}
-      rel="noreferrer"
-      target="_blank"
-    >
-      {trackingCode}
-      <ExternalLink className="h-3.5 w-3.5" />
-    </a>
-  )
-}
 
 function OrderDetailPage() {
   const { id: routeRef = '' } = useParams<{ id: string }>()
@@ -87,13 +57,6 @@ function OrderDetailPage() {
   })
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation()
   const [fetchProduct] = useLazyGetProductByIdQuery()
-
-  const orderProgressSteps = [
-    { key: 'confirmed', label: 'Confirmed' },
-    { key: 'processing', label: 'Processing' },
-    { key: 'shipped', label: 'Shipped' },
-    { key: 'delivered', label: 'Delivered' },
-  ] as const
 
   async function confirmCancelOrder() {
     if (!order) {
@@ -311,63 +274,11 @@ function OrderDetailPage() {
               </div>
             </div>
 
-            <div className="mt-5 border-b border-black/10 pb-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
-                    Delivery tracker
-                  </p>
-                  <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
-                    Live status from courier dispatch network.
-                  </p>
-                </div>
-                {getDeliveryIssueLabel(order) ? (
-                  <span className="inline-flex min-h-9 items-center bg-[#fff5ef] px-3 text-xs font-bold text-[#8f3f1d]">
-                    {getDeliveryIssueLabel(order)}
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {orderProgressSteps.map((step, index) => {
-                  const progressIndex = getOrderProgressIndex(order)
-                  const done =
-                    progressIndex >= index && order.orderStatus !== 'cancelled'
-                  const active =
-                    progressIndex === index && order.orderStatus !== 'cancelled'
-
-                  return (
-                    <div
-                      className={`border px-4 py-3 text-sm font-bold ${
-                        order.orderStatus === 'cancelled'
-                          ? 'border-[#c85f2f]/25 bg-[#fff5ef] text-[#8f3f1d]'
-                          : done
-                            ? 'border-[#1f7a4d]/20 bg-[#effaf3] text-[#1f6b43]'
-                            : 'border-black/10 bg-white text-[#6b5f53]'
-                      }`}
-                      key={step.key}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`grid h-6 w-6 place-items-center border text-xs ${
-                            active
-                              ? 'border-[#181512] bg-[#181512] text-white'
-                              : done
-                                ? 'border-[#1f7a4d] bg-[#1f7a4d] text-white'
-                                : 'border-black/15 bg-white text-[#6b5f53]'
-                          }`}
-                        >
-                          {index + 1}
-                        </span>
-                        <span>{step.label}</span>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+            <div className="mt-5">
+              <OrderDeliveryStepper order={order} />
             </div>
 
-            <div className="mt-5 grid gap-4 text-sm sm:grid-cols-2 md:grid-cols-4">
+            <div className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
               <div className="border border-black/10 p-3">
                 <p className="text-xs font-bold uppercase text-[#7a3f1d]">
                   Shipping address
@@ -382,23 +293,6 @@ function OrderDetailPage() {
                 <p className="mt-1 font-bold">{order.contactPhone ?? 'Not set'}</p>
               </div>
 
-              <div className="border border-black/10 p-3">
-                <p className="text-xs font-bold uppercase text-[#7a3f1d]">
-                  Courier provider
-                </p>
-                <p className="mt-1 font-bold">
-                  {formatCourierProvider(order.courierProvider)}
-                </p>
-              </div>
-
-              <div className="border border-black/10 p-3">
-                <p className="text-xs font-bold uppercase text-[#7a3f1d]">
-                  Tracking code
-                </p>
-                <p className="mt-1 font-bold">
-                  <TrackingCodeLink order={order} />
-                </p>
-              </div>
             </div>
           </section>
 

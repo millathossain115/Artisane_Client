@@ -11,7 +11,7 @@ import {
   useSyncShipmentMutation,
   useUpdateOrderStatusMutation,
 } from '../../../features/orders/orderApi'
-import { formatOrderId, getOrderTrackingUrl } from '../../../utils/orderDisplay'
+import { formatOrderId } from '../../../utils/orderDisplay'
 import { adminNavItems } from '../adminNavItems'
 import OrderConfirmModal from './components/OrderConfirmModal'
 import OrderDetailPanel from './components/OrderDetailPanel'
@@ -70,9 +70,6 @@ function AdminOrderDetailPage() {
   const shipmentActionAllowed =
     selectedOrder?.orderStatus === 'confirmed' ||
     selectedOrder?.orderStatus === 'processing'
-  const selectedOrderTrackingUrl = selectedOrder
-    ? getOrderTrackingUrl(selectedOrder)
-    : ''
   const fraudRisk = selectedOrder?.fraudRisk ?? 'low'
   const fraudFlags = selectedOrder?.fraudFlags ?? []
 
@@ -278,7 +275,6 @@ function AdminOrderDetailPage() {
           onShowShipmentWarning={() => setShowShipmentWarning(true)}
           onStatusUpdate={confirmStatusUpdate}
           order={selectedOrder}
-          selectedOrderTrackingUrl={selectedOrderTrackingUrl}
           setShipmentForm={setShipmentForm}
           setStatusForm={setStatusForm}
           shipmentActionAllowed={shipmentActionAllowed}

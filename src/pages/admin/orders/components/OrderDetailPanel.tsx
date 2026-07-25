@@ -1,7 +1,8 @@
-import { AlertTriangle, RefreshCw, X } from 'lucide-react'
+import { AlertTriangle, X } from 'lucide-react'
 import { useState, type Dispatch, type SetStateAction } from 'react'
 import { Link } from 'react-router-dom'
 
+import OrderDeliveryStepper from '../../../../components/orders/OrderDeliveryStepper'
 import type {
   Order,
   OrderStatus,
@@ -9,7 +10,6 @@ import type {
 } from '../../../../features/orders/orderApi'
 import { formatPrice, getAssetUrl } from '../../../../utils/productDisplay'
 import {
-  formatCourierProvider,
   formatOrderDate,
   formatOrderId,
   formatOrderStatus,
@@ -39,7 +39,6 @@ type OrderDetailPanelProps = {
   onShowShipmentWarning: () => void
   onStatusUpdate: () => void
   order: Order
-  selectedOrderTrackingUrl: string
   setShipmentForm: Dispatch<SetStateAction<ShipmentFormState>>
   setStatusForm: Dispatch<SetStateAction<StatusFormState>>
   shipmentActionAllowed: boolean
@@ -61,7 +60,6 @@ function OrderDetailPanelContent({
   onShowShipmentWarning,
   onStatusUpdate,
   order,
-  selectedOrderTrackingUrl,
   setShipmentForm,
   setStatusForm,
   shipmentActionAllowed,
@@ -245,6 +243,15 @@ function OrderDetailPanelContent({
         </div>
       )}
 
+      <div className="mt-5">
+        <OrderDeliveryStepper
+          isRefreshing={isSyncingShipment}
+          onRefresh={shipmentExists ? onShipmentSync : undefined}
+          order={order}
+          variant="admin"
+        />
+      </div>
+
       <div className="mt-5 border-b border-black/10 pb-5">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div>
@@ -256,53 +263,13 @@ function OrderDetailPanelContent({
             </p>
           </div>
 
-          {shipmentExists ? (
-            <button
-              className="inline-flex min-h-10 items-center justify-center gap-2 border border-black/10 bg-white px-4 text-xs font-bold transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
-              disabled={isSyncingShipment}
-              onClick={onShipmentSync}
-              type="button"
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${isSyncingShipment ? 'animate-spin' : ''}`}
-              />
-              {isSyncingShipment ? 'Syncing...' : 'Sync courier status'}
-            </button>
-          ) : null}
         </div>
 
         {shipmentExists ? (
-          <div className="mt-4 grid gap-3 border border-black/10 bg-[#f8f3ea] p-4 text-sm md:grid-cols-2">
-            <p>
-              <span className="font-bold">Courier provider:</span>{' '}
-              {formatCourierProvider(order.courierProvider)}
-            </p>
-            <p>
-              <span className="font-bold">Courier status:</span>{' '}
-              {formatOrderStatus(order.courierStatus ?? 'shipment_created')}
-            </p>
-            <p>
-              <span className="font-bold">Courier order id:</span>{' '}
-              {order.courierOrderId ?? 'Not set'}
-            </p>
-            <p>
-              <span className="font-bold">Tracking code:</span>{' '}
-              {order.trackingCode ?? 'Not set'}
-            </p>
-            {selectedOrderTrackingUrl ? (
-              <p className="md:col-span-2">
-                <span className="font-bold">Tracking URL:</span>{' '}
-                <a
-                  className="font-bold text-[#7a3f1d] underline"
-                  href={selectedOrderTrackingUrl}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  {selectedOrderTrackingUrl}
-                </a>
-              </p>
-            ) : null}
-          </div>
+          <p className="mt-4 border border-black/10 bg-[#f8f3ea] p-4 text-sm font-semibold text-[#6b5f53]">
+            Shipment exists. Use the delivery tracker above for courier facts
+            and live sync.
+          </p>
         ) : (
           <div className="mt-4 border border-black/10 p-4">
             <p className="text-sm font-bold text-[#181512]">
