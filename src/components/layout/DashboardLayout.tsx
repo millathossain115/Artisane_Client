@@ -21,6 +21,7 @@ import {
 } from '../../features/auth/authApi'
 import { syncCartForCurrentUser } from '../../features/cart/cartSlice'
 import { useAppDispatch } from '../../redux/hooks'
+import Footer from './Footer'
 import Navbar from './Navbar'
 
 type SidebarLinkItem = {
@@ -462,6 +463,8 @@ function DashboardLayout({
 
           {children}
         </main>
+
+        {isCustomerLayout ? <Footer /> : null}
       </div>
     </div>
   )
