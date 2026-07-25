@@ -22,6 +22,9 @@ function WishlistPage() {
   const [page, setPage] = useState(1)
   const [removingId, setRemovingId] = useState('')
   const [selectedWishlistIds, setSelectedWishlistIds] = useState<string[]>([])
+  const [wishlistQuantities, setWishlistQuantities] = useState<
+    Record<string, number>
+  >({})
   const {
     data: wishlistList,
     isError,
@@ -55,8 +58,13 @@ function WishlistPage() {
     selectableWishlistIds.length > 0 &&
     selectableWishlistIds.every((id) => visibleSelectedWishlistIds.includes(id))
 
+  function getWishlistQuantity(id: string, product: Product) {
+    return Math.min(Math.max(1, wishlistQuantities[id] ?? 1), product.stock)
+  }
+
   function getSelectedCartProducts() {
-    return wishlistItems.reduce<Product[]>((products, item) => {
+    return wishlistItems.reduce<{ product: Product; quantity: number }[]>(
+      (products, item) => {
       const product = getWishlistProduct(item)
 
       if (
@@ -64,11 +72,16 @@ function WishlistPage() {
         product.stock > 0 &&
         visibleSelectedWishlistIds.includes(item._id)
       ) {
-        products.push(product)
+        products.push({
+          product,
+          quantity: getWishlistQuantity(item._id, product),
+        })
       }
 
       return products
-    }, [])
+      },
+      [],
+    )
   }
 
   function handleToggleWishlistSelection(id: string) {
@@ -89,19 +102,34 @@ function WishlistPage() {
     })
   }
 
-  function handleAddProductToCart(product?: Product) {
+  function handleUpdateWishlistQuantity(
+    id: string,
+    product: Product | undefined,
+    quantity: number,
+  ) {
+    if (!product || product.stock <= 0) {
+      return
+    }
+
+    setWishlistQuantities((currentQuantities) => ({
+      ...currentQuantities,
+      [id]: Math.min(Math.max(1, quantity), product.stock),
+    }))
+  }
+
+  function handleAddProductToCart(product?: Product, quantity = 1) {
     if (!product) {
       return
     }
 
-    dispatch(addToCart(createCartItem(product)))
+    dispatch(addToCart(createCartItem(product, quantity)))
   }
 
   function handleAddSelectedToCart() {
     const selectedProducts = getSelectedCartProducts()
 
-    selectedProducts.forEach((product) => {
-      dispatch(addToCart(createCartItem(product)))
+    selectedProducts.forEach(({ product, quantity }) => {
+      dispatch(addToCart(createCartItem(product, quantity)))
     })
 
     if (selectedProducts.length) {
@@ -173,12 +201,14 @@ function WishlistPage() {
         onRemoveWishlistItem={handleRemoveWishlistItem}
         onToggleAllWishlistItems={handleToggleAllWishlistItems}
         onToggleWishlistSelection={handleToggleWishlistSelection}
+        onUpdateWishlistQuantity={handleUpdateWishlistQuantity}
         page={page}
         removingId={removingId}
         selectableWishlistIds={selectableWishlistIds}
         selectedWishlistCount={selectedWishlistCount}
         selectedWishlistIds={selectedWishlistIds}
         setPage={setPage}
+        wishlistQuantities={wishlistQuantities}
         wishlistItems={wishlistItems}
       />
     </DashboardLayout>

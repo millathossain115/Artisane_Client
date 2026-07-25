@@ -32,7 +32,7 @@ function MyOrdersPage() {
     isLoading,
   } = useGetMyOrdersQuery(
     {
-      limit: 10,
+      limit: 5,
       page,
       paymentStatus: selectedTab.paymentStatus,
       status: selectedTab.orderStatus,

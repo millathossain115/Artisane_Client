@@ -12,6 +12,10 @@ import { formatPrice, getProductImage, getProductUrl } from '../../../utils/prod
 
 const FEATURED_CATEGORY_LIMIT = 6
 
+type NavbarCategoryNavProps = {
+  fullWidth?: boolean
+}
+
 function getCategoryUrl(categoryId: string) {
   return `/products?category=${encodeURIComponent(categoryId)}`
 }
@@ -67,8 +71,17 @@ function CategoryProductCount({ categoryId }: { categoryId: string }) {
   )
 }
 
-function NavbarCategoryNav() {
+function NavbarCategoryNav({ fullWidth = false }: NavbarCategoryNavProps) {
   const [activePanel, setActivePanel] = useState('')
+  const containerClass = fullWidth
+    ? 'mx-auto flex w-full items-center gap-1 px-4 py-1.5 sm:overflow-x-auto sm:px-6 lg:px-8'
+    : 'mx-auto flex max-w-7xl items-center gap-1 px-4 py-1.5 sm:overflow-x-auto sm:px-6 lg:px-8'
+  const panelContainerClass = fullWidth
+    ? 'mx-auto w-full px-4 py-6 sm:px-6 lg:px-8'
+    : 'mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8'
+  const activePanelContainerClass = fullWidth
+    ? 'mx-auto flex w-full flex-col gap-4 px-4 py-3.5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8'
+    : 'mx-auto flex max-w-7xl flex-col gap-4 px-4 py-3.5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8'
   const activeCategoryId =
     activePanel && activePanel !== 'all-categories' ? activePanel : ''
   const { data: categoryList, isLoading: isCategoriesLoading } =
@@ -103,7 +116,7 @@ function NavbarCategoryNav() {
       className="relative hidden border-t border-[#e2d5c5] bg-[#f4ebe1]/90 backdrop-blur-sm sm:block"
       onMouseLeave={() => setActivePanel('')}
     >
-      <nav className="mx-auto flex max-w-7xl items-center gap-1 px-4 py-1.5 sm:overflow-x-auto sm:px-6 lg:px-8">
+      <nav className={containerClass}>
         <Link
           className="group relative inline-flex shrink-0 items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#4a3528] transition-colors duration-200 hover:text-[#181512]"
           onClick={() => setActivePanel('')}
@@ -152,7 +165,7 @@ function NavbarCategoryNav() {
 
       {activePanel === 'all-categories' ? (
         <div className="absolute left-0 right-0 top-full z-40 hidden border-t border-black/10 bg-white shadow-[0_28px_60px_rgba(24,21,18,0.18)] backdrop-blur-sm sm:block">
-          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <div className={panelContainerClass}>
             <div className="mb-4 flex items-center justify-between border-b border-black/10 pb-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#7a3f1d]">
@@ -218,7 +231,7 @@ function NavbarCategoryNav() {
 
       {activeCategory ? (
         <div className="absolute left-0 right-0 top-full z-40 hidden border-t border-black/10 bg-white/95 shadow-[0_20px_40px_rgba(24,21,18,0.15)] backdrop-blur-md sm:block">
-          <div className="mx-auto flex flex-col gap-4 px-4 py-3.5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div className={activePanelContainerClass}>
             <div className="flex shrink-0 items-center gap-3 lg:border-r lg:border-black/10 lg:pr-6">
               <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden border border-black/10 bg-[#f8f3ea] text-[#7a3f1d]">
                 {getCategoryImageUrl(activeCategory.image) ? (

@@ -39,6 +39,7 @@ type MyOrdersCardSectionProps = {
   isError: boolean
   isLoading: boolean
   meta?: {
+    limit: number
     page: number
     total: number
     totalPage: number
@@ -51,6 +52,14 @@ type MyOrdersCardSectionProps = {
   selectedTabKey: MyOrderTabKey
   tabs: MyOrderTab[]
   visibleOrders: Order[]
+}
+
+function getPaginationItems(currentPage: number, totalPage: number) {
+  const safeTotalPage = Math.max(1, totalPage)
+  const start = Math.max(1, Math.min(currentPage - 1, safeTotalPage - 2))
+  const end = Math.min(safeTotalPage, start + 2)
+
+  return Array.from({ length: end - start + 1 }, (_, index) => start + index)
 }
 
 function getOrderStatusBadgeClass(status?: string) {
@@ -334,6 +343,15 @@ function MyOrdersCardSection({
     null,
   )
   const activeTab = tabs.find((tab) => tab.key === selectedTabKey) ?? tabs[0]
+  const currentPage = meta?.page ?? page
+  const totalPage = meta?.totalPage ?? 1
+  const totalOrders = meta?.total ?? orders.length
+  const pageLimit = meta?.limit ?? visibleOrders.length
+  const startOrder = totalOrders ? (currentPage - 1) * pageLimit + 1 : 0
+  const endOrder = totalOrders
+    ? Math.min(startOrder + visibleOrders.length - 1, totalOrders)
+    : 0
+  const paginationItems = getPaginationItems(currentPage, totalPage)
 
   async function handleReorder(order: Order) {
     if (!order.items?.length) {
@@ -464,21 +482,39 @@ function MyOrdersCardSection({
 
       <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
         <p className="text-sm font-semibold text-[#6b5f53]">
-          Page {meta?.page ?? page} of {meta?.totalPage ?? 1}
+          {totalOrders
+            ? `Showing ${startOrder}-${endOrder} of ${totalOrders}`
+            : 'No orders to show'}
         </p>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             className="inline-flex h-10 w-10 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
-            disabled={page <= 1}
+            disabled={currentPage <= 1}
             onClick={() => onPageChange((current) => Math.max(1, current - 1))}
             type="button"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
+          {paginationItems.map((item) => (
+            <button
+              className={`inline-flex h-10 min-w-10 items-center justify-center border px-3 text-sm font-bold transition ${
+                item === currentPage
+                  ? 'border-[#181512] bg-[#181512] text-white'
+                  : 'border-black/10 bg-white text-[#181512] hover:border-[#181512] hover:bg-[#f8f3ea]'
+              }`}
+              key={item}
+              onClick={() => onPageChange(item)}
+              type="button"
+            >
+              {item}
+            </button>
+          ))}
           <button
             className="inline-flex h-10 w-10 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
-            disabled={page >= (meta?.totalPage ?? 1)}
-            onClick={() => onPageChange((current) => current + 1)}
+            disabled={currentPage >= totalPage}
+            onClick={() =>
+              onPageChange((current) => Math.min(totalPage, current + 1))
+            }
             type="button"
           >
             <ChevronRight className="h-4 w-4" />

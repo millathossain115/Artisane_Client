@@ -247,7 +247,7 @@ function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-[#f8f3ea] text-[#181512]">
-      {isCustomerLayout ? <Navbar /> : null}
+      {isCustomerLayout ? <Navbar fullWidth /> : null}
 
       <aside
         className={`fixed bottom-0 left-0 z-40 hidden w-72 border-r border-black/10 bg-[#181512] text-white lg:flex lg:flex-col ${

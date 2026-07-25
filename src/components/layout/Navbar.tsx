@@ -7,13 +7,21 @@ import NavbarMobileDrawer from './navbar/NavbarMobileDrawer'
 import NavbarProfileMenu from './navbar/NavbarProfileMenu'
 import NavbarSearch from './navbar/NavbarSearch'
 
-function Navbar() {
+type NavbarProps = {
+  fullWidth?: boolean
+}
+
+function Navbar({ fullWidth = false }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const containerClass = fullWidth
+    ? 'mx-auto flex w-full items-center gap-4 px-4 py-3 sm:px-6 lg:px-8'
+    : 'mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8'
+  const mobileSearchClass = fullWidth ? 'w-full' : 'mx-auto max-w-7xl'
 
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-black/10 bg-[#f8f3ea]/95 shadow-[0_10px_30px_rgba(24,21,18,0.06)] backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
+        <div className={containerClass}>
           <button
             aria-controls="mobile-navigation"
             aria-expanded={isMobileMenuOpen}
@@ -36,10 +44,10 @@ function Navbar() {
           <NavbarProfileMenu />
         </div>
 
-        <NavbarCategoryNav />
+        <NavbarCategoryNav fullWidth={fullWidth} />
 
         <div className="border-t border-black/10 px-4 py-3 md:hidden">
-          <NavbarSearch className="mx-auto max-w-7xl" />
+          <NavbarSearch className={mobileSearchClass} />
         </div>
       </header>
 

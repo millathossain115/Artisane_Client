@@ -4,6 +4,8 @@ import {
   ChevronRight,
   Heart,
   ImageOff,
+  Minus,
+  Plus,
   ShoppingBag,
   Trash2,
 } from 'lucide-react'
@@ -13,12 +15,14 @@ import type { Product } from '../../../../features/products/productApi'
 import type { WishlistItem } from '../../../../features/wishlists/wishlistApi'
 import {
   formatPrice,
-  getProductCategoryName,
   getProductImage,
   getProductUrl,
 } from '../../../../utils/productDisplay'
 import { getWishlistProduct } from '../../../../features/wishlists/wishlistApi'
-import { formatWishlistDate, getVisibleWishlistIds } from '../wishlistUtils'
+import { getVisibleWishlistIds } from '../wishlistUtils'
+
+const truncateProductName = (name: string, maxLength = 48) =>
+  name.length > maxLength ? `${name.slice(0, maxLength).trim()}...` : name
 
 type WishlistSectionProps = {
   areAllWishlistItemsSelected: boolean
@@ -30,18 +34,24 @@ type WishlistSectionProps = {
     total: number
     totalPage: number
   }
-  onAddProductToCart: (product?: Product) => void
+  onAddProductToCart: (product?: Product, quantity?: number) => void
   onAddSelectedToCart: () => void
   onClearWishlist: () => void
   onRemoveWishlistItem: (id: string, productName?: string) => void
   onToggleAllWishlistItems: () => void
   onToggleWishlistSelection: (id: string) => void
+  onUpdateWishlistQuantity: (
+    id: string,
+    product: Product | undefined,
+    quantity: number,
+  ) => void
   page: number
   removingId: string
   selectableWishlistIds: string[]
   selectedWishlistCount: number
   selectedWishlistIds: string[]
   setPage: Dispatch<SetStateAction<number>>
+  wishlistQuantities: Record<string, number>
   wishlistItems: WishlistItem[]
 }
 
@@ -57,12 +67,14 @@ function WishlistSection({
   onRemoveWishlistItem,
   onToggleAllWishlistItems,
   onToggleWishlistSelection,
+  onUpdateWishlistQuantity,
   page,
   removingId,
   selectableWishlistIds,
   selectedWishlistCount,
   selectedWishlistIds,
   setPage,
+  wishlistQuantities,
   wishlistItems,
 }: WishlistSectionProps) {
   const visibleWishlistIds = getVisibleWishlistIds(wishlistItems)
@@ -127,11 +139,11 @@ function WishlistSection({
                 />
               </th>
               <th className="px-5 py-3">Product</th>
-              <th className="px-5 py-3">Category</th>
               <th className="px-5 py-3">Stock</th>
+              <th className="px-5 py-3 text-center">Qty</th>
               <th className="px-5 py-3">Price</th>
-              <th className="px-5 py-3">Saved</th>
-              <th className="px-5 py-3 text-right">Action</th>
+              <th className="px-5 py-3 text-center">Buy</th>
+              <th className="px-5 py-3 text-right">Remove</th>
             </tr>
           </thead>
           <tbody>
@@ -148,6 +160,12 @@ function WishlistSection({
                 const product = getWishlistProduct(item)
                 const imageUrl = getProductImage(product)
                 const canAddToCart = Boolean(product && product.stock > 0)
+                const quantity = canAddToCart
+                  ? Math.min(
+                      Math.max(1, wishlistQuantities[item._id] ?? 1),
+                      product?.stock ?? 1,
+                    )
+                  : 0
                 const rowSelected = selectedWishlistIds.includes(item._id)
                 const isVisible = visibleWishlistIds.has(item._id)
 
@@ -187,10 +205,11 @@ function WishlistSection({
                         <div className="min-w-0">
                           {product ? (
                             <Link
-                              className="line-clamp-1 font-bold transition hover:text-[#7a3f1d]"
+                              className="block max-w-[220px] truncate font-bold transition hover:text-[#7a3f1d] sm:max-w-[320px]"
+                              title={product.name}
                               to={getProductUrl(product)}
                             >
-                              {product.name}
+                              {truncateProductName(product.name)}
                             </Link>
                           ) : (
                             <p className="font-bold">Product unavailable</p>
@@ -201,52 +220,77 @@ function WishlistSection({
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-[#6b5f53]">
-                      {getProductCategoryName(product)}
-                    </td>
                     <td className="px-5 py-4">
                       <span className="bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
                         {product?.stock ?? 0} in stock
                       </span>
                     </td>
-                    <td className="px-5 py-4 font-bold">
-                      {formatPrice(product?.price ?? 0)}
-                    </td>
-                    <td className="px-5 py-4 text-[#6b5f53]">
-                      {formatWishlistDate(item.createdAt)}
-                    </td>
                     <td className="px-5 py-4">
-                      <div className="flex justify-end gap-2">
+                      <div className="mx-auto inline-grid grid-cols-[32px_40px_32px] overflow-hidden border border-black/10 bg-white">
                         <button
-                          aria-label={`Add ${product?.name ?? 'product'} to cart`}
-                          className="btn-primary !py-1.5 !px-3"
-                          disabled={!canAddToCart}
-                          onClick={() => onAddProductToCart(product)}
-                          type="button"
-                        >
-                          <ShoppingBag className="h-3.5 w-3.5" />
-                          Cart
-                        </button>
-                        {product ? (
-                          <Link
-                            className="btn-secondary !py-1.5 !px-3"
-                            to={`/products/${product._id}`}
-                          >
-                            View
-                          </Link>
-                        ) : null}
-                        <button
-                          aria-label={`Remove ${product?.name ?? 'product'} from wishlist`}
-                          className="btn-danger grid h-8 w-8 !p-0"
-                          disabled={removingId === item._id}
+                          aria-label={`Decrease ${product?.name ?? 'product'} quantity`}
+                          className="grid h-8 place-items-center transition hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"
+                          disabled={!canAddToCart || quantity <= 1}
                           onClick={() =>
-                            onRemoveWishlistItem(item._id, product?.name)
+                            onUpdateWishlistQuantity(
+                              item._id,
+                              product,
+                              quantity - 1,
+                            )
                           }
                           type="button"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Minus className="h-3.5 w-3.5" />
+                        </button>
+                        <span className="grid h-8 place-items-center border-x border-black/10 text-xs font-bold">
+                          {quantity}
+                        </span>
+                        <button
+                          aria-label={`Increase ${product?.name ?? 'product'} quantity`}
+                          className="grid h-8 place-items-center transition hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"
+                          disabled={
+                            !canAddToCart || quantity >= (product?.stock ?? 0)
+                          }
+                          onClick={() =>
+                            onUpdateWishlistQuantity(
+                              item._id,
+                              product,
+                              quantity + 1,
+                            )
+                          }
+                          type="button"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
                         </button>
                       </div>
+                    </td>
+                    <td className="px-5 py-4 font-bold">
+                      {formatPrice(product?.price ?? 0)}
+                    </td>
+                    <td className="px-5 py-4 text-center">
+                      <button
+                        aria-label={`Add ${product?.name ?? 'product'} to cart`}
+                        className="btn-primary !py-1.5 !px-3"
+                        disabled={!canAddToCart}
+                        onClick={() => onAddProductToCart(product, quantity)}
+                        type="button"
+                      >
+                        <ShoppingBag className="h-3.5 w-3.5" />
+                        Cart
+                      </button>
+                    </td>
+                    <td className="px-5 py-4">
+                      <button
+                        aria-label={`Remove ${product?.name ?? 'product'} from wishlist`}
+                        className="btn-danger ml-auto grid h-8 w-8 !p-0"
+                        disabled={removingId === item._id}
+                        onClick={() =>
+                          onRemoveWishlistItem(item._id, product?.name)
+                        }
+                        type="button"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     </td>
                   </tr>
                 )
