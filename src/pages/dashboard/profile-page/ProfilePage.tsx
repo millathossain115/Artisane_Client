@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import { getStoredUser, saveStoredUser } from '../../../features/auth/authApi'
@@ -203,10 +204,6 @@ function ProfilePage() {
           <ProfileAddressSection
             fieldClass={fieldClass}
             isAdminProfile={isAdminProfile}
-            isEditing={isEditing}
-            onFieldChange={updateField}
-            profileForm={visibleProfileForm}
-            readonlyClass={readonlyClass}
           />
         </div>
 

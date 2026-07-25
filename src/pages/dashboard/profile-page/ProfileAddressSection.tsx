@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
 import { Check, Edit, MapPin, Plus, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import {
@@ -14,34 +14,22 @@ import {
   useGetDistrictsQuery,
   useGetZonesQuery,
 } from '../../../features/locations/locationApi'
-import { type ProfileForm } from './profilePageUtils'
 
 type ProfileAddressSectionProps = {
   fieldClass: string
   isAdminProfile: boolean
-  isEditing: boolean
-  profileForm: ProfileForm
-  readonlyClass: string
-  onFieldChange: <K extends keyof ProfileForm>(
-    field: K,
-    value: ProfileForm[K],
-  ) => void
 }
 
 function ProfileAddressSection({
   fieldClass,
   isAdminProfile,
-  isEditing,
-  profileForm,
-  readonlyClass,
-  onFieldChange,
 }: ProfileAddressSectionProps) {
   const [addresses, setAddresses] = useState<UserAddress[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingAddress, setEditingAddress] = useState<UserAddress | null>(null)
-  
+
   const [formState, setFormState] = useState({
     label: 'Home',
     recipientName: '',
@@ -61,7 +49,9 @@ function ProfileAddressSection({
     skip: !formState.districtId,
   })
 
-  const [pendingConfirm, setPendingConfirm] = useState<'save' | 'delete' | 'setDefault' | null>(null)
+  const [pendingConfirm, setPendingConfirm] = useState<
+    'save' | 'delete' | 'setDefault' | null
+  >(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [defaultingId, setDefaultingId] = useState<string | null>(null)
 
@@ -170,7 +160,8 @@ function ProfileAddressSection({
       toast.success('Address deleted successfully.')
       await loadAddresses()
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to delete address'
+      const msg =
+        err instanceof Error ? err.message : 'Failed to delete address'
       setError(msg)
       toast.error(msg)
     }
@@ -191,7 +182,8 @@ function ProfileAddressSection({
       toast.success('Default address updated.')
       await loadAddresses()
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to set default address'
+      const msg =
+        err instanceof Error ? err.message : 'Failed to set default address'
       setError(msg)
       toast.error(msg)
     }
@@ -235,7 +227,8 @@ function ProfileAddressSection({
         <p className="mt-5 text-sm text-[#6b5f53]">Loading address book...</p>
       ) : addresses.length === 0 ? (
         <p className="mt-5 text-sm text-[#6b5f53]">
-          No saved addresses found. Click &quot;Add new address&quot; to save one.
+          No saved addresses found. Click &quot;Add new address&quot; to save
+          one.
         </p>
       ) : (
         <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -266,7 +259,11 @@ function ProfileAddressSection({
                 <p className="mt-2 text-sm text-[#4f463d]">
                   {addr.streetAddress}
                   {addr.zoneName ? `, ${addr.zoneName}` : ''}
-                  {addr.districtName ? `, ${addr.districtName}` : addr.city ? `, ${addr.city}` : ''}
+                  {addr.districtName
+                    ? `, ${addr.districtName}`
+                    : addr.city
+                      ? `, ${addr.city}`
+                      : ''}
                   {addr.postalCode ? ` - ${addr.postalCode}` : ''}
                 </p>
               </div>
@@ -281,7 +278,9 @@ function ProfileAddressSection({
                     Set as default
                   </button>
                 ) : (
-                  <span className="text-xs text-stone-400">Primary delivery</span>
+                  <span className="text-xs text-stone-400">
+                    Primary delivery
+                  </span>
                 )}
                 <div className="flex items-center gap-3">
                   <button
@@ -360,7 +359,10 @@ function ProfileAddressSection({
                 <input
                   className={fieldClass}
                   onChange={(e) =>
-                    setFormState({ ...formState, streetAddress: e.target.value })
+                    setFormState({
+                      ...formState,
+                      streetAddress: e.target.value,
+                    })
                   }
                   required
                   type="text"
@@ -374,7 +376,9 @@ function ProfileAddressSection({
                   <select
                     className={fieldClass}
                     onChange={(e) => {
-                      const selected = districts.find((d) => d.id === e.target.value)
+                      const selected = districts.find(
+                        (d) => d.id === e.target.value,
+                      )
                       setFormState({
                         ...formState,
                         districtId: e.target.value,
@@ -401,7 +405,9 @@ function ProfileAddressSection({
                     className={fieldClass}
                     disabled={!formState.districtId}
                     onChange={(e) => {
-                      const selected = zones.find((z) => z.id === e.target.value)
+                      const selected = zones.find(
+                        (z) => z.id === e.target.value,
+                      )
                       setFormState({
                         ...formState,
                         zoneId: e.target.value,
@@ -411,7 +417,9 @@ function ProfileAddressSection({
                     value={formState.zoneId}
                   >
                     <option value="">
-                      {!formState.districtId ? 'Select district first' : 'Select zone'}
+                      {!formState.districtId
+                        ? 'Select district first'
+                        : 'Select zone'}
                     </option>
                     {zones.map((zone) => (
                       <option key={zone.id} value={zone.id}>
@@ -483,9 +491,12 @@ function ProfileAddressSection({
       {pendingConfirm === 'save' ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md border border-black/10 bg-white p-6 shadow-xl">
-            <h4 className="text-lg font-bold text-[#181512]">Confirm Save Address</h4>
+            <h4 className="text-lg font-bold text-[#181512]">
+              Confirm Save Address
+            </h4>
             <p className="mt-2 text-sm text-[#6b5f53]">
-              Are you sure you want to {editingAddress ? 'update' : 'add'} this address?
+              Are you sure you want to {editingAddress ? 'update' : 'add'} this
+              address?
             </p>
             <div className="mt-5 flex justify-end gap-3 border-t border-black/10 pt-4">
               <button
@@ -510,7 +521,9 @@ function ProfileAddressSection({
       {pendingConfirm === 'setDefault' ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md border border-black/10 bg-white p-6 shadow-xl">
-            <h4 className="text-lg font-bold text-[#181512]">Set Default Address</h4>
+            <h4 className="text-lg font-bold text-[#181512]">
+              Set Default Address
+            </h4>
             <p className="mt-2 text-sm text-[#6b5f53]">
               Are you sure you want to make this your primary delivery address?
             </p>
@@ -540,9 +553,12 @@ function ProfileAddressSection({
       {pendingConfirm === 'delete' ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md border border-red-200 bg-white p-6 shadow-xl">
-            <h4 className="text-lg font-bold text-red-600">Delete Address Warning</h4>
+            <h4 className="text-lg font-bold text-red-600">
+              Delete Address Warning
+            </h4>
             <p className="mt-2 text-sm text-[#6b5f53]">
-              Are you sure you want to delete this address? Action cannot be undone.
+              Are you sure you want to delete this address? Action cannot be
+              undone.
             </p>
             <div className="mt-5 flex justify-end gap-3 border-t border-black/10 pt-4">
               <button
