@@ -1,4 +1,5 @@
 import { ArrowRight, Gift, Percent } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 type HomePromoBannersProps = {
   firstImage: string
@@ -11,9 +12,9 @@ function HomePromoBanners({
 }: HomePromoBannersProps) {
   return (
     <section className="mx-auto grid max-w-7xl gap-5 px-4 py-6 sm:px-6 lg:grid-cols-2 lg:px-8">
-      <a
+      <Link
         className="group relative min-h-72 overflow-hidden bg-[#181512] p-6 text-white sm:p-8"
-        href="#products"
+        to="/products"
       >
         <img
           alt="Starter kit promotion"
@@ -37,11 +38,11 @@ function HomePromoBanners({
             <ArrowRight className="h-4 w-4" />
           </span>
         </div>
-      </a>
+      </Link>
 
-      <a
+      <Link
         className="group relative min-h-72 overflow-hidden bg-[#7a3f1d] p-6 text-white sm:p-8"
-        href="#latest"
+        to="/products?sort=newest"
       >
         <img
           alt="Latest craft supplies"
@@ -65,7 +66,7 @@ function HomePromoBanners({
             <ArrowRight className="h-4 w-4" />
           </span>
         </div>
-      </a>
+      </Link>
     </section>
   )
 }

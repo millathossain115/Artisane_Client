@@ -18,8 +18,11 @@ import HomeHero from './home/HomeHero'
 import HomeNewsletter from './home/HomeNewsletter'
 import HomePromoBanners from './home/HomePromoBanners'
 import HomeStats from './home/HomeStats'
+import HomeTrustStrip from './home/HomeTrustStrip'
+import HomeUseCases from './home/HomeUseCases'
 import KitProducts from './home/KitProducts'
 import LatestProducts from './home/LatestProducts'
+import TopRatedProducts from './home/TopRatedProducts'
 import WhyChooseUs from './home/WhyChooseUs'
 import { getProductImage } from '../utils/productDisplay'
 
@@ -34,6 +37,31 @@ function shuffleProducts(products: Product[]) {
   }
 
   return shuffledProducts
+}
+
+function sortTopRatedProducts(products: Product[]) {
+  return [...products].sort((firstProduct, secondProduct) => {
+    const firstRating = firstProduct.averageRating ?? 0
+    const secondRating = secondProduct.averageRating ?? 0
+    const firstReviewCount = firstProduct.reviewCount ?? 0
+    const secondReviewCount = secondProduct.reviewCount ?? 0
+    const firstHasRating = firstRating > 0 && firstReviewCount > 0
+    const secondHasRating = secondRating > 0 && secondReviewCount > 0
+
+    if (firstHasRating !== secondHasRating) {
+      return firstHasRating ? -1 : 1
+    }
+
+    if (firstRating !== secondRating) {
+      return secondRating - firstRating
+    }
+
+    if (firstReviewCount !== secondReviewCount) {
+      return secondReviewCount - firstReviewCount
+    }
+
+    return firstProduct.name.localeCompare(secondProduct.name)
+  })
 }
 
 function Home() {
@@ -66,6 +94,10 @@ function Home() {
   const kitCategory =
     categories.find((category) => /kit/i.test(category.name)) ?? categories[0]
   const featuredProducts = shuffledProducts.slice(0, 10)
+  const topRatedProducts = useMemo(
+    () => sortTopRatedProducts(products).slice(0, 5),
+    [products],
+  )
   const latestProducts = shuffledProducts.slice(10, 20)
   const moreProducts = shuffledProducts.slice(20, 29)
   const bannerProducts = shuffledProducts.filter((product) =>
@@ -98,10 +130,15 @@ function Home() {
           firstImage={firstBannerImage}
           secondImage={secondBannerImage}
         />
+        <HomeTrustStrip />
         <FeaturedProducts
           hasError={hasProductsError}
           isLoading={isProductsLoading}
           products={featuredProducts}
+        />
+        <TopRatedProducts
+          isLoading={isProductsLoading}
+          products={topRatedProducts}
         />
         <LatestProducts
           isLoading={isProductsLoading}
@@ -112,6 +149,7 @@ function Home() {
           kitCategory={kitCategory}
           products={moreProducts}
         />
+        <HomeUseCases />
         <WhyChooseUs />
         <HomeNewsletter />
       </main>
