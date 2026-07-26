@@ -9,6 +9,7 @@ import {
   type Product,
   useGetProductsQuery,
 } from '../features/products/productApi'
+import { useGetHomeHeroQuery } from '../features/homeContent/homeContentApi'
 import FeaturedProducts from './home/FeaturedProducts'
 import FlashDealBanner from './home/FlashDealBanner'
 import VoucherBanner from './home/VoucherBanner'
@@ -73,6 +74,7 @@ function Home() {
   const [recentProducts] = useState<RecentProduct[]>(() =>
     loadRecentProducts(),
   )
+  const { data: heroContent } = useGetHomeHeroQuery()
   const {
     data: categoryList,
     isError: hasCategoriesError,
@@ -120,7 +122,7 @@ function Home() {
       <FlashDealModal />
 
       <main>
-        <HomeHero image={homeWallArtBanner} />
+        <HomeHero fallbackImage={homeWallArtBanner} heroContent={heroContent} />
         <FlashDealBanner />
         <VoucherBanner />
         <HomeStats

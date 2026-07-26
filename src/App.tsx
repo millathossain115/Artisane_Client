@@ -25,6 +25,7 @@ import UserReviewsPage from './pages/dashboard/reviews/ReviewsPage'
 import WishlistPage from './pages/dashboard/user-dashboard/WishlistPage'
 import AdminReviewsPage from './pages/admin/reviews/ReviewsPage'
 import ManagePromoBanner from './pages/admin/promo/ManagePromoBanner'
+import ManageHomeHero from './pages/admin/homeHero/ManageHomeHero'
 import ManagePaymentLogs from './pages/admin/paymentLog/ManagePaymentLogs'
 import PaymentLogDetailPage from './pages/admin/paymentLog/PaymentLogDetailPage'
 import Home from './pages/Home'
@@ -192,6 +193,14 @@ function App() {
           element={
             <AdminRoute>
               <ManagePromoBanner />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/home-hero"
+          element={
+            <AdminRoute>
+              <ManageHomeHero />
             </AdminRoute>
           }
         />
