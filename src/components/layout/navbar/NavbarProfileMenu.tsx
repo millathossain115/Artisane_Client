@@ -25,8 +25,8 @@ function NavbarProfileMenu() {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement | null>(null)
   const isAdmin = user?.role === 'admin'
-  const displayName = user?.name ?? 'Guest Artist'
-  const displayEmail = user?.email ?? 'Login to view account'
+  const displayName = user?.name ?? 'Login'
+  const displayEmail = user?.email ?? 'Access your account'
   const userImageUrl = getAssetUrl(user?.profileImage || user?.avatar)
 
   useEffect(() => {
