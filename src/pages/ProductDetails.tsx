@@ -82,16 +82,18 @@ function ProductDetails() {
       skip: !productCategoryId,
     },
   )
-  const { data: fallbackProductsResult } = useGetProductsQuery(
+  const { data: topRatedProductsResult } = useGetProductsQuery(
     {
       limit: 10,
       sortBy: 'rating',
       sortOrder: 'desc',
     },
-    {
-      skip: Boolean(productCategoryId),
-    },
   )
+  const { data: latestProductsResult } = useGetProductsQuery({
+    limit: 10,
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+  })
   const { data: wishlistItems } = useGetMyWishlistQuery(undefined, {
     skip: !accessToken || isAdmin,
   })
@@ -150,9 +152,12 @@ function ProductDetails() {
   const isWishlisted = Boolean(wishlistEntryId)
 
   const catalogProducts = useMemo(
-    () => categoryProductsResult?.data ?? fallbackProductsResult?.data ?? [],
-    [categoryProductsResult?.data, fallbackProductsResult?.data],
+    () => categoryProductsResult?.data ?? topRatedProductsResult?.data ?? [],
+    [categoryProductsResult?.data, topRatedProductsResult?.data],
   )
+  const categoryProductsLink = productCategoryId
+    ? `/products?category=${encodeURIComponent(productCategoryId)}`
+    : '/products'
 
   const similarProducts = useMemo(() => {
     if (!product) {
@@ -173,6 +178,26 @@ function ProductDetails() {
       .filter((item) => item._id !== product._id)
       .slice(5, 10)
   }, [catalogProducts, product])
+
+  const topRatedProducts = useMemo(() => {
+    if (!product) {
+      return []
+    }
+
+    return (topRatedProductsResult?.data ?? [])
+      .filter((item) => item._id !== product._id)
+      .slice(0, 5)
+  }, [product, topRatedProductsResult?.data])
+
+  const latestProducts = useMemo(() => {
+    if (!product) {
+      return []
+    }
+
+    return (latestProductsResult?.data ?? [])
+      .filter((item) => item._id !== product._id)
+      .slice(0, 5)
+  }, [latestProductsResult?.data, product])
 
   const cartQuantity = useMemo(() => {
     if (!product?._id) {
@@ -303,7 +328,7 @@ function ProductDetails() {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <Link
             className="inline-flex items-center gap-2 border border-black/10 bg-white px-4 py-2 text-sm font-bold text-[#181512] transition hover:border-[#181512]"
-            to="/shop"
+            to="/products"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to shop
@@ -320,7 +345,7 @@ function ProductDetails() {
           <ErrorState
             title="Product unavailable"
             message="The product you are looking for does not exist or has been removed from the catalog."
-            onRetry={() => navigate('/shop')}
+            onRetry={() => navigate('/products')}
           />
         ) : (
           <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
@@ -503,15 +528,37 @@ function ProductDetails() {
         )}
 
         <ProductShelfSection
+          actionLabel="See more"
+          actionTo={categoryProductsLink}
           eyebrow="Similar products"
           heading={`More in ${getProductCategoryName(product)}`}
           products={similarProducts}
         />
-        <RecentlyViewedSection products={recentProducts} />
+        <RecentlyViewedSection
+          actionLabel="Explore more"
+          actionTo="/products"
+          products={recentProducts}
+        />
         <ProductShelfSection
+          actionLabel="View more"
+          actionTo="/products"
           eyebrow="You may like"
           heading="Fresh shelf picks"
           products={mayLikeProducts}
+        />
+        <ProductShelfSection
+          actionLabel="View top rated"
+          actionTo="/products?sort=rating-desc"
+          eyebrow="Top rated"
+          heading="Best-rated craft picks"
+          products={topRatedProducts}
+        />
+        <ProductShelfSection
+          actionLabel="View latest"
+          actionTo="/products?sort=newest"
+          eyebrow="Latest arrivals"
+          heading="New on the shelf"
+          products={latestProducts}
         />
       </main>
 
