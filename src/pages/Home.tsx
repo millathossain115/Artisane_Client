@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import brushLineImage from '../assets/brush-line-optimized.jpg'
 import homeWallArtBanner from '../assets/home-wall-art-banner.jpg'
 import paintTableImage from '../assets/paint-table-optimized.jpg'
@@ -24,6 +24,11 @@ import KitProducts from './home/KitProducts'
 import LatestProducts from './home/LatestProducts'
 import TopRatedProducts from './home/TopRatedProducts'
 import WhyChooseUs from './home/WhyChooseUs'
+import RecentlyViewedSection from './products/RecentlyViewedSection'
+import {
+  loadRecentProducts,
+  type RecentProduct,
+} from './products/recentProducts'
 import { getProductImage } from '../utils/productDisplay'
 
 function shuffleProducts(products: Product[]) {
@@ -65,6 +70,9 @@ function sortTopRatedProducts(products: Product[]) {
 }
 
 function Home() {
+  const [recentProducts] = useState<RecentProduct[]>(() =>
+    loadRecentProducts(),
+  )
   const {
     data: categoryList,
     isError: hasCategoriesError,
@@ -136,6 +144,7 @@ function Home() {
           isLoading={isProductsLoading}
           products={featuredProducts}
         />
+        <RecentlyViewedSection products={recentProducts} />
         <TopRatedProducts
           isLoading={isProductsLoading}
           products={topRatedProducts}

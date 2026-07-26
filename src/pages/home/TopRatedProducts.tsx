@@ -1,4 +1,5 @@
-import { Star } from 'lucide-react'
+import { ArrowRight, Star } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import { SkeletonCard } from '../../components/loaders'
 import ProductTile from '../../components/product/ProductTile'
@@ -25,9 +26,18 @@ function TopRatedProducts({ isLoading, products }: TopRatedProductsProps) {
             Loved by shoppers
           </h2>
         </div>
-        <div className="flex items-center gap-2 text-sm font-bold text-[#4f463d]">
-          <Star className="h-4 w-4 fill-[#c85f2f] text-[#c85f2f]" />
-          Based on product ratings
+        <div className="flex flex-col items-start gap-3 sm:items-end">
+          <div className="flex items-center gap-2 text-sm font-bold text-[#4f463d]">
+            <Star className="h-4 w-4 fill-[#c85f2f] text-[#c85f2f]" />
+            Based on product ratings
+          </div>
+          <Link
+            className="inline-flex items-center gap-2 bg-[#181512] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#7a3f1d]"
+            to="/products?sort=rating-desc"
+          >
+            View top rated
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
 

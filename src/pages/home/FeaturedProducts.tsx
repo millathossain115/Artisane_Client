@@ -1,4 +1,5 @@
-import { BadgeCheck } from 'lucide-react'
+import { ArrowRight, BadgeCheck } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import { ErrorState, SkeletonCard } from '../../components/loaders'
 import ProductTile from '../../components/product/ProductTile'
@@ -29,9 +30,18 @@ function FeaturedProducts({
             Featured products
           </h2>
         </div>
-        <div className="flex items-center gap-2 text-sm font-bold text-[#4f463d]">
-          <BadgeCheck className="h-4 w-4 text-[#7a3f1d]" />
-          Cart and wishlist ready
+        <div className="flex flex-col items-start gap-3 sm:items-end">
+          <div className="flex items-center gap-2 text-sm font-bold text-[#4f463d]">
+            <BadgeCheck className="h-4 w-4 text-[#7a3f1d]" />
+            Cart and wishlist ready
+          </div>
+          <Link
+            className="inline-flex items-center gap-2 bg-[#181512] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#7a3f1d]"
+            to="/products"
+          >
+            Explore more
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
 

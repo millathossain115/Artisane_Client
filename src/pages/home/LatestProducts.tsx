@@ -1,3 +1,6 @@
+import { ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
+
 import { SkeletonCard } from '../../components/loaders'
 import ProductTile from '../../components/product/ProductTile'
 import type { Product } from '../../features/products/productApi'
@@ -23,9 +26,18 @@ function LatestProducts({ isLoading, products }: LatestProductsProps) {
               Recently added to the shelf
             </h2>
           </div>
-          <p className="max-w-sm text-sm leading-6 text-white/64">
-            A denser product wall for quick scanning across every screen.
-          </p>
+          <div className="flex flex-col items-start gap-3 sm:items-end">
+            <p className="max-w-sm text-sm leading-6 text-white/64 sm:text-right">
+              A denser product wall for quick scanning across every screen.
+            </p>
+            <Link
+              className="inline-flex items-center gap-2 bg-white px-5 py-3 text-sm font-bold text-[#181512] transition hover:bg-[#f1c9a6]"
+              to="/products?sort=newest"
+            >
+              View latest
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
 
         <div className="mt-8">
