@@ -112,12 +112,9 @@ function HomeCategories({
       ) : null}
 
       <div className="relative mt-8">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-[linear-gradient(90deg,#f6f0e5,rgba(246,240,229,0))]" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-[linear-gradient(270deg,#f6f0e5,rgba(246,240,229,0))]" />
-
         <button
           aria-label="Previous categories"
-          className="absolute left-2 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center border border-white/60 bg-white/92 text-[#181512] shadow-[0_14px_34px_rgba(24,21,18,0.18)] backdrop-blur transition hover:bg-[#181512] hover:text-white disabled:pointer-events-none disabled:opacity-35 sm:-left-5"
+          className="absolute left-2 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center border border-white/60 bg-white/92 text-[#181512] backdrop-blur transition hover:bg-[#181512] hover:text-white disabled:pointer-events-none disabled:opacity-35 sm:-left-5"
           disabled={!scrollState.canScrollPrevious}
           onClick={() => scrollCategoryRail('previous')}
           type="button"
@@ -164,7 +161,7 @@ function HomeCategories({
 
         <button
           aria-label="Next categories"
-          className="absolute right-2 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center border border-white/60 bg-white/92 text-[#181512] shadow-[0_14px_34px_rgba(24,21,18,0.18)] backdrop-blur transition hover:bg-[#181512] hover:text-white disabled:pointer-events-none disabled:opacity-35 sm:-right-5"
+          className="absolute right-2 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center border border-white/60 bg-white/92 text-[#181512] backdrop-blur transition hover:bg-[#181512] hover:text-white disabled:pointer-events-none disabled:opacity-35 sm:-right-5"
           disabled={!scrollState.canScrollNext}
           onClick={() => scrollCategoryRail('next')}
           type="button"

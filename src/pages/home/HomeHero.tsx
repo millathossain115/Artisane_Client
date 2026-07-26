@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { ArrowRight, Sparkles } from 'lucide-react'
 
 type HomeHeroProps = {
@@ -29,19 +30,19 @@ function HomeHero({ image }: HomeHeroProps) {
             marketplace edit.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a
+            <Link
               className="inline-flex items-center gap-2 bg-white px-5 py-3 text-sm font-bold text-[#181512] transition hover:bg-[#f1dfc8]"
-              href="#products"
+              to="/products"
             >
               Shop products
               <ArrowRight className="h-4 w-4" />
-            </a>
-            <a
+            </Link>
+            <Link
               className="inline-flex items-center border border-white/35 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10"
-              href="#categories"
+              to="/categories"
             >
               Browse categories
-            </a>
+            </Link>
           </div>
         </div>
       </div>
