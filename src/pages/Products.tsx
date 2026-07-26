@@ -231,9 +231,9 @@ function Products() {
 
           <div className="min-w-0" ref={productGridRef}>
             {isProductsLoading ? (
-              <SkeletonCard count={DEFAULT_LIMIT} gridCols="grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" />
+              <SkeletonCard count={DEFAULT_LIMIT} gridCols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" />
             ) : (
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                 {products.map((product) => (
                   <ProductTile key={product._id} product={product} />
                 ))}

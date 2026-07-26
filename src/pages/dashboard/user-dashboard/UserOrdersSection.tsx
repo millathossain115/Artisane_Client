@@ -19,7 +19,7 @@ type UserOrdersSectionProps = {
   stats: UserDashboardStats | null
 }
 
-const RECENT_ORDER_LIMIT = 6
+const RECENT_ORDER_LIMIT = 4
 
 function getPrimaryOrderItem(order: DashboardOrder | Order) {
   const firstItem = order.items?.[0]
@@ -32,6 +32,16 @@ function getPrimaryOrderItem(order: DashboardOrder | Order) {
   const extraItems = (order.items?.length ?? 0) - 1
 
   return extraItems > 0 ? `${itemName} +${extraItems} more` : itemName
+}
+
+function getPrimaryOrderImage(order: DashboardOrder | Order) {
+  const firstItem = order.items?.[0]
+
+  if (!firstItem || !('image' in firstItem)) {
+    return ''
+  }
+
+  return typeof firstItem.image === 'string' ? firstItem.image : ''
 }
 
 function UserOrdersSection({ orders, stats }: UserOrdersSectionProps) {
@@ -57,60 +67,62 @@ function UserOrdersSection({ orders, stats }: UserOrdersSectionProps) {
         </Link>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[620px] border-collapse text-left text-sm">
-          <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
-            <tr>
-              <th className="px-5 py-3">Order</th>
-              <th className="px-5 py-3">Artwork</th>
-              <th className="px-5 py-3">Status</th>
-              <th className="px-5 py-3">Total</th>
-              <th className="px-5 py-3">Placed</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentOrders.length ? (
-              recentOrders.map((order) => (
-                <tr
-                  className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
-                  key={order._id}
-                >
-                  <td className="px-5 py-4 font-bold">
-                    <Link
-                      className="text-[#7a3f1d] hover:underline"
-                      to={getOrderUrl(order)}
-                    >
-                      {formatOrderId(order._id)}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-4 text-[#6b5f53]">
-                    {getPrimaryOrderItem(order)}
-                  </td>
-                  <td className="px-5 py-4">
-                    <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
-                      {formatStatus(order.orderStatus)}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 font-bold">
+      <div className="p-4">
+        {recentOrders.length ? (
+          <div className="flex flex-col gap-2.5">
+            {recentOrders.map((order) => (
+              <div
+                className="flex items-center justify-between gap-3 border border-black/10 bg-[#FAF7F2] px-3.5 py-2.5 transition hover:border-black/30"
+                key={order._id}
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <Link
+                    className="group flex items-center gap-3 min-w-0 flex-1"
+                    to={getOrderUrl(order)}
+                  >
+                    {getPrimaryOrderImage(order) ? (
+                      <img
+                        alt={getPrimaryOrderItem(order)}
+                        className="h-10 w-10 flex-shrink-0 border border-black/10 object-cover transition group-hover:border-[#7a3f1d]"
+                        src={getPrimaryOrderImage(order)}
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center border border-black/10 bg-[#f1dfc8]/40 text-[10px] font-bold text-[#7a3f1d] transition group-hover:border-[#7a3f1d]">
+                        ART
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-[#181512]">
+                          {formatOrderId(order._id)}
+                        </span>
+                        <span className="bg-[#f1dfc8] px-1.5 py-0.5 text-[10px] font-bold text-[#7a3f1d]">
+                          {formatStatus(order.orderStatus)}
+                        </span>
+                      </div>
+                      <p className="truncate text-xs font-medium text-[#6b5f53] transition group-hover:text-[#7a3f1d] group-hover:underline">
+                        {getPrimaryOrderItem(order)}
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+
+                <div className="flex flex-col items-end flex-shrink-0 border-l border-black/10 pl-3">
+                  <span className="text-xs font-bold text-[#181512]">
                     {formatCurrency(order.totalPrice)}
-                  </td>
-                  <td className="px-5 py-4 text-[#6b5f53]">
+                  </span>
+                  <span className="text-[10px] text-[#6b5f53]">
                     {formatDate(order.createdAt)}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr className="border-t border-black/10">
-                <td
-                  className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
-                  colSpan={5}
-                >
-                  No orders yet.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-4 text-center text-sm font-semibold text-[#6b5f53]">
+            No orders yet.
+          </div>
+        )}
       </div>
     </div>
   )

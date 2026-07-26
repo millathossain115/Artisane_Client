@@ -30,12 +30,20 @@ type SidebarLinkItem = {
   icon: LucideIcon
 }
 
-type SidebarGroupItem = {
+type SidebarActionItem = {
   label: string
-  items: SidebarLinkItem[]
+  action: 'logout'
+  icon: LucideIcon
 }
 
-type SidebarItem = SidebarGroupItem | SidebarLinkItem
+type SidebarNavItem = SidebarActionItem | SidebarLinkItem
+
+type SidebarGroupItem = {
+  label: string
+  items: SidebarNavItem[]
+}
+
+type SidebarItem = SidebarGroupItem | SidebarNavItem
 
 type DashboardAction = {
   label: string
@@ -144,18 +152,58 @@ function DashboardLayout({
     return 'items' in item
   }
 
+  function isSidebarAction(item: SidebarNavItem): item is SidebarActionItem {
+    return 'action' in item
+  }
+
+  function getSidebarLinkTarget(to: string) {
+    if (to.startsWith('#')) {
+      return {
+        hash: to,
+        path: '/dashboard',
+        to: `/dashboard${to}`,
+      }
+    }
+
+    const [path, hashValue] = to.split('#')
+
+    return {
+      hash: hashValue ? `#${hashValue}` : '',
+      path,
+      to,
+    }
+  }
+
+  function renderSidebarAction(item: SidebarActionItem, isNested = false) {
+    const Icon = item.icon
+    const className = `${getSidebarItemClass(false)} w-full text-left ${
+      isNested ? 'pl-7' : ''
+    }`
+
+    return (
+      <button
+        className={className}
+        key={item.label}
+        onClick={handleLogout}
+        type="button"
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="truncate">{item.label}</span>
+      </button>
+    )
+  }
+
   function renderSidebarLink(item: SidebarLinkItem, isNested = false) {
     const Icon = item.icon
-    const isAnchor = item.to.startsWith('#')
+    const linkTarget = getSidebarLinkTarget(item.to)
     const isCustomerNestedRoute =
       isCustomerLayout &&
       item.to === '/dashboard/orders' &&
       location.pathname.startsWith('/dashboard/orders')
-    const isActive = isAnchor
-      ? location.pathname === '/dashboard' && location.hash === item.to
-      : (isCustomerNestedRoute || location.pathname === item.to) &&
+    const isActive = linkTarget.hash
+      ? location.pathname === linkTarget.path && location.hash === linkTarget.hash
+      : (isCustomerNestedRoute || location.pathname === linkTarget.path) &&
         !location.hash
-    const to = isAnchor ? `/dashboard${item.to}` : item.to
     const className = `${getSidebarItemClass(isActive)} ${
       isNested ? 'pl-7' : ''
     }`
@@ -165,7 +213,7 @@ function DashboardLayout({
         className={className}
         key={item.label}
         onClick={() => setIsSidebarOpen(false)}
-        to={to}
+        to={linkTarget.to}
       >
         <Icon className="h-4 w-4 shrink-0" />
         <span className="truncate">{item.label}</span>
@@ -254,7 +302,9 @@ function DashboardLayout({
         <nav className={navClass}>
           {sidebarItems.map((item) => {
             if (!isSidebarGroup(item)) {
-              return renderSidebarLink(item)
+              return isSidebarAction(item)
+                ? renderSidebarAction(item)
+                : renderSidebarLink(item)
             }
 
             return (
@@ -264,7 +314,9 @@ function DashboardLayout({
                 </p>
                 <div className="space-y-1">
                   {item.items.map((childItem) =>
-                    renderSidebarLink(childItem, true),
+                    isSidebarAction(childItem)
+                      ? renderSidebarAction(childItem, true)
+                      : renderSidebarLink(childItem, true),
                   )}
                 </div>
               </div>

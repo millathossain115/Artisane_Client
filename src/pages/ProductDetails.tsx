@@ -76,7 +76,7 @@ function ProductDetails() {
   const { data: categoryProductsResult } = useGetProductsQuery(
     {
       category: productCategoryId,
-      limit: 8,
+      limit: 12,
     },
     {
       skip: !productCategoryId,
@@ -84,7 +84,7 @@ function ProductDetails() {
   )
   const { data: fallbackProductsResult } = useGetProductsQuery(
     {
-      limit: 8,
+      limit: 10,
       sortBy: 'rating',
       sortOrder: 'desc',
     },
@@ -161,7 +161,7 @@ function ProductDetails() {
 
     return catalogProducts
       .filter((item) => item._id !== product._id)
-      .slice(0, 4)
+      .slice(0, 5)
   }, [catalogProducts, product])
 
   const mayLikeProducts = useMemo(() => {
@@ -171,7 +171,7 @@ function ProductDetails() {
 
     return catalogProducts
       .filter((item) => item._id !== product._id)
-      .slice(4, 8)
+      .slice(5, 10)
   }, [catalogProducts, product])
 
   const cartQuantity = useMemo(() => {

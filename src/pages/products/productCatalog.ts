@@ -9,7 +9,7 @@ export const SORT_VALUES = [
   'name-asc',
   'name-desc',
 ] as const
-export const DEFAULT_LIMIT = 12
+export const DEFAULT_LIMIT = 15
 export const DEFAULT_PAGE = 1
 export const DEFAULT_SORT = 'newest'
 

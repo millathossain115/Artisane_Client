@@ -11,10 +11,15 @@ export type AuthUser = {
   name: string
   email: string
   phone?: string
+  alternativePhone?: string
+  dateOfBirth?: string
+  gender?: ProfileGender
   profileImage?: string
   avatar?: string
   role: 'admin' | 'user'
 }
+
+export type ProfileGender = 'female' | 'male' | 'other' | 'prefer_not_to_say'
 
 export type AuthData = {
   accessToken: string

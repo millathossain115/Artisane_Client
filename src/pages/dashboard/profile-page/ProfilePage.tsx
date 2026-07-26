@@ -12,12 +12,12 @@ import { adminNavItems } from '../../admin/adminNavItems'
 import { userNavItems } from '../user-dashboard/userNavItems'
 import AccountSummaryCard from './AccountSummaryCard'
 import ConfirmSaveModal from './ConfirmSaveModal'
-import ProfileAddressSection from './ProfileAddressSection'
 import ProfileDetailsSection from './ProfileDetailsSection'
 import {
   createProfileForm,
   emptyProfileForm,
   getErrorMessage,
+  normalizeProfileDate,
   type ProfileForm,
 } from './profilePageUtils'
 
@@ -27,7 +27,10 @@ function ProfilePage() {
   const sidebarItems = isAdminProfile ? adminNavItems : userNavItems
   const [profileForm, setProfileForm] = useState<ProfileForm>(() => ({
     ...emptyProfileForm,
+    alternativePhone: storedUser?.alternativePhone ?? '',
+    dateOfBirth: normalizeProfileDate(storedUser?.dateOfBirth),
     email: storedUser?.email ?? '',
+    gender: storedUser?.gender ?? '',
     name: storedUser?.name ?? '',
     phone: storedUser?.phone ?? '',
   }))
@@ -48,9 +51,21 @@ function ProfilePage() {
 
   const loadedProfileForm = createProfileForm({
     address: savedProfileForm?.address ?? profile?.address ?? '',
+    alternativePhone:
+      savedProfileForm?.alternativePhone ??
+      profile?.alternativePhone ??
+      storedUser?.alternativePhone ??
+      '',
     avatar: savedProfileForm?.avatar ?? profile?.avatar ?? '',
     city: savedProfileForm?.city ?? profile?.city ?? '',
+    dateOfBirth:
+      savedProfileForm?.dateOfBirth ??
+      profile?.dateOfBirth ??
+      storedUser?.dateOfBirth ??
+      '',
     email: savedProfileForm?.email ?? profile?.email ?? storedUser?.email ?? '',
+    gender:
+      savedProfileForm?.gender ?? profile?.gender ?? storedUser?.gender ?? '',
     name: savedProfileForm?.name ?? profile?.name ?? storedUser?.name ?? '',
     phone: savedProfileForm?.phone ?? profile?.phone ?? storedUser?.phone ?? '',
     postalCode: savedProfileForm?.postalCode ?? profile?.postalCode ?? '',
@@ -113,8 +128,11 @@ function ProfilePage() {
       profileForm.avatarFile ?? (profileForm.avatar.trim() || undefined)
     const payload: UpdateProfilePayload = {
       address: profileForm.address.trim() || undefined,
+      alternativePhone: profileForm.alternativePhone.trim() || undefined,
       avatar,
       city: profileForm.city.trim() || undefined,
+      dateOfBirth: profileForm.dateOfBirth || undefined,
+      gender: profileForm.gender || undefined,
       name: profileForm.name.trim(),
       phone: profileForm.phone.trim() || undefined,
       postalCode: profileForm.postalCode.trim() || undefined,
@@ -124,12 +142,15 @@ function ProfilePage() {
       const updatedProfile = await updateMyProfile(payload).unwrap()
 
       if (updatedProfile) {
-        const nextProfileForm = {
+        const nextProfileForm: ProfileForm = {
           address: updatedProfile.address ?? '',
+          alternativePhone: updatedProfile.alternativePhone ?? '',
           avatar: updatedProfile.avatar ?? '',
           avatarFile: null,
           city: updatedProfile.city ?? '',
+          dateOfBirth: updatedProfile.dateOfBirth ?? '',
           email: updatedProfile.email ?? profileForm.email,
+          gender: updatedProfile.gender ?? '',
           name: updatedProfile.name ?? '',
           phone: updatedProfile.phone ?? '',
           postalCode: updatedProfile.postalCode ?? '',
@@ -153,6 +174,9 @@ function ProfilePage() {
   const isFormChanged =
     profileForm.name !== loadedProfileForm.name ||
     profileForm.phone !== loadedProfileForm.phone ||
+    profileForm.alternativePhone !== loadedProfileForm.alternativePhone ||
+    profileForm.dateOfBirth !== loadedProfileForm.dateOfBirth ||
+    profileForm.gender !== loadedProfileForm.gender ||
     Boolean(profileForm.avatarFile)
 
   return (
@@ -166,14 +190,14 @@ function ProfilePage() {
       helperText={
         isAdminProfile
           ? 'Keep admin contact details current for marketplace operations.'
-          : 'Keep contact and address details ready for faster checkout.'
+          : 'Keep profile details current for account updates and checkout.'
       }
       layoutVariant={isAdminProfile ? 'admin' : 'customer'}
       sidebarItems={sidebarItems}
       subtitle={
         isAdminProfile
           ? 'Manage admin profile and contact information.'
-          : 'Manage profile details, contact information, and saved address.'
+          : 'Manage profile details, contact information, and profile photo.'
       }
       title="My profile"
       workspaceLabel={isAdminProfile ? 'Marketplace studio' : 'Collector account'}
@@ -193,28 +217,22 @@ function ProfilePage() {
       )}
 
       <div className="grid gap-6 xl:grid-cols-[1fr_0.48fr]">
-        <div className="grid gap-6">
-          <ProfileDetailsSection
-            fieldClass={fieldClass}
-            isEditing={isEditing}
-            isFormChanged={isFormChanged}
-            isSaving={isSaving}
-            onCancelEdit={() => setIsEditing(false)}
-            onFieldChange={updateField}
-            onRequestSave={handleRequestSave}
-            onStartEditing={handleStartEditing}
-            profileForm={visibleProfileForm}
-            readonlyClass={readonlyClass}
-          />
-          <ProfileAddressSection
-            fieldClass={fieldClass}
-            isAdminProfile={isAdminProfile}
-          />
-        </div>
+        <ProfileDetailsSection
+          fieldClass={fieldClass}
+          isEditing={isEditing}
+          isFormChanged={isFormChanged}
+          isSaving={isSaving}
+          onCancelEdit={() => setIsEditing(false)}
+          onFieldChange={updateField}
+          onRequestSave={handleRequestSave}
+          onStartEditing={handleStartEditing}
+          profileForm={visibleProfileForm}
+          readonlyClass={readonlyClass}
+          savedAvatar={loadedProfileForm.avatar}
+        />
 
         <AccountSummaryCard
           error={error}
-          isAdminProfile={isAdminProfile}
           profileForm={visibleProfileForm}
           status={status}
         />

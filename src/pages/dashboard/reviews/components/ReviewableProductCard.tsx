@@ -43,11 +43,11 @@ function ReviewableProductCard({
   }
 
   return (
-    <article className="border border-black/10 bg-white p-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex gap-4">
+    <article className="border border-black/10 bg-white p-3.5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex gap-3">
           <Link
-            className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden bg-[#f8f3ea]"
+            className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden bg-[#f8f3ea]"
             to={getProductUrl(product)}
           >
             {imageUrl ? (
@@ -57,7 +57,7 @@ function ReviewableProductCard({
                 src={imageUrl}
               />
             ) : (
-              <ImageOff className="h-6 w-6 text-[#7a3f1d]" />
+              <ImageOff className="h-5 w-5 text-[#7a3f1d]" />
             )}
           </Link>
 
@@ -68,14 +68,14 @@ function ReviewableProductCard({
             >
               {product.name}
             </Link>
-            <p className="mt-0.5 text-xs text-[#6b5f53]">
+            <p className="text-xs text-[#6b5f53]">
               {getProductCategoryName(product)}
             </p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="bg-[#effaf3] px-2 py-0.5 text-xs font-bold text-[#1f6b43]">
+            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+              <span className="bg-[#effaf3] px-1.5 py-0.5 text-xs font-bold text-[#1f6b43]">
                 {formatPrice(product.price)}
               </span>
-              <span className="bg-[#f8f3ea] px-2 py-0.5 text-xs font-semibold text-[#6b5f53]">
+              <span className="bg-[#f8f3ea] px-1.5 py-0.5 text-[11px] font-semibold text-[#6b5f53]">
                 Purchased & Delivered
               </span>
             </div>
@@ -83,27 +83,27 @@ function ReviewableProductCard({
         </div>
 
         <Link
-          className="inline-flex h-9 shrink-0 items-center justify-center border border-black/10 px-3 text-xs font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+          className="inline-flex h-8 shrink-0 items-center justify-center border border-black/10 px-2.5 text-xs font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
           to={getOrderUrl(orderId)}
         >
           View order details
         </Link>
       </div>
 
-      <div className="mt-4 border-t border-black/10 pt-4">
-        <div>
-          <p className="text-sm font-bold">Rating</p>
-          <div className="mt-2 flex gap-1">
+      <div className="mt-3 border-t border-black/10 pt-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-xs font-bold">Rating:</span>
+          <div className="flex gap-1">
             {Array.from({ length: 5 }).map((_, index) => (
               <button
                 aria-label={`Rate ${index + 1} star`}
-                className="grid h-9 w-9 place-items-center border border-black/10 transition hover:border-[#181512]"
+                className="grid h-7 w-7 place-items-center border border-black/10 transition hover:border-[#181512]"
                 key={index}
                 onClick={() => onChangeRating(index + 1)}
                 type="button"
               >
                 <Star
-                  className={`h-4 w-4 ${
+                  className={`h-3.5 w-3.5 ${
                     index < draftRating
                       ? 'fill-[#7a3f1d] text-[#7a3f1d]'
                       : 'text-[#d2c5b5]'
@@ -114,28 +114,29 @@ function ReviewableProductCard({
           </div>
         </div>
 
-        <label className="mt-4 grid gap-2">
-          <span className="text-sm font-bold">Comment</span>
+        <label className="mt-2.5 grid gap-1">
+          <span className="text-xs font-bold">Comment</span>
           <textarea
-            className="min-h-24 resize-y border border-black/10 px-3 py-3 text-sm font-medium leading-6 outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+            className="min-h-16 resize-y border border-black/10 px-2.5 py-2 text-xs font-medium leading-5 outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
             maxLength={1000}
             onChange={(event) => onChangeComment(event.target.value)}
             placeholder="Share how the product felt, looked, and shipped."
+            rows={2}
             value={draftComment}
           />
         </label>
 
-        <div className="mt-4 flex justify-end">
+        <div className="mt-2.5 flex justify-end">
           <button
-            className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex min-h-9 items-center justify-center gap-2 bg-[#181512] px-3.5 text-xs font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-50"
             disabled={saving}
             onClick={() => setShowConfirmModal(true)}
             type="button"
           >
             {saving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
-              <Save className="h-4 w-4" />
+              <Save className="h-3.5 w-3.5" />
             )}
             Submit review
           </button>

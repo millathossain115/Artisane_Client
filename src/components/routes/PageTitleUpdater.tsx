@@ -27,6 +27,7 @@ const TITLE_MAP: Record<string, string> = {
   '/dashboard/orders': 'My Orders',
   '/dashboard/reviews': 'My Reviews',
   '/dashboard/wishlist': 'My Wishlist',
+  '/dashboard/support': 'Support',
   '/dashboard/admin/orders': 'Manage Orders',
   '/dashboard/admin/payment-logs': 'Payment Logs',
   '/dashboard/admin/reviews': 'Manage Reviews',

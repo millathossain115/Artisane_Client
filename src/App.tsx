@@ -18,6 +18,8 @@ import Checkout from './pages/checkout/Checkout'
 import Dashboard from './pages/dashboard/Dashboard'
 import MyOrdersPage from './pages/dashboard/MyOrdersPage'
 import OrderDetailPage from './pages/dashboard/OrderDetailPage'
+import SupportPage from './pages/dashboard/SupportPage'
+import AddressesPage from './pages/dashboard/profile-page/AddressesPage'
 import ProfilePage from './pages/dashboard/profile-page/ProfilePage'
 import UserReviewsPage from './pages/dashboard/reviews/ReviewsPage'
 import WishlistPage from './pages/dashboard/user-dashboard/WishlistPage'
@@ -114,6 +116,14 @@ function App() {
           }
         />
         <Route
+          path="/dashboard/addresses"
+          element={
+            <ProtectedRoute>
+              <AddressesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/dashboard/orders"
           element={
             <ProtectedRoute>
@@ -142,6 +152,14 @@ function App() {
           element={
             <ProtectedRoute>
               <WishlistPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/support"
+          element={
+            <ProtectedRoute>
+              <SupportPage />
             </ProtectedRoute>
           }
         />

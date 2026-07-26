@@ -65,9 +65,9 @@ function Home() {
   const totalCategories = categoryList?.meta.total ?? categories.length
   const kitCategory =
     categories.find((category) => /kit/i.test(category.name)) ?? categories[0]
-  const featuredProducts = shuffledProducts.slice(0, 8)
-  const latestProducts = shuffledProducts.slice(8, 16)
-  const moreProducts = shuffledProducts.slice(16, 20)
+  const featuredProducts = shuffledProducts.slice(0, 10)
+  const latestProducts = shuffledProducts.slice(10, 20)
+  const moreProducts = shuffledProducts.slice(20, 29)
   const bannerProducts = shuffledProducts.filter((product) =>
     getProductImage(product),
   )

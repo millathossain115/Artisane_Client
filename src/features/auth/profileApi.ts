@@ -1,5 +1,5 @@
 import { baseApi } from '../../redux/api/baseApi'
-import { saveStoredUser, type AuthUser } from './authApi'
+import { saveStoredUser, type AuthUser, type ProfileGender } from './authApi'
 
 type ApiResponse<T> = {
   success: boolean
@@ -10,15 +10,21 @@ type ApiResponse<T> = {
 
 export type UserProfile = AuthUser & {
   address?: string
+  alternativePhone?: string
   avatar?: string
   city?: string
+  dateOfBirth?: string
+  gender?: ProfileGender
   postalCode?: string
 }
 
 export type UpdateProfilePayload = {
   address?: string
+  alternativePhone?: string
   avatar?: File | string
   city?: string
+  dateOfBirth?: string
+  gender?: ProfileGender
   name: string
   phone?: string
   postalCode?: string
@@ -33,12 +39,24 @@ function createProfileFormData(payload: UpdateProfilePayload) {
     formData.append('address', payload.address)
   }
 
+  if (payload.alternativePhone !== undefined) {
+    formData.append('alternativePhone', payload.alternativePhone)
+  }
+
   if (payload.avatar !== undefined) {
     formData.append('avatar', payload.avatar)
   }
 
   if (payload.city !== undefined) {
     formData.append('city', payload.city)
+  }
+
+  if (payload.dateOfBirth !== undefined) {
+    formData.append('dateOfBirth', payload.dateOfBirth)
+  }
+
+  if (payload.gender !== undefined) {
+    formData.append('gender', payload.gender)
   }
 
   if (payload.phone !== undefined) {

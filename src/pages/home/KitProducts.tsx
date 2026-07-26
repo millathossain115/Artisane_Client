@@ -16,8 +16,8 @@ function KitProducts({
   products,
 }: KitProductsProps) {
   const visibleProducts = products.length
-    ? products
-    : fallbackProducts.slice(0, 4)
+    ? products.slice(0, 9)
+    : fallbackProducts.slice(0, 9)
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
@@ -42,7 +42,7 @@ function KitProducts({
           </a>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-5">
+        <div className="grid grid-cols-3 gap-2 sm:gap-5">
           {visibleProducts.map((product) => (
             <ProductTile
               key={product._id}

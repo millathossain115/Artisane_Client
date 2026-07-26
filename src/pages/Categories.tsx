@@ -64,7 +64,7 @@ function Categories() {
   )
   const products = useMemo(() => productList?.data ?? [], [productList?.data])
   const featuredProducts = useMemo(() => {
-    return shuffleProducts(products).slice(0, 8)
+    return shuffleProducts(products).slice(0, 10)
   }, [products])
 
   return (
@@ -160,9 +160,9 @@ function Categories() {
               </div>
             ) : null}
 
-            <div className="mt-8 grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+            <div className="mt-8 grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
               {isProductsLoading
-                ? Array.from({ length: 8 }).map((_, index) => (
+                ? Array.from({ length: 10 }).map((_, index) => (
                     <div
                       className="h-52 animate-pulse bg-white/10 sm:h-[438px]"
                       key={index}
