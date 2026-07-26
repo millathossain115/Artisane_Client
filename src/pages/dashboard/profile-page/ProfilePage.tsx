@@ -157,7 +157,11 @@ function ProfilePage() {
 
   return (
     <DashboardLayout
-      actions={[{ label: 'Back to dashboard', to: '/dashboard' }]}
+      actions={[
+        isAdminProfile
+          ? { label: 'Back to dashboard', to: '/dashboard' }
+          : { label: 'Back to orders', to: '/dashboard/orders' },
+      ]}
       eyebrow="Account profile"
       helperText={
         isAdminProfile

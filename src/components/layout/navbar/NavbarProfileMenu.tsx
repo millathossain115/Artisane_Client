@@ -102,7 +102,7 @@ function NavbarProfileMenu() {
                   className="mt-2 flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
                   onClick={() => setIsProfileOpen(false)}
                   role="menuitem"
-                  to="/dashboard"
+                  to={user.role === 'admin' ? '/dashboard' : '/dashboard/orders'}
                 >
                   <LayoutDashboard className="h-4 w-4" />
                   {user.role === 'admin' ? 'Dashboard' : 'My account'}

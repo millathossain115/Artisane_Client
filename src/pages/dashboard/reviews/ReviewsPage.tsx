@@ -185,7 +185,7 @@ function ReviewsPage() {
 
   return (
     <DashboardLayout
-      actions={[{ label: 'Back to dashboard', to: '/dashboard' }]}
+      actions={[{ label: 'Back to orders', to: '/dashboard/orders' }]}
       eyebrow="Reviews"
       helperText="Only delivered, paid products appear here. Hidden or deleted review stays out of public pages."
       layoutVariant="customer"

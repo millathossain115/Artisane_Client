@@ -1,6 +1,7 @@
+import { Navigate } from 'react-router-dom'
+
 import { getStoredUser } from '../../features/auth/authApi'
 import AdminDashboard from './admin-dashboard/AdminDashboard'
-import UserDashboard from './user-dashboard/UserDashboard'
 
 function Dashboard() {
   const user = getStoredUser()
@@ -9,7 +10,7 @@ function Dashboard() {
     return <AdminDashboard />
   }
 
-  return <UserDashboard />
+  return <Navigate replace to="/dashboard/orders" />
 }
 
 export default Dashboard

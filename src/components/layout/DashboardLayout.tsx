@@ -129,6 +129,12 @@ function DashboardLayout({
     const baseClass =
       'flex items-center gap-3 px-4 py-3 text-sm font-medium tracking-wide transition'
 
+    if (isCustomerLayout) {
+      return isActive
+        ? `${baseClass} border border-black/10 bg-[#f8f3ea] font-bold text-[#181512] shadow-sm hover:bg-[#f8f3ea]`
+        : `${baseClass} border border-transparent text-[#4f463d] hover:border-black/10 hover:bg-[#f8f3ea] hover:text-[#181512]`
+    }
+
     return isActive
       ? `${baseClass} bg-white text-[#181512] font-semibold hover:bg-white hover:text-[#181512]`
       : `${baseClass} text-white/70 hover:bg-white/10 hover:text-white`
@@ -141,9 +147,14 @@ function DashboardLayout({
   function renderSidebarLink(item: SidebarLinkItem, isNested = false) {
     const Icon = item.icon
     const isAnchor = item.to.startsWith('#')
+    const isCustomerNestedRoute =
+      isCustomerLayout &&
+      item.to === '/dashboard/orders' &&
+      location.pathname.startsWith('/dashboard/orders')
     const isActive = isAnchor
       ? location.pathname === '/dashboard' && location.hash === item.to
-      : location.pathname === item.to && !location.hash
+      : (isCustomerNestedRoute || location.pathname === item.to) &&
+        !location.hash
     const to = isAnchor ? `/dashboard${item.to}` : item.to
     const className = `${getSidebarItemClass(isActive)} ${
       isNested ? 'pl-7' : ''
@@ -163,21 +174,52 @@ function DashboardLayout({
   }
 
   function renderSidebarContent(showCloseButton = false) {
+    const navClass = isCustomerLayout
+      ? 'dashboard-sidebar-scroll flex-1 space-y-1 overflow-y-auto px-3 py-4'
+      : 'dashboard-sidebar-scroll flex-1 space-y-1 overflow-y-auto px-4 py-5'
+    const groupLabelClass = isCustomerLayout
+      ? 'px-4 pb-2 text-xs font-semibold tracking-wider uppercase text-[#7a3f1d]'
+      : 'px-4 pb-2 text-xs font-semibold tracking-wider uppercase text-[#f1c9a6]'
+    const helperWrapClass = isCustomerLayout
+      ? 'border-t border-black/10 p-3'
+      : 'border-t border-white/10 p-4'
+    const helperCardClass = isCustomerLayout
+      ? 'border border-black/10 bg-[#f8f3ea] p-4'
+      : 'border border-white/10 bg-white/5 p-4'
+    const helperTitleClass = isCustomerLayout
+      ? 'text-xs font-semibold tracking-wider uppercase text-[#7a3f1d]'
+      : 'text-xs font-semibold tracking-wider uppercase text-[#f1c9a6]'
+    const helperTextClass = isCustomerLayout
+      ? 'mt-2 text-sm leading-6 text-[#6b5f53]'
+      : 'mt-2 text-sm leading-6 text-white/70'
+
     return (
       <>
         {isCustomerLayout ? (
-          showCloseButton ? (
-            <div className="flex h-16 items-center justify-end border-b border-white/10 px-4">
+          <div className="flex min-h-16 items-center gap-3 border-b border-black/10 px-4 py-4">
+            <span className="grid h-10 w-10 shrink-0 place-items-center bg-[#181512] text-white">
+              <UserRound className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold tracking-wider uppercase text-[#7a3f1d]">
+                {workspaceLabel}
+              </p>
+              <p className="truncate text-sm font-bold text-[#181512]">
+                {displayName}
+              </p>
+            </div>
+
+            {showCloseButton ? (
               <button
-                className="grid h-10 w-10 place-items-center border border-white/10 text-white transition hover:bg-white hover:text-[#181512]"
+                className="ml-auto grid h-10 w-10 place-items-center border border-black/10 bg-white text-[#181512] transition hover:border-[#181512]"
                 aria-label="Close dashboard menu"
                 onClick={() => setIsSidebarOpen(false)}
                 type="button"
               >
                 <X className="h-5 w-5" />
               </button>
-            </div>
-          ) : null
+            ) : null}
+          </div>
         ) : (
           <div className="flex h-20 items-center gap-3 border-b border-white/10 px-6">
             <span className="grid h-11 w-11 place-items-center bg-white text-base font-bold text-[#181512]">
@@ -209,7 +251,7 @@ function DashboardLayout({
           </div>
         )}
 
-        <nav className="dashboard-sidebar-scroll flex-1 space-y-1 overflow-y-auto px-4 py-5">
+        <nav className={navClass}>
           {sidebarItems.map((item) => {
             if (!isSidebarGroup(item)) {
               return renderSidebarLink(item)
@@ -217,7 +259,7 @@ function DashboardLayout({
 
             return (
               <div className="pt-3 first:pt-0" key={item.label}>
-                <p className="px-4 pb-2 text-xs font-semibold tracking-wider uppercase text-[#f1c9a6]">
+                <p className={groupLabelClass}>
                   {item.label}
                 </p>
                 <div className="space-y-1">
@@ -230,12 +272,12 @@ function DashboardLayout({
           })}
         </nav>
 
-        <div className="border-t border-white/10 p-4">
-          <div className="border border-white/10 bg-white/5 p-4">
-            <p className="text-xs font-semibold tracking-wider uppercase text-[#f1c9a6]">
+        <div className={helperWrapClass}>
+          <div className={helperCardClass}>
+            <p className={helperTitleClass}>
               {helperTitle}
             </p>
-            <p className="mt-2 text-sm leading-6 text-white/70">
+            <p className={helperTextClass}>
               {helperText ??
                 'Review your latest marketplace activity and account tasks.'}
             </p>
@@ -245,16 +287,102 @@ function DashboardLayout({
     )
   }
 
+  function renderPageHeading() {
+    return (
+      <div className="mb-6 flex flex-col justify-between gap-4 border-b border-black/10 pb-6 md:flex-row md:items-end">
+        <div>
+          <p className="text-sm font-semibold text-[#7a3f1d]">{eyebrow}</p>
+          <h1 className="mt-2 text-4xl font-bold sm:text-5xl">{title}</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6b5f53]">
+            {subtitle}
+          </p>
+        </div>
+
+        {actions.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {actions.map((action) => {
+              const className =
+                action.variant === 'primary' ? 'btn-primary' : 'btn-secondary'
+
+              return action.to ? (
+                <Link className={className} key={action.label} to={action.to}>
+                  {action.label}
+                </Link>
+              ) : (
+                <button className={className} key={action.label} type="button">
+                  {action.label}
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  if (isCustomerLayout) {
+    return (
+      <div className="min-h-screen bg-[#f8f3ea] text-[#181512]">
+        <Navbar />
+
+        <div
+          className={`fixed inset-0 z-50 lg:hidden ${
+            isSidebarOpen ? '' : 'pointer-events-none'
+          }`}
+          aria-hidden={!isSidebarOpen}
+        >
+          <button
+            className={`absolute inset-0 bg-[#181512]/55 transition-opacity ${
+              isSidebarOpen ? 'opacity-100' : 'opacity-0'
+            }`}
+            aria-label="Close dashboard menu"
+            onClick={() => setIsSidebarOpen(false)}
+            type="button"
+          />
+          <aside
+            className={`absolute inset-y-0 left-0 flex w-[min(20rem,86vw)] flex-col border-r border-black/10 bg-white text-[#181512] shadow-[24px_0_60px_rgba(24,21,18,0.22)] transition-transform duration-200 ${
+              isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
+          >
+            {renderSidebarContent(true)}
+          </aside>
+        </div>
+
+        <div className="mx-auto grid max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start lg:px-8">
+          <aside className="hidden border border-black/10 bg-white shadow-sm lg:sticky lg:top-[132px] lg:flex lg:h-[calc(100dvh-132px)] lg:flex-col">
+            {renderSidebarContent()}
+          </aside>
+
+          <div className="min-w-0">
+            <div className="mb-4 border border-black/10 bg-white px-3 py-3 shadow-sm backdrop-blur lg:hidden">
+              <button
+                className="inline-flex min-h-10 items-center gap-2 border border-black/10 bg-white px-3 text-sm font-bold text-[#181512] transition hover:border-[#181512]"
+                aria-label="Open dashboard menu"
+                aria-expanded={isSidebarOpen}
+                onClick={() => setIsSidebarOpen(true)}
+                type="button"
+              >
+                <Menu className="h-5 w-5" />
+                Account menu
+              </button>
+            </div>
+
+            <main className="min-w-0">
+              {renderPageHeading()}
+              {children}
+            </main>
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#f8f3ea] text-[#181512]">
-      {isCustomerLayout ? <Navbar /> : null}
-
       <aside
-        className={`fixed bottom-0 left-0 z-40 hidden w-72 border-r border-black/10 bg-[#181512] text-white lg:flex lg:flex-col ${
-          isCustomerLayout
-            ? 'lg:bottom-4 lg:top-[120px] lg:shadow-[0_18px_36px_rgba(24,21,18,0.16)]'
-            : 'top-0'
-        }`}
+        className="fixed bottom-0 left-0 top-0 z-40 hidden w-72 border-r border-black/10 bg-[#181512] text-white lg:flex lg:flex-col"
       >
         {renderSidebarContent()}
       </aside>
@@ -282,22 +410,8 @@ function DashboardLayout({
         </aside>
       </div>
 
-      <div className={`lg:pl-72 ${isCustomerLayout ? 'pt-3 lg:pt-4' : ''}`}>
-        {isCustomerLayout ? (
-          <div className="mx-4 border border-black/10 bg-white px-3 py-3 shadow-sm backdrop-blur lg:hidden">
-            <button
-              className="inline-flex min-h-10 items-center gap-2 border border-black/10 bg-white px-3 text-sm font-bold text-[#181512] transition hover:border-[#181512]"
-              aria-label="Open dashboard menu"
-              aria-expanded={isSidebarOpen}
-              onClick={() => setIsSidebarOpen(true)}
-              type="button"
-            >
-              <Menu className="h-5 w-5" />
-              Dashboard menu
-            </button>
-          </div>
-        ) : (
-          <header className="sticky top-0 z-30 border-b border-black/10 bg-[#f8f3ea]/95 backdrop-blur">
+      <div className="lg:pl-72">
+        <header className="sticky top-0 z-30 border-b border-black/10 bg-[#f8f3ea]/95 backdrop-blur">
           <div className="flex min-h-20 items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
             <button
               className="grid h-10 w-10 shrink-0 place-items-center border border-black/10 bg-white text-[#181512] transition hover:border-[#181512] lg:hidden"
@@ -418,53 +532,12 @@ function DashboardLayout({
               </button>
             </div>
           </div>
-          </header>
-        )}
+        </header>
 
         <main className="px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mb-6 flex flex-col justify-between gap-4 border-b border-black/10 pb-6 md:flex-row md:items-end">
-            <div>
-              <p className="text-sm font-semibold text-[#7a3f1d]">{eyebrow}</p>
-              <h1 className="mt-2 text-4xl font-bold sm:text-5xl">{title}</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6b5f53]">
-                {subtitle}
-              </p>
-            </div>
-
-            {actions.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {actions.map((action) => {
-                  const className =
-                    action.variant === 'primary'
-                      ? 'btn-primary'
-                      : 'btn-secondary'
-
-                  return action.to ? (
-                    <Link
-                      className={className}
-                      key={action.label}
-                      to={action.to}
-                    >
-                      {action.label}
-                    </Link>
-                  ) : (
-                    <button
-                      className={className}
-                      key={action.label}
-                      type="button"
-                    >
-                      {action.label}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
+          {renderPageHeading()}
           {children}
         </main>
-
-        {isCustomerLayout ? <Footer /> : null}
       </div>
     </div>
   )
