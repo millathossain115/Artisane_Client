@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
+import { getStoredUser, isSuperAdminRole } from '../../../features/auth/authApi'
 import {
   type OrderStatus,
   type PaymentStatus,
@@ -19,6 +20,7 @@ import OrderConfirmModal from './components/OrderConfirmModal'
 import OrderDetailPanel from './components/OrderDetailPanel'
 import OrderMessageBanner from './components/OrderMessageBanner'
 import OrdersTableSection from './components/OrdersTableSection'
+import ShipmentRestrictedModal from './components/ShipmentRestrictedModal'
 import ShipmentWarningModal from './components/ShipmentWarningModal'
 import {
   type AdminOrderMessage,
@@ -43,6 +45,7 @@ function ManageOrders() {
   const [selectedOrderId, setSelectedOrderId] = useState('')
   const [confirmTarget, setConfirmTarget] = useState<ConfirmTarget | null>(null)
   const [message, setMessage] = useState<AdminOrderMessage | null>(null)
+  const [showShipmentRestricted, setShowShipmentRestricted] = useState(false)
   const [showShipmentWarning, setShowShipmentWarning] = useState(false)
   const [shipmentForm, setShipmentForm] = useState<ShipmentFormState>(
     getEmptyShipmentForm(),
@@ -103,12 +106,13 @@ function ManageOrders() {
   )
   const shipmentExists = Boolean(
     selectedOrder?.courierProvider ||
-      selectedOrder?.courierOrderId ||
-      selectedOrder?.trackingCode,
+    selectedOrder?.courierOrderId ||
+    selectedOrder?.trackingCode,
   )
   const shipmentActionAllowed =
     selectedOrder?.orderStatus === 'confirmed' ||
     selectedOrder?.orderStatus === 'processing'
+  const canCreateShipment = isSuperAdminRole(getStoredUser()?.role)
   const fraudRisk = selectedOrder?.fraudRisk ?? 'low'
   const fraudFlags = selectedOrder?.fraudFlags ?? []
 
@@ -139,8 +143,18 @@ function ManageOrders() {
   }
 
   function closeOrderDetail() {
+    setShowShipmentRestricted(false)
     setShowShipmentWarning(false)
     setSelectedOrderId('')
+  }
+
+  function handleShowShipmentWarning() {
+    if (!canCreateShipment) {
+      setShowShipmentRestricted(true)
+      return
+    }
+
+    setShowShipmentWarning(true)
   }
 
   async function confirmOrderAction() {
@@ -316,7 +330,7 @@ function ManageOrders() {
           isUpdatingStatus={isUpdatingStatus}
           onClose={closeOrderDetail}
           onShipmentSync={confirmShipmentSync}
-          onShowShipmentWarning={() => setShowShipmentWarning(true)}
+          onShowShipmentWarning={handleShowShipmentWarning}
           onStatusUpdate={confirmStatusUpdate}
           order={selectedOrder}
           setShipmentForm={setShipmentForm}
@@ -336,6 +350,12 @@ function ManageOrders() {
           onClose={() => setShowShipmentWarning(false)}
           onConfirm={confirmShipmentAction}
           order={selectedOrder}
+        />
+      ) : null}
+
+      {showShipmentRestricted ? (
+        <ShipmentRestrictedModal
+          onClose={() => setShowShipmentRestricted(false)}
         />
       ) : null}
 

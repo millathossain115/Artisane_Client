@@ -3,6 +3,7 @@ import { ArrowLeft, LoaderCircle } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
+import { getStoredUser, isSuperAdminRole } from '../../../features/auth/authApi'
 import {
   useCancelOrderMutation,
   useCreateShipmentMutation,
@@ -16,6 +17,7 @@ import { adminNavItems } from '../adminNavItems'
 import OrderConfirmModal from './components/OrderConfirmModal'
 import OrderDetailPanel from './components/OrderDetailPanel'
 import OrderMessageBanner from './components/OrderMessageBanner'
+import ShipmentRestrictedModal from './components/ShipmentRestrictedModal'
 import ShipmentWarningModal from './components/ShipmentWarningModal'
 import {
   type AdminOrderMessage,
@@ -34,6 +36,7 @@ function AdminOrderDetailPage() {
   const navigate = useNavigate()
   const [confirmTarget, setConfirmTarget] = useState<ConfirmTarget | null>(null)
   const [message, setMessage] = useState<AdminOrderMessage | null>(null)
+  const [showShipmentRestricted, setShowShipmentRestricted] = useState(false)
   const [showShipmentWarning, setShowShipmentWarning] = useState(false)
   const [shipmentForm, setShipmentForm] = useState<ShipmentFormState>(
     getEmptyShipmentForm(),
@@ -64,12 +67,13 @@ function AdminOrderDetailPage() {
 
   const shipmentExists = Boolean(
     selectedOrder?.courierProvider ||
-      selectedOrder?.courierOrderId ||
-      selectedOrder?.trackingCode,
+    selectedOrder?.courierOrderId ||
+    selectedOrder?.trackingCode,
   )
   const shipmentActionAllowed =
     selectedOrder?.orderStatus === 'confirmed' ||
     selectedOrder?.orderStatus === 'processing'
+  const canCreateShipment = isSuperAdminRole(getStoredUser()?.role)
   const fraudRisk = selectedOrder?.fraudRisk ?? 'low'
   const fraudFlags = selectedOrder?.fraudFlags ?? []
 
@@ -87,6 +91,15 @@ function AdminOrderDetailPage() {
 
   function handleCloseDetail() {
     navigate('/dashboard/admin/orders')
+  }
+
+  function handleShowShipmentWarning() {
+    if (!canCreateShipment) {
+      setShowShipmentRestricted(true)
+      return
+    }
+
+    setShowShipmentWarning(true)
   }
 
   async function confirmOrderAction() {
@@ -221,8 +234,14 @@ function AdminOrderDetailPage() {
       eyebrow="Marketplace admin"
       helperText="Review order details, update fulfillment status, create courier shipments, and inspect fraud risk."
       sidebarItems={adminNavItems}
-      subtitle={selectedOrder ? `Order management for ${formatOrderId(selectedOrder._id)}` : 'Admin order details'}
-      title={selectedOrder ? formatOrderId(selectedOrder._id) : 'Admin order details'}
+      subtitle={
+        selectedOrder
+          ? `Order management for ${formatOrderId(selectedOrder._id)}`
+          : 'Admin order details'
+      }
+      title={
+        selectedOrder ? formatOrderId(selectedOrder._id) : 'Admin order details'
+      }
       workspaceLabel="Marketplace studio"
     >
       {message ? (
@@ -272,7 +291,7 @@ function AdminOrderDetailPage() {
           isUpdatingStatus={isUpdatingStatus}
           onClose={handleCloseDetail}
           onShipmentSync={confirmShipmentSync}
-          onShowShipmentWarning={() => setShowShipmentWarning(true)}
+          onShowShipmentWarning={handleShowShipmentWarning}
           onStatusUpdate={confirmStatusUpdate}
           order={selectedOrder}
           setShipmentForm={setShipmentForm}
@@ -292,6 +311,12 @@ function AdminOrderDetailPage() {
           onClose={() => setShowShipmentWarning(false)}
           onConfirm={confirmShipmentAction}
           order={selectedOrder}
+        />
+      ) : null}
+
+      {showShipmentRestricted ? (
+        <ShipmentRestrictedModal
+          onClose={() => setShowShipmentRestricted(false)}
         />
       ) : null}
 
