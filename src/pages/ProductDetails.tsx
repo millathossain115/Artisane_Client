@@ -6,7 +6,11 @@ import { toast } from 'sonner'
 import { ErrorState, PageSpinner } from '../components/loaders'
 import Footer from '../components/layout/Footer'
 import Navbar from '../components/layout/Navbar'
-import { getAccessToken, getStoredUser } from '../features/auth/authApi'
+import {
+  getAccessToken,
+  getStoredUser,
+  isAdminRole,
+} from '../features/auth/authApi'
 import { addToCart, createCartItem } from '../features/cart/cartSlice'
 import {
   useGetProductByIdQuery,
@@ -58,12 +62,10 @@ function ProductDetails() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const accessToken = getAccessToken()
-  const isAdmin = getStoredUser()?.role === 'admin'
+  const isAdmin = isAdminRole(getStoredUser()?.role)
   const cartItems = useAppSelector((state) => state.cart.items)
   const { id } = useParams<{ id: string }>()
-  const { data: product, isLoading, isError } = useGetProductByIdQuery(
-    id ?? '',
-  )
+  const { data: product, isLoading, isError } = useGetProductByIdQuery(id ?? '')
 
   useEffect(() => {
     if (product?.name) {
@@ -82,13 +84,11 @@ function ProductDetails() {
       skip: !productCategoryId,
     },
   )
-  const { data: topRatedProductsResult } = useGetProductsQuery(
-    {
-      limit: 10,
-      sortBy: 'rating',
-      sortOrder: 'desc',
-    },
-  )
+  const { data: topRatedProductsResult } = useGetProductsQuery({
+    limit: 10,
+    sortBy: 'rating',
+    sortOrder: 'desc',
+  })
   const { data: latestProductsResult } = useGetProductsQuery({
     limit: 10,
     sortBy: 'createdAt',
@@ -340,7 +340,10 @@ function ProductDetails() {
         </div>
 
         {isLoading ? (
-          <PageSpinner message="Loading product details..." className="min-h-[400px]" />
+          <PageSpinner
+            message="Loading product details..."
+            className="min-h-[400px]"
+          />
         ) : isError || !product ? (
           <ErrorState
             title="Product unavailable"
@@ -517,7 +520,9 @@ function ProductDetails() {
                 </div>
               ) : (
                 <div className="p-4 sm:p-5">
-                  <p className="text-sm font-bold text-[#181512]">No public reviews yet</p>
+                  <p className="text-sm font-bold text-[#181512]">
+                    No public reviews yet
+                  </p>
                   <p className="mt-0.5 text-xs text-[#6b5f53]">
                     First customer review will show here.
                   </p>

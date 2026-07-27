@@ -10,6 +10,7 @@ import Navbar from '../../components/layout/Navbar'
 import {
   login,
   loginWithGoogle,
+  isAdminRole,
   saveAuthSession,
   type AuthData,
 } from '../../features/auth/authApi'
@@ -26,13 +27,11 @@ const demoAccounts = [
     email: 'userdemo111@gmail.com',
     label: 'Login as user',
     password: 'user111',
-    role: 'Customer',
   },
   {
     email: 'admindemo111@gmail.com',
     label: 'Login as admin',
     password: 'admin111',
-    role: 'Admin',
   },
 ]
 
@@ -58,18 +57,21 @@ function Login() {
   function handleLoginSuccess(authData: AuthData, message: string) {
     saveAuthSession(authData)
     dispatch(syncCartForCurrentUser())
-    if (authData.user.role !== 'admin' && locationState?.buyNowItem) {
+    const isAdmin = isAdminRole(authData.user.role)
+
+    if (!isAdmin && locationState?.buyNowItem) {
       dispatch(addToCart(locationState.buyNowItem))
     }
     setStatus(message)
 
     window.setTimeout(() => {
       const redirectPath =
-        locationState?.from?.pathname && locationState.from.pathname !== '/login'
+        locationState?.from?.pathname &&
+        locationState.from.pathname !== '/login'
           ? locationState.from.pathname
           : '/'
 
-      navigate(authData.user.role === 'admin' ? '/dashboard' : redirectPath, {
+      navigate(isAdmin ? '/dashboard' : redirectPath, {
         replace: true,
       })
     }, 500)
@@ -84,7 +86,10 @@ function Login() {
     setIsSubmitting(true)
 
     try {
-      const response = await login(credentials)
+      const response = await login({
+        ...credentials,
+        email: credentials.email.trim().toLowerCase(),
+      })
 
       if (!response.data) {
         throw new Error('Login succeeded but no auth data was returned.')
@@ -172,15 +177,15 @@ function Login() {
 
             <section className="flex items-center bg-white">
               <div className="mx-auto w-full max-w-lg p-5 sm:p-8 lg:p-10">
-              <div>
-                <p className="text-sm font-bold text-[#7a3f1d]">
-                  Account access
-                </p>
-                <h2 className="mt-1 text-3xl font-bold">Login</h2>
-                <p className="mt-2 text-sm leading-6 text-[#6b5f53]">
-                  Use your Artisane account to manage orders and saved pieces.
-                </p>
-              </div>
+                <div>
+                  <p className="text-sm font-bold text-[#7a3f1d]">
+                    Account access
+                  </p>
+                  <h2 className="mt-1 text-3xl font-bold">Login</h2>
+                  <p className="mt-2 text-sm leading-6 text-[#6b5f53]">
+                    Use your Artisane account to manage orders and saved pieces.
+                  </p>
+                </div>
 
               <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
                 <div className="grid gap-3 border border-black/10 bg-[#f8f3ea] p-3">
@@ -203,107 +208,107 @@ function Login() {
                 </div>
 
                 <label className="block">
-                  <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#6b5f53]">
-                    Email address
-                  </span>
-                  <span className="mt-2 flex min-h-12 items-center gap-3 border border-black/10 bg-white px-3 transition focus-within:border-[#181512]">
-                    <Mail className="h-4 w-4 text-[#7a3f1d]" />
-                    <input
-                      className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#8a7d71]"
-                      onChange={(event) => setEmail(event.target.value)}
-                      placeholder="you@example.com"
-                      required
-                      type="email"
-                      value={email}
-                    />
-                  </span>
-                </label>
-
-                <label className="block">
-                  <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#6b5f53]">
-                    Password
-                  </span>
-                  <span className="mt-2 flex min-h-12 items-center gap-3 border border-black/10 bg-white px-3 transition focus-within:border-[#181512]">
-                    <LockKeyhole className="h-4 w-4 text-[#7a3f1d]" />
-                    <input
-                      className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#8a7d71]"
-                      minLength={6}
-                      onChange={(event) => setPassword(event.target.value)}
-                      placeholder="Enter password"
-                      required
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                    />
-                    <button
-                      aria-label="Show password"
-                      className="text-[#6b5f53] transition hover:text-[#181512]"
-                      onClick={() => setShowPassword((current) => !current)}
-                      type="button"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                  </span>
-                </label>
-
-                <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <label className="inline-flex items-center gap-2 font-semibold text-[#6b5f53]">
-                    <input
-                      className="h-4 w-4 accent-[#181512]"
-                      type="checkbox"
-                    />
-                    Remember me
+                    <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#6b5f53]">
+                      Email address
+                    </span>
+                    <span className="mt-2 flex min-h-12 items-center gap-3 border border-black/10 bg-white px-3 transition focus-within:border-[#181512]">
+                      <Mail className="h-4 w-4 text-[#7a3f1d]" />
+                      <input
+                        className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#8a7d71]"
+                        onChange={(event) => setEmail(event.target.value)}
+                        placeholder="you@example.com"
+                        required
+                        type="email"
+                        value={email}
+                      />
+                    </span>
                   </label>
-                  <a
-                    className="font-bold text-[#7a3f1d] transition hover:text-[#181512]"
-                    href="#"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
 
-                <div className="grid gap-3 pt-1">
-                  <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.16em] text-[#8a7d71]">
-                    <span className="h-px flex-1 bg-black/10" />
-                    or
-                    <span className="h-px flex-1 bg-black/10" />
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#6b5f53]">
+                      Password
+                    </span>
+                    <span className="mt-2 flex min-h-12 items-center gap-3 border border-black/10 bg-white px-3 transition focus-within:border-[#181512]">
+                      <LockKeyhole className="h-4 w-4 text-[#7a3f1d]" />
+                      <input
+                        className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#8a7d71]"
+                        minLength={6}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder="Enter password"
+                        required
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                      />
+                      <button
+                        aria-label="Show password"
+                        className="text-[#6b5f53] transition hover:text-[#181512]"
+                        onClick={() => setShowPassword((current) => !current)}
+                        type="button"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    </span>
+                  </label>
+
+                  <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <label className="inline-flex items-center gap-2 font-semibold text-[#6b5f53]">
+                      <input
+                        className="h-4 w-4 accent-[#181512]"
+                        type="checkbox"
+                      />
+                      Remember me
+                    </label>
+                    <a
+                      className="font-bold text-[#7a3f1d] transition hover:text-[#181512]"
+                      href="#"
+                    >
+                      Forgot password?
+                    </a>
                   </div>
-                  <GoogleAuthButton
+
+                  <div className="grid gap-3 pt-1">
+                    <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.16em] text-[#8a7d71]">
+                      <span className="h-px flex-1 bg-black/10" />
+                      or
+                      <span className="h-px flex-1 bg-black/10" />
+                    </div>
+                    <GoogleAuthButton
+                      disabled={isSubmitting}
+                      onCredential={handleGoogleCredential}
+                    />
+                  </div>
+
+                  {error ? (
+                    <p className="border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                      {error}
+                    </p>
+                  ) : null}
+
+                  {status ? (
+                    <p className="border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                      {status}
+                    </p>
+                  ) : null}
+
+                  <button
+                    className="flex min-h-12 w-full items-center justify-center gap-2 bg-[#181512] px-5 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:pointer-events-none disabled:opacity-60"
                     disabled={isSubmitting}
-                    onCredential={handleGoogleCredential}
-                  />
-                </div>
+                    type="submit"
+                  >
+                    {isSubmitting ? 'Logging in...' : 'Login'}
+                    <ShieldCheck className="h-4 w-4" />
+                  </button>
+                </form>
 
-                {error ? (
-                  <p className="border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
-                    {error}
-                  </p>
-                ) : null}
-
-                {status ? (
-                  <p className="border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-                    {status}
-                  </p>
-                ) : null}
-
-                <button
-                  className="flex min-h-12 w-full items-center justify-center gap-2 bg-[#181512] px-5 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:pointer-events-none disabled:opacity-60"
-                  disabled={isSubmitting}
-                  type="submit"
-                >
-                  {isSubmitting ? 'Logging in...' : 'Login'}
-                  <ShieldCheck className="h-4 w-4" />
-                </button>
-              </form>
-
-              <p className="mt-5 text-center text-sm font-medium text-[#6b5f53]">
-                New to Artisane?{' '}
-                <Link
-                  className="font-bold text-[#181512] transition hover:text-[#7a3f1d]"
-                  to="/register"
-                >
-                  Create an account
-                </Link>
-              </p>
+                <p className="mt-5 text-center text-sm font-medium text-[#6b5f53]">
+                  New to Artisane?{' '}
+                  <Link
+                    className="font-bold text-[#181512] transition hover:text-[#7a3f1d]"
+                    to="/register"
+                  >
+                    Create an account
+                  </Link>
+                </p>
               </div>
             </section>
           </div>

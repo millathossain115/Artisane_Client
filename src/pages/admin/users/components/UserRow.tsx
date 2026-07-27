@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
+import { isAdminRole } from '../../../../features/auth/authApi'
 import type { AdminUser } from '../../../../features/users/userApi'
 import {
   formatDate,
@@ -24,13 +25,8 @@ type UserRowProps = {
   user: AdminUser
 }
 
-function UserRow({
-  onDelete,
-  onEdit,
-  onToggleStatus,
-  user,
-}: UserRowProps) {
-  const isAdmin = user.role === 'admin'
+function UserRow({ onDelete, onEdit, onToggleStatus, user }: UserRowProps) {
+  const isAdmin = isAdminRole(user.role)
   const isBlocked = user.status === 'blocked'
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
@@ -72,7 +68,11 @@ function UserRow({
         <div className="flex items-center gap-3">
           <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-sm font-bold text-[#7a3f1d]">
             {user.avatar ? (
-              <img alt="" className="h-full w-full object-cover" src={user.avatar} />
+              <img
+                alt=""
+                className="h-full w-full object-cover"
+                src={user.avatar}
+              />
             ) : (
               getInitials(user.name)
             )}
@@ -89,9 +89,7 @@ function UserRow({
       <td className="px-5 py-4">
         <span
           className={`inline-flex min-h-8 items-center px-3 text-xs font-bold ${
-            isAdmin
-              ? 'bg-[#181512] text-white'
-              : 'bg-[#f8f3ea] text-[#7a3f1d]'
+            isAdmin ? 'bg-[#181512] text-white' : 'bg-[#f8f3ea] text-[#7a3f1d]'
           }`}
         >
           {formatRole(user.role)}
@@ -122,9 +120,7 @@ function UserRow({
       <td className="max-w-xs px-5 py-4 text-[#6b5f53]">
         <span className="line-clamp-2">{user.address || 'No address'}</span>
       </td>
-      <td className="px-5 py-4 text-[#6b5f53]">
-        {formatDate(user.createdAt)}
-      </td>
+      <td className="px-5 py-4 text-[#6b5f53]">{formatDate(user.createdAt)}</td>
       <td className="px-5 py-4">
         <div className="relative flex" ref={menuRef}>
           <button

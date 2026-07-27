@@ -12,6 +12,7 @@ import CartButton from '../../cart/CartButton'
 import {
   clearAuthSession,
   getStoredUser,
+  isAdminRole,
   type AuthUser,
 } from '../../../features/auth/authApi'
 import { syncCartForCurrentUser } from '../../../features/cart/cartSlice'
@@ -24,7 +25,7 @@ function NavbarProfileMenu() {
   const [user, setUser] = useState<AuthUser | null>(() => getStoredUser())
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement | null>(null)
-  const isAdmin = user?.role === 'admin'
+  const isAdmin = isAdminRole(user?.role)
   const displayName = user?.name ?? 'Login'
   const displayEmail = user?.email ?? 'Access your account'
   const userImageUrl = getAssetUrl(user?.profileImage || user?.avatar)
@@ -102,10 +103,10 @@ function NavbarProfileMenu() {
                   className="mt-2 flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
                   onClick={() => setIsProfileOpen(false)}
                   role="menuitem"
-                  to={user.role === 'admin' ? '/dashboard' : '/dashboard/orders'}
+                  to={isAdmin ? '/dashboard' : '/dashboard/orders'}
                 >
                   <LayoutDashboard className="h-4 w-4" />
-                  {user.role === 'admin' ? 'Dashboard' : 'My account'}
+                  {isAdmin ? 'Dashboard' : 'My account'}
                 </Link>
                 <Link
                   className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
@@ -116,7 +117,7 @@ function NavbarProfileMenu() {
                   <UserRound className="h-4 w-4" />
                   My profile
                 </Link>
-                {user.role !== 'admin' && (
+                {!isAdmin && (
                   <Link
                     className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
                     onClick={() => setIsProfileOpen(false)}

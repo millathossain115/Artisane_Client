@@ -3,7 +3,11 @@ import { Heart, ImageOff, ShoppingBag, Star } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { addToCart, createCartItem } from '../../features/cart/cartSlice'
-import { getAccessToken, getStoredUser } from '../../features/auth/authApi'
+import {
+  getAccessToken,
+  getStoredUser,
+  isAdminRole,
+} from '../../features/auth/authApi'
 import type { Product } from '../../features/products/productApi'
 import {
   getWishlistProductId,
@@ -38,7 +42,7 @@ function ProductTile({
   const navigate = useNavigate()
   const imageUrl = getProductImage(product)
   const accessToken = getAccessToken()
-  const isAdmin = getStoredUser()?.role === 'admin'
+  const isAdmin = isAdminRole(getStoredUser()?.role)
   const isDark = tone === 'dark'
   const productUrl = getProductUrl(product)
   const { data: wishlistList, isFetching: isWishlistFetching } =

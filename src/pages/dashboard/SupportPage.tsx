@@ -15,12 +15,13 @@ import {
 import { Link, Navigate } from 'react-router-dom'
 
 import DashboardLayout from '../../components/layout/DashboardLayout'
-import { getStoredUser } from '../../features/auth/authApi'
+import { getStoredUser, isAdminRole } from '../../features/auth/authApi'
 import { userNavItems } from './user-dashboard/userNavItems'
 
 const quickHelpItems = [
   {
-    description: 'Track status, cancel eligible orders, and view order details.',
+    description:
+      'Track status, cancel eligible orders, and view order details.',
     icon: PackageSearch,
     label: 'Order help',
     to: '/dashboard/orders',
@@ -65,7 +66,7 @@ const faqItems = [
 function SupportPage() {
   const storedUser = getStoredUser()
 
-  if (storedUser?.role === 'admin') {
+  if (isAdminRole(storedUser?.role)) {
     return <Navigate replace to="/dashboard" />
   }
 

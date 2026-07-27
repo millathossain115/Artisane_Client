@@ -4,14 +4,14 @@ import { Navigate } from 'react-router-dom'
 import {
   getAccessToken,
   getStoredUser,
-  isAdminRole,
+  isSuperAdminRole,
 } from '../../features/auth/authApi'
 
-type AdminRouteProps = {
+type SuperAdminRouteProps = {
   children: ReactNode
 }
 
-function AdminRoute({ children }: AdminRouteProps) {
+function SuperAdminRoute({ children }: SuperAdminRouteProps) {
   const accessToken = getAccessToken()
   const user = getStoredUser()
 
@@ -19,11 +19,11 @@ function AdminRoute({ children }: AdminRouteProps) {
     return <Navigate replace to="/login" />
   }
 
-  if (!isAdminRole(user?.role)) {
+  if (!isSuperAdminRole(user?.role)) {
     return <Navigate replace to="/dashboard" />
   }
 
   return children
 }
 
-export default AdminRoute
+export default SuperAdminRoute

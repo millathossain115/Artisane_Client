@@ -16,9 +16,10 @@ export type AuthUser = {
   gender?: ProfileGender
   profileImage?: string
   avatar?: string
-  role: 'admin' | 'user'
+  role: AuthRole
 }
 
+export type AuthRole = 'admin' | 'super_admin' | 'user'
 export type ProfileGender = 'female' | 'male' | 'other' | 'prefer_not_to_say'
 
 export type AuthData = {
@@ -133,6 +134,14 @@ export function getStoredUser() {
 
 export function saveStoredUser(user: AuthUser) {
   localStorage.setItem(USER_KEY, JSON.stringify(user))
+}
+
+export function isSuperAdminRole(role?: string | null) {
+  return role === 'super_admin'
+}
+
+export function isAdminRole(role?: string | null) {
+  return role === 'admin' || isSuperAdminRole(role)
 }
 
 export function clearAuthSession() {

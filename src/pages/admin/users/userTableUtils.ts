@@ -59,6 +59,10 @@ export function getInitials(name: string) {
 }
 
 export function formatRole(role?: UserRole) {
+  if (role === 'super_admin') {
+    return 'Super Admin'
+  }
+
   return role === 'admin' ? 'Admin' : 'User'
 }
 

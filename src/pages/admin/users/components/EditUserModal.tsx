@@ -97,6 +97,7 @@ function EditUserModal({
                 onChange={(event) => onUpdateField('role', event.target.value)}
                 value={editForm.role}
               >
+                <option value="super_admin">Super Admin</option>
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
               </select>
@@ -106,7 +107,9 @@ function EditUserModal({
               Status
               <select
                 className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
-                onChange={(event) => onUpdateField('status', event.target.value)}
+                onChange={(event) =>
+                  onUpdateField('status', event.target.value)
+                }
                 value={editForm.status}
               >
                 <option value="active">Active</option>

@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
-import { getStoredUser, saveStoredUser } from '../../../features/auth/authApi'
+import {
+  getStoredUser,
+  isAdminRole,
+  saveStoredUser,
+} from '../../../features/auth/authApi'
 import {
   type UpdateProfilePayload,
   useGetMyProfileQuery,
@@ -23,7 +27,7 @@ import {
 
 function ProfilePage() {
   const storedUser = getStoredUser()
-  const isAdminProfile = storedUser?.role === 'admin'
+  const isAdminProfile = isAdminRole(storedUser?.role)
   const sidebarItems = isAdminProfile ? adminNavItems : userNavItems
   const [profileForm, setProfileForm] = useState<ProfileForm>(() => ({
     ...emptyProfileForm,
@@ -200,7 +204,9 @@ function ProfilePage() {
           : 'Manage profile details, contact information, and profile photo.'
       }
       title="My profile"
-      workspaceLabel={isAdminProfile ? 'Marketplace studio' : 'Collector account'}
+      workspaceLabel={
+        isAdminProfile ? 'Marketplace studio' : 'Collector account'
+      }
     >
       {(isProfileLoading || hasProfileError) && (
         <div

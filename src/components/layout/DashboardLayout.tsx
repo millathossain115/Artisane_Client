@@ -17,6 +17,8 @@ import CartButton from '../cart/CartButton'
 import {
   clearAuthSession,
   getStoredUser,
+  isAdminRole,
+  isSuperAdminRole,
   type AuthUser,
 } from '../../features/auth/authApi'
 import { syncCartForCurrentUser } from '../../features/cart/cartSlice'
@@ -24,26 +26,29 @@ import { useAppDispatch } from '../../redux/hooks'
 import Footer from './Footer'
 import Navbar from './Navbar'
 
-type SidebarLinkItem = {
+export type SidebarLinkItem = {
   label: string
   to: string
   icon: LucideIcon
+  requiredRole?: 'super_admin'
 }
 
-type SidebarActionItem = {
+export type SidebarActionItem = {
   label: string
   action: 'logout'
   icon: LucideIcon
+  requiredRole?: 'super_admin'
 }
 
-type SidebarNavItem = SidebarActionItem | SidebarLinkItem
+export type SidebarNavItem = SidebarActionItem | SidebarLinkItem
 
-type SidebarGroupItem = {
+export type SidebarGroupItem = {
   label: string
   items: SidebarNavItem[]
+  requiredRole?: 'super_admin'
 }
 
-type SidebarItem = SidebarGroupItem | SidebarNavItem
+export type SidebarItem = SidebarGroupItem | SidebarNavItem
 
 type DashboardAction = {
   label: string
@@ -86,7 +91,7 @@ function DashboardLayout({
 
   const displayName = user?.name ?? 'Dashboard User'
   const displayEmail = user?.email ?? 'No email loaded'
-  const isAdmin = user?.role === 'admin'
+  const isAdmin = isAdminRole(user?.role)
   const isCustomerLayout = layoutVariant === 'customer'
 
   useEffect(() => {
@@ -156,6 +161,10 @@ function DashboardLayout({
     return 'action' in item
   }
 
+  function canAccessSidebarItem(item: SidebarItem) {
+    return item.requiredRole !== 'super_admin' || isSuperAdminRole(user?.role)
+  }
+
   function getSidebarLinkTarget(to: string) {
     if (to.startsWith('#')) {
       return {
@@ -201,7 +210,8 @@ function DashboardLayout({
       item.to === '/dashboard/orders' &&
       location.pathname.startsWith('/dashboard/orders')
     const isActive = linkTarget.hash
-      ? location.pathname === linkTarget.path && location.hash === linkTarget.hash
+      ? location.pathname === linkTarget.path &&
+        location.hash === linkTarget.hash
       : (isCustomerNestedRoute || location.pathname === linkTarget.path) &&
         !location.hash
     const className = `${getSidebarItemClass(isActive)} ${
@@ -301,19 +311,27 @@ function DashboardLayout({
 
         <nav className={navClass}>
           {sidebarItems.map((item) => {
+            if (!canAccessSidebarItem(item)) {
+              return null
+            }
+
             if (!isSidebarGroup(item)) {
               return isSidebarAction(item)
                 ? renderSidebarAction(item)
                 : renderSidebarLink(item)
             }
 
+            const visibleItems = item.items.filter(canAccessSidebarItem)
+
+            if (!visibleItems.length) {
+              return null
+            }
+
             return (
               <div className="pt-3 first:pt-0" key={item.label}>
-                <p className={groupLabelClass}>
-                  {item.label}
-                </p>
+                <p className={groupLabelClass}>{item.label}</p>
                 <div className="space-y-1">
-                  {item.items.map((childItem) =>
+                  {visibleItems.map((childItem) =>
                     isSidebarAction(childItem)
                       ? renderSidebarAction(childItem, true)
                       : renderSidebarLink(childItem, true),
@@ -326,9 +344,7 @@ function DashboardLayout({
 
         <div className={helperWrapClass}>
           <div className={helperCardClass}>
-            <p className={helperTitleClass}>
-              {helperTitle}
-            </p>
+            <p className={helperTitleClass}>{helperTitle}</p>
             <p className={helperTextClass}>
               {helperText ??
                 'Review your latest marketplace activity and account tasks.'}
@@ -433,9 +449,7 @@ function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-[#f8f3ea] text-[#181512]">
-      <aside
-        className="fixed bottom-0 left-0 top-0 z-40 hidden w-72 border-r border-black/10 bg-[#181512] text-white lg:flex lg:flex-col"
-      >
+      <aside className="fixed bottom-0 left-0 top-0 z-40 hidden w-72 border-r border-black/10 bg-[#181512] text-white lg:flex lg:flex-col">
         {renderSidebarContent()}
       </aside>
 

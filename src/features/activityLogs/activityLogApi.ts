@@ -8,7 +8,7 @@ type ApiResponse<T> = {
   errorSources?: { path: string; message: string }[]
 }
 
-export type ActivityActorRole = 'admin' | 'system' | 'user'
+export type ActivityActorRole = 'admin' | 'super_admin' | 'system' | 'user'
 export type ActivitySource =
   | 'admin'
   | 'courier_webhook'

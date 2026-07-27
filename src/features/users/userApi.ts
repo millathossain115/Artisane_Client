@@ -8,7 +8,7 @@ type ApiResponse<T> = {
   errorSources?: { path: string; message: string }[]
 }
 
-export type UserRole = 'admin' | 'user'
+export type UserRole = 'admin' | 'super_admin' | 'user'
 export type UserStatus = 'active' | 'blocked'
 
 export type AdminUser = {
@@ -145,11 +145,8 @@ export const userApi = baseApi.injectEndpoints({
         params: createUserParams(params ?? undefined),
         url: '/users',
       }),
-      transformResponse: (
-        response: ApiResponse<AdminUser[]>,
-        _meta,
-        params,
-      ) => createUserListResult(response, params ?? undefined),
+      transformResponse: (response: ApiResponse<AdminUser[]>, _meta, params) =>
+        createUserListResult(response, params ?? undefined),
     }),
     updateUser: builder.mutation<AdminUser | null, UpdateUserPayload>({
       invalidatesTags: (_result, _error, { id }) => [

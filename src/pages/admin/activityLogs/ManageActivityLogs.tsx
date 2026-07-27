@@ -50,7 +50,12 @@ const moduleOptions: ActivityModule[] = [
   'home_content',
 ]
 
-const roleOptions: ActivityActorRole[] = ['admin', 'user', 'system']
+const roleOptions: ActivityActorRole[] = [
+  'admin',
+  'super_admin',
+  'user',
+  'system',
+]
 const sourceOptions: ActivitySource[] = [
   'admin',
   'user',
@@ -139,7 +144,12 @@ function sanitizeDisplayValue(value: unknown): unknown {
 
   return Object.entries(value).reduce<Record<string, unknown>>(
     (cleanValue, [key, item]) => {
-      if (key === 'buffer' || key === '_id' || key === 'id' || isTechnicalIdField(key)) {
+      if (
+        key === 'buffer' ||
+        key === '_id' ||
+        key === 'id' ||
+        isTechnicalIdField(key)
+      ) {
         return cleanValue
       }
 
@@ -326,7 +336,10 @@ function getVisibleChanges(log: ActivityLog) {
     const before = formatValue(change.before)
     const after = formatValue(change.after)
 
-    return before !== 'Record reference hidden' || after !== 'Record reference hidden'
+    return (
+      before !== 'Record reference hidden' ||
+      after !== 'Record reference hidden'
+    )
   })
 }
 
@@ -353,7 +366,9 @@ function ActivityLogDetailModal({
             <p className="text-xs font-bold uppercase tracking-wider text-[#7a3f1d]">
               {formatLabel(log.module)} audit event
             </p>
-            <h2 className="mt-2 text-2xl font-bold">{getActionLabel(log.action)}</h2>
+            <h2 className="mt-2 text-2xl font-bold">
+              {getActionLabel(log.action)}
+            </h2>
             <p className="mt-2 text-sm leading-6 text-[#6b5f53]">
               {log.summary}
             </p>
@@ -411,7 +426,10 @@ function ActivityLogDetailModal({
                   </thead>
                   <tbody>
                     {visibleChanges.map((change) => (
-                      <tr className="border-t border-black/10" key={change.field}>
+                      <tr
+                        className="border-t border-black/10"
+                        key={change.field}
+                      >
                         <td className="px-4 py-3 font-bold">
                           {getFieldLabel(change.field)}
                         </td>
@@ -540,7 +558,10 @@ function ManageActivityLogs() {
             const Icon = kpi.icon
 
             return (
-              <div className="border border-black/10 bg-white p-5" key={kpi.label}>
+              <div
+                className="border border-black/10 bg-white p-5"
+                key={kpi.label}
+              >
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-xs font-bold uppercase tracking-wider text-[#6b5f53]">
                     {kpi.label}
@@ -579,7 +600,9 @@ function ManageActivityLogs() {
               onClick={() => void handleRefresh()}
               type="button"
             >
-              <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`}
+              />
               Refresh
             </button>
           </div>
@@ -604,25 +627,29 @@ function ManageActivityLogs() {
             {[
               {
                 label: 'Module',
-                onChange: (value: string) => setModuleFilter(value as ActivityModule | ''),
+                onChange: (value: string) =>
+                  setModuleFilter(value as ActivityModule | ''),
                 options: moduleOptions,
                 value: moduleFilter,
               },
               {
                 label: 'Role',
-                onChange: (value: string) => setRoleFilter(value as ActivityActorRole | ''),
+                onChange: (value: string) =>
+                  setRoleFilter(value as ActivityActorRole | ''),
                 options: roleOptions,
                 value: roleFilter,
               },
               {
                 label: 'Source',
-                onChange: (value: string) => setSourceFilter(value as ActivitySource | ''),
+                onChange: (value: string) =>
+                  setSourceFilter(value as ActivitySource | ''),
                 options: sourceOptions,
                 value: sourceFilter,
               },
               {
                 label: 'Status',
-                onChange: (value: string) => setStatusFilter(value as ActivityStatus | ''),
+                onChange: (value: string) =>
+                  setStatusFilter(value as ActivityStatus | ''),
                 options: statusOptions,
                 value: statusFilter,
               },
@@ -671,7 +698,11 @@ function ManageActivityLogs() {
           ) : !logs.length ? (
             <EmptyState
               action={
-                <button className="btn-secondary" onClick={resetFilters} type="button">
+                <button
+                  className="btn-secondary"
+                  onClick={resetFilters}
+                  type="button"
+                >
                   Reset Filters
                 </button>
               }
@@ -724,7 +755,9 @@ function ManageActivityLogs() {
                         {formatLabel(log.module)}
                       </td>
                       <td className="px-5 py-4">
-                        <p className="font-bold">{getActionLabel(log.action)}</p>
+                        <p className="font-bold">
+                          {getActionLabel(log.action)}
+                        </p>
                         <p
                           className="mt-1 max-w-[14rem] truncate text-xs text-[#6b5f53]"
                           title={log.summary}

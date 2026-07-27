@@ -4,6 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import AdminRoute from './components/routes/AdminRoute'
 import ProtectedRoute from './components/routes/ProtectedRoute'
 import ScrollToTop from './components/routes/ScrollToTop'
+import SuperAdminRoute from './components/routes/SuperAdminRoute'
 import CreateCategory from './pages/admin/categories/CreateCategory'
 import ManageCategories from './pages/admin/categories/ManageCategories'
 import AdminOrderDetailPage from './pages/admin/orders/AdminOrderDetailPage'
@@ -57,11 +58,13 @@ function App() {
             padding: '14px 18px',
           },
           classNames: {
-            toast: 'font-sans bg-[#f8f3ea] text-[#181512] border border-[#181512]/20 shadow-xl rounded-none p-4 font-semibold text-sm',
+            toast:
+              'font-sans bg-[#f8f3ea] text-[#181512] border border-[#181512]/20 shadow-xl rounded-none p-4 font-semibold text-sm',
             title: 'text-[#181512] font-bold text-sm',
             description: 'text-[#6b5f53] text-xs mt-0.5',
             actionButton: '!bg-[#7a3f1d] !text-white font-bold rounded-none',
-            cancelButton: '!bg-[#e5dcd0] !text-[#181512] font-bold rounded-none',
+            cancelButton:
+              '!bg-[#e5dcd0] !text-[#181512] font-bold rounded-none',
             success: '!bg-[#f3f7f2] !text-[#2d5a27] !border-[#2d5a27]/30',
             error: '!bg-[#fcf2f0] !text-[#8c2a1c] !border-[#8c2a1c]/30',
             info: '!bg-[#f8f3ea] !text-[#7a3f1d] !border-[#7a3f1d]/30',
@@ -290,9 +293,9 @@ function App() {
         <Route
           path="/dashboard/users"
           element={
-            <AdminRoute>
+            <SuperAdminRoute>
               <ManageUsers />
-            </AdminRoute>
+            </SuperAdminRoute>
           }
         />
         <Route

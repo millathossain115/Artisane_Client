@@ -9,7 +9,11 @@ import {
   fetchMyAddresses,
   type UserAddress,
 } from '../../features/address/addressApi'
-import { getAccessToken, getStoredUser } from '../../features/auth/authApi'
+import {
+  getAccessToken,
+  getStoredUser,
+  isAdminRole,
+} from '../../features/auth/authApi'
 import { useGetMyProfileQuery } from '../../features/auth/profileApi'
 import { clearCart } from '../../features/cart/cartSlice'
 import {
@@ -141,7 +145,7 @@ function Checkout() {
     return <Navigate replace to="/login" />
   }
 
-  if (storedUser?.role === 'admin') {
+  if (isAdminRole(storedUser?.role)) {
     return <Navigate replace to="/dashboard" />
   }
 

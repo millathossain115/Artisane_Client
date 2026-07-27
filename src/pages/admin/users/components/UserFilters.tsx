@@ -65,6 +65,7 @@ function UserFilters({
             value={roleFilter}
           >
             <option value="">All roles</option>
+            <option value="super_admin">Super Admin</option>
             <option value="user">User</option>
             <option value="admin">Admin</option>
           </select>
