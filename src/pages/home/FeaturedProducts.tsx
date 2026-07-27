@@ -55,9 +55,9 @@ function FeaturedProducts({
 
       <div className="mt-8">
         {isLoading ? (
-          <SkeletonCard count={10} gridCols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5" />
+          <SkeletonCard count={10} gridCols="grid-cols-3 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" />
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
             {products.map((product) => (
               <ProductTile key={product._id} product={product} />
             ))}

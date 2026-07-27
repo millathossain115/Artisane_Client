@@ -68,15 +68,15 @@ function CheckoutForm({
 }: CheckoutFormProps) {
   return (
     <form
-      className="border border-black/10 bg-white p-5 sm:p-6"
+      className="min-w-0 overflow-hidden border border-black/10 bg-white p-4 sm:p-6"
       onSubmit={onSubmit}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="flex min-w-0 items-start justify-between gap-4">
+        <div className="min-w-0">
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7a3f1d]">
             Checkout
           </p>
-          <h1 className="mt-3 text-4xl font-bold sm:text-5xl">
+          <h1 className="mt-3 text-3xl font-bold break-words sm:text-5xl">
             Delivery details
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6b5f53]">
@@ -86,11 +86,11 @@ function CheckoutForm({
       </div>
 
       {savedAddresses.length > 0 ? (
-        <div className="mt-6 border border-black/10 bg-[#f8f3ea]/30 p-4">
+        <div className="mt-6 min-w-0 border border-black/10 bg-[#f8f3ea]/30 p-3 sm:p-4">
           <p className="text-xs font-bold uppercase tracking-wider text-[#7a3f1d]">
             Select Saved Address
           </p>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="mt-3 grid min-w-0 gap-3 sm:grid-cols-2">
             {savedAddresses.map((addr) => {
               const isSelected = selectedAddressId === addr._id
               return (
@@ -98,21 +98,23 @@ function CheckoutForm({
                   key={addr._id}
                   type="button"
                   onClick={() => onSelectAddress?.(addr)}
-                  className={`text-left p-3 border transition ${
+                  className={`min-w-0 overflow-hidden border p-3 text-left transition ${
                     isSelected
                       ? 'border-[#7a3f1d] bg-white ring-1 ring-[#7a3f1d]'
                       : 'border-black/10 bg-white hover:border-[#181512]'
                   }`}
                 >
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-[#7a3f1d]">{addr.label}</span>
+                  <div className="flex min-w-0 items-center justify-between gap-2 text-xs font-bold">
+                    <span className="min-w-0 truncate text-[#7a3f1d]">
+                      {addr.label}
+                    </span>
                     {addr.isDefault && (
                       <span className="text-[10px] bg-[#7a3f1d] text-white px-1.5 py-0.5 rounded">
                         Default
                       </span>
                     )}
                   </div>
-                  <p className="mt-1 text-xs font-bold text-[#181512]">
+                  <p className="mt-1 truncate text-xs font-bold text-[#181512]">
                     {addr.recipientName} ({addr.phone})
                   </p>
                   <p className="mt-0.5 text-xs text-[#6b5f53] truncate">
@@ -126,27 +128,27 @@ function CheckoutForm({
       ) : null}
 
       <div className="mt-6 grid gap-5">
-        <div className="grid gap-5 md:grid-cols-2">
-          <label className="grid gap-2">
+        <div className="grid min-w-0 gap-5 md:grid-cols-2">
+          <label className="grid min-w-0 gap-2">
             <span className="flex items-center gap-2 text-sm font-bold">
               <UserRound className="h-4 w-4 text-[#7a3f1d]" />
               Recipient name
             </span>
             <input
-              className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+              className="min-h-12 w-full min-w-0 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
               onChange={(event) => onRecipientNameChange(event.target.value)}
               placeholder="Milla"
               value={recipientName}
             />
           </label>
 
-          <label className="grid gap-2">
+          <label className="grid min-w-0 gap-2">
             <span className="flex items-center gap-2 text-sm font-bold">
               <Phone className="h-4 w-4 text-[#7a3f1d]" />
               Recipient phone
             </span>
             <input
-              className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+              className="min-h-12 w-full min-w-0 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
               onChange={(event) => onRecipientPhoneChange(event.target.value)}
               placeholder="01700000000"
               type="tel"
@@ -154,13 +156,13 @@ function CheckoutForm({
             />
           </label>
 
-          <label className="grid gap-2">
+          <label className="grid min-w-0 gap-2">
             <span className="flex items-center gap-2 text-sm font-bold">
               <MapPin className="h-4 w-4 text-[#7a3f1d]" />
               District
             </span>
             <select
-              className="min-h-12 border border-black/10 bg-white px-3 text-sm font-medium outline-none transition focus:border-[#181512]"
+              className="min-h-12 w-full min-w-0 border border-black/10 bg-white px-3 text-sm font-medium outline-none transition focus:border-[#181512]"
               disabled={isDistrictsLoading}
               onChange={(event) => onDistrictChange(event.target.value)}
               value={selectedDistrictId}
@@ -176,13 +178,13 @@ function CheckoutForm({
             </select>
           </label>
 
-          <label className="grid gap-2">
+          <label className="grid min-w-0 gap-2">
             <span className="flex items-center gap-2 text-sm font-bold">
               <MapPinned className="h-4 w-4 text-[#7a3f1d]" />
               Zone / area
             </span>
             <select
-              className="min-h-12 border border-black/10 bg-white px-3 text-sm font-medium outline-none transition focus:border-[#181512] disabled:bg-[#f8f3ea]"
+              className="min-h-12 w-full min-w-0 border border-black/10 bg-white px-3 text-sm font-medium outline-none transition focus:border-[#181512] disabled:bg-[#f8f3ea]"
               disabled={!selectedDistrictId || isZonesLoading}
               onChange={(event) => onZoneChange(event.target.value)}
               value={selectedZoneId}
@@ -203,13 +205,13 @@ function CheckoutForm({
           </label>
         </div>
 
-        <label className="grid gap-2">
+        <label className="grid min-w-0 gap-2">
           <span className="flex items-center gap-2 text-sm font-bold">
             <MapPin className="h-4 w-4 text-[#7a3f1d]" />
             Full address
           </span>
           <textarea
-            className="min-h-32 resize-y border border-black/10 px-3 py-3 text-sm font-medium leading-6 outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+            className="min-h-32 w-full min-w-0 resize-y border border-black/10 px-3 py-3 text-sm font-medium leading-6 outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
             onChange={(event) => onFullAddressChange(event.target.value)}
             placeholder="House, road, landmark, floor"
             value={fullAddress}
@@ -221,10 +223,10 @@ function CheckoutForm({
             <CreditCard className="h-4 w-4 text-[#7a3f1d]" />
             Payment method
           </span>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
             {paymentOptions.map((option) => (
               <label
-                className={`group cursor-pointer border p-4 transition ${
+                className={`group min-w-0 cursor-pointer border p-3 transition sm:p-4 ${
                   paymentMethod === option.value
                     ? 'border-[#181512] bg-[#f8f3ea] shadow-[0_14px_28px_rgba(24,21,18,0.08)]'
                     : 'border-black/10 bg-white hover:border-[#7a3f1d]'
@@ -239,9 +241,9 @@ function CheckoutForm({
                   type="radio"
                   value={option.value}
                 />
-                <span className="flex items-center gap-3">
+                <span className="flex min-w-0 items-center gap-3">
                   <span
-                    className={`grid h-11 min-w-16 place-items-center px-3 text-sm font-black ${option.accentClass}`}
+                    className={`grid h-10 min-w-14 place-items-center px-2 text-xs font-black sm:h-11 sm:min-w-16 sm:px-3 sm:text-sm ${option.accentClass}`}
                   >
                     {option.logo}
                   </span>
@@ -268,10 +270,10 @@ function CheckoutForm({
           </div>
         </div>
 
-        <label className="grid gap-2">
+        <label className="grid min-w-0 gap-2">
           <span className="text-sm font-bold">Order notes</span>
           <textarea
-            className="min-h-24 resize-y border border-black/10 px-3 py-3 text-sm font-medium leading-6 outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+            className="min-h-24 w-full min-w-0 resize-y border border-black/10 px-3 py-3 text-sm font-medium leading-6 outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
             onChange={(event) => onNotesChange(event.target.value)}
             placeholder="Optional note"
             value={notes}

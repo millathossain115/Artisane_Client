@@ -456,7 +456,63 @@ function ManagePaymentLogs() {
               title="No payment logs found"
             />
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="grid gap-3 p-4 lg:hidden">
+              {logs.map((log) => (
+                <article
+                  className="border border-black/10 bg-white p-4"
+                  key={log._id}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <Link
+                        className="block truncate font-mono text-xs font-bold text-[#181512] hover:text-[#7a3f1d] hover:underline"
+                        to={getPaymentLogDetailUrl(log)}
+                      >
+                        {log.transactionId}
+                      </Link>
+                      {log.orderId?.orderNumber ? (
+                        <Link
+                          className="mt-1 block text-xs font-bold text-[#7a3f1d] hover:underline"
+                          to={getPaymentLogDetailUrl(log)}
+                        >
+                          {log.orderId.orderNumber}
+                        </Link>
+                      ) : null}
+                    </div>
+                    <span className="shrink-0 text-sm font-bold">
+                      {formatPaymentAmount(log.amount, log.currency)}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 grid gap-1">
+                    <p className="truncate text-sm font-bold">
+                      {getCustomerName(log)}
+                    </p>
+                    <p className="truncate text-xs text-[#6b5f53]">
+                      {getCustomerEmail(log) || 'No email'}
+                    </p>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {getStatusBadge(log.status)}
+                    <span className="inline-flex items-center gap-1.5 bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#181512]">
+                      <CreditCard className="h-3.5 w-3.5 text-[#7a3f1d]" />
+                      {formatPaymentMethod(log.paymentMethod)}
+                    </span>
+                    <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
+                      {log.source === 'order' ? 'Order' : 'Payment log'}
+                    </span>
+                  </div>
+
+                  <p className="mt-3 border-t border-black/10 pt-3 text-xs font-semibold text-[#6b5f53]">
+                    {formatOrderDate(log.createdAt)}
+                  </p>
+                </article>
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto lg:block">
               <table className="w-full min-w-[980px] border-collapse text-left text-sm">
                 <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
                   <tr>
@@ -520,6 +576,7 @@ function ManagePaymentLogs() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
 
           <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">

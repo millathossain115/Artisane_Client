@@ -39,7 +39,7 @@ function RecentlyViewedSection({
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-        <div className="mt-6 grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="mt-6 grid grid-cols-3 gap-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
           {products.slice(0, 5).map((item, index) => (
             <RecentShelfCard
               key={item.id ? `${item.id}-${index}` : index}

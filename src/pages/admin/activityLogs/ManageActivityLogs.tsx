@@ -711,7 +711,83 @@ function ManageActivityLogs() {
               title="No activity logs found"
             />
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="grid gap-3 p-4 lg:hidden">
+              {logs.map((log) => (
+                <article
+                  className="border border-black/10 bg-white p-4"
+                  key={log._id}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-[#6b5f53]">
+                        {formatOrderDate(log.createdAt)}
+                      </p>
+                      <h3 className="mt-1 line-clamp-2 font-bold">
+                        {getActionLabel(log.action)}
+                      </h3>
+                    </div>
+                    <button
+                      aria-label={`View activity ${log.action}`}
+                      className="grid h-9 w-9 shrink-0 place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-white"
+                      onClick={() => setSelectedLog(log)}
+                      type="button"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <p className="mt-2 line-clamp-2 text-sm text-[#6b5f53]">
+                    {log.summary}
+                  </p>
+
+                  <div className="mt-3 grid gap-1 border-t border-black/10 pt-3">
+                    <p
+                      className="truncate text-sm font-bold"
+                      title={getActorName(log)}
+                    >
+                      {getActorName(log)}
+                    </p>
+                    <p
+                      className="truncate text-xs text-[#6b5f53]"
+                      title={log.actorEmail || 'No email'}
+                    >
+                      {log.actorEmail || 'No email'}
+                    </p>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
+                      {formatLabel(log.module)}
+                    </span>
+                    <span className="bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#181512]">
+                      {formatLabel(log.actorRole)}
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-bold ${getStatusClass(
+                        log.status,
+                      )}`}
+                    >
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      {getResultLabel(log.status)}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 grid gap-1 text-xs font-semibold text-[#6b5f53]">
+                    <p className="truncate">Target: {getTargetLabel(log)}</p>
+                    <p className="flex min-w-0 items-center gap-1">
+                      <Laptop className="h-3.5 w-3.5 shrink-0 text-[#7a3f1d]" />
+                      <span className="truncate">{getDeviceLabel(log)}</span>
+                    </p>
+                    <p className="truncate font-mono">
+                      {normalizeIpAddress(log.ipAddress)}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto lg:block">
               <table className="w-full min-w-[1040px] border-collapse text-left text-sm">
                 <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
                   <tr>
@@ -816,6 +892,7 @@ function ManageActivityLogs() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
 
           <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">

@@ -549,7 +549,108 @@ function CategoryTable() {
           <SkeletonTable rows={pageSize} cols={7} />
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <>
+        <div className="grid gap-3 p-4 lg:hidden">
+          {categories.length ? (
+            categories.map((category) => {
+              const imageUrl = getCategoryImageUrl(category)
+              const categoryIsActive = isCategoryActive(category)
+
+              return (
+                <article
+                  className="border border-black/10 bg-white p-4"
+                  key={category._id}
+                >
+                  <div className="flex items-start gap-3">
+                    <Link
+                      className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]"
+                      to={`/products?category=${encodeURIComponent(category._id)}`}
+                    >
+                      {imageUrl ? (
+                        <img
+                          alt=""
+                          className="h-full w-full object-cover"
+                          src={imageUrl}
+                        />
+                      ) : (
+                        <Globe2 className="h-5 w-5" />
+                      )}
+                    </Link>
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        className="line-clamp-2 font-bold hover:underline"
+                        to={`/products?category=${encodeURIComponent(category._id)}`}
+                      >
+                        {category.name}
+                      </Link>
+                      <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
+                        {category._id.slice(-8).toUpperCase()}
+                      </p>
+                      <p className="mt-2 line-clamp-2 text-sm text-[#6b5f53]">
+                        {category.description || 'No description added.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2 border-t border-black/10 pt-3">
+                    <CategoryProductCount categoryId={category._id} />
+                    <button
+                      className={`inline-flex min-h-8 items-center gap-2 border px-2 text-xs font-bold transition ${
+                        categoryIsActive
+                          ? 'border-[#1f7a4d]/20 bg-[#effaf3] text-[#1f6b43] hover:border-[#1f6b43]'
+                          : 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d] hover:border-[#8f3f1d]'
+                      } disabled:cursor-not-allowed disabled:opacity-60`}
+                      disabled={isUpdating}
+                      onClick={() => handleToggleCategoryStatus(category)}
+                      type="button"
+                    >
+                      {categoryIsActive ? (
+                        <Eye className="h-4 w-4" />
+                      ) : (
+                        <EyeOff className="h-4 w-4" />
+                      )}
+                      {categoryIsActive ? 'Active' : 'Inactive'}
+                    </button>
+                    <span className="inline-flex min-h-8 items-center bg-[#f8f3ea] px-2 text-xs font-bold text-[#6b5f53]">
+                      {formatDate(category.createdAt)}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 flex justify-end gap-2">
+                    <button
+                      aria-label={`Update ${category.name}`}
+                      className="grid h-9 w-9 place-items-center border border-black/10 text-[#181512] transition hover:border-[#181512] hover:bg-white"
+                      onClick={() => openEditModal(category)}
+                      type="button"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      aria-label={`Delete ${category.name}`}
+                      className="grid h-9 w-9 place-items-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef]"
+                      onClick={() => {
+                        setStatus('')
+                        setError('')
+                        setCategoryToDelete(category)
+                      }}
+                      type="button"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </article>
+              )
+            })
+          ) : (
+            <p className="border border-black/10 bg-[#f8f3ea] p-5 text-center text-sm font-semibold text-[#6b5f53]">
+              {totalCategories
+                ? 'No categories match the current filters.'
+                : 'No categories found.'}
+            </p>
+          )}
+        </div>
+
+        <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
@@ -683,6 +784,7 @@ function CategoryTable() {
           </tbody>
         </table>
       </div>
+      </>
       )}
 
       <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">

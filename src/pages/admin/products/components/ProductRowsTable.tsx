@@ -41,7 +41,98 @@ function ProductRowsTable({
 }: ProductRowsTableProps) {
   return (
     <div>
-      <div className="overflow-x-auto">
+      <div className="grid gap-3 p-4 lg:hidden">
+        {products.length ? (
+          products.map((product) => {
+            const imageUrl = getProductImageUrl(product.images?.[0])
+            const productUrl = `/products/${product._id}`
+
+            return (
+              <article
+                className="border border-black/10 bg-white p-4"
+                key={product._id}
+              >
+                <div className="flex items-start gap-3">
+                  <Link
+                    aria-label={`View ${product.name}`}
+                    className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden border border-black/10 bg-[#f8f3ea] text-[#6b5f53]"
+                    to={productUrl}
+                  >
+                    {imageUrl ? (
+                      <img
+                        alt=""
+                        className="h-full w-full object-cover"
+                        src={imageUrl}
+                      />
+                    ) : (
+                      <ImageOff className="h-5 w-5" />
+                    )}
+                  </Link>
+
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      className="line-clamp-2 font-bold text-[#181512] hover:text-[#7a3f1d] hover:underline"
+                      to={productUrl}
+                    >
+                      {product.name}
+                    </Link>
+                    <p className="mt-1 truncate text-xs font-semibold text-[#6b5f53]">
+                      {product.brand || 'Artisane'}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
+                        {getCategoryName(product.category)}
+                      </span>
+                      <span className="bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#181512]">
+                        {formatCurrency(product.price)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-black/10 pt-3">
+                  {product.stock > 0 ? (
+                    <span className="inline-flex items-center gap-1.5 bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
+                      <span className="h-1.5 w-1.5 bg-[#1f6b43]" />
+                      {product.stock} in stock
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 bg-[#fff5ef] px-2 py-1 text-xs font-bold text-[#8f3f1d]">
+                      <span className="h-1.5 w-1.5 bg-[#8f3f1d]" />
+                      Out of stock
+                    </span>
+                  )}
+
+                  <div className="flex gap-2">
+                    <button
+                      aria-label={`Edit ${product.name}`}
+                      className="grid h-9 w-9 place-items-center border border-black/10 bg-white text-[#181512] transition hover:border-[#181512]"
+                      onClick={() => onEdit(product)}
+                      type="button"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      aria-label={`Delete ${product.name}`}
+                      className="grid h-9 w-9 place-items-center border border-[#c85f2f]/25 bg-white text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef]"
+                      onClick={() => onDelete(product)}
+                      type="button"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            )
+          })
+        ) : (
+          <p className="border border-black/10 bg-[#f8f3ea] p-5 text-center text-sm font-semibold text-[#6b5f53]">
+            No products match your current search or category filter.
+          </p>
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>

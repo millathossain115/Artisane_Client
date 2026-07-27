@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { SlidersHorizontal, X } from 'lucide-react'
 
 import {
@@ -27,6 +28,7 @@ function ProductCatalogFilters({
   onSortChange,
   sortOption,
 }: ProductCatalogFiltersProps) {
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const stockOptions: { label: string; value: StockFilter }[] = [
     { label: 'All stock', value: 'all' },
     { label: 'In stock', value: 'in-stock' },
@@ -40,12 +42,17 @@ function ProductCatalogFilters({
   ]
 
   return (
-    <aside className="border border-black/10 bg-white p-4 lg:sticky lg:top-32 lg:self-start">
+    <aside className="min-w-0 border border-black/10 bg-white p-3 sm:p-4 lg:sticky lg:top-32 lg:self-start">
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-sm font-bold text-[#181512]">
+        <button
+          aria-expanded={isMobileFilterOpen}
+          className="flex min-h-10 flex-1 items-center gap-2 text-left text-sm font-bold text-[#181512] lg:min-h-0 lg:cursor-default"
+          onClick={() => setIsMobileFilterOpen((current) => !current)}
+          type="button"
+        >
           <SlidersHorizontal className="h-4 w-4 text-[#7a3f1d]" />
-          Filters
-        </div>
+          Filters & sort
+        </button>
         {hasActiveFilters ? (
           <button
             aria-label="Clear filters"
@@ -58,12 +65,16 @@ function ProductCatalogFilters({
         ) : null}
       </div>
 
-      <div className="mt-4 grid gap-4">
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
-          <label className="grid gap-2 text-sm font-bold">
+      <div
+        className={`mt-3 gap-4 lg:grid ${
+          isMobileFilterOpen ? 'grid' : 'hidden'
+        }`}
+      >
+        <div className="grid min-w-0 grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-1">
+          <label className="grid min-w-0 gap-2 text-sm font-bold">
             Min price
             <input
-              className="min-h-11 border border-black/10 bg-[#f8f3ea]/45 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512] focus:bg-white"
+              className="min-h-11 w-full min-w-0 border border-black/10 bg-[#f8f3ea]/45 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512] focus:bg-white"
               min="0"
               onChange={(event) =>
                 onFilterChange({ minPrice: event.target.value })
@@ -74,10 +85,10 @@ function ProductCatalogFilters({
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-bold">
+          <label className="grid min-w-0 gap-2 text-sm font-bold">
             Max price
             <input
-              className="min-h-11 border border-black/10 bg-[#f8f3ea]/45 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512] focus:bg-white"
+              className="min-h-11 w-full min-w-0 border border-black/10 bg-[#f8f3ea]/45 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512] focus:bg-white"
               min="0"
               onChange={(event) =>
                 onFilterChange({ maxPrice: event.target.value })

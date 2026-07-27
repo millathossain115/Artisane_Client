@@ -56,12 +56,12 @@ function NavbarProfileMenu() {
   }
 
   return (
-    <div className="ml-auto flex items-center gap-2 md:ml-0">
+    <div className="ml-auto flex min-w-0 items-center gap-2 md:ml-0">
       <div className="relative" ref={profileMenuRef}>
         <button
           aria-expanded={isProfileOpen}
           aria-haspopup="menu"
-          className="flex min-w-0 items-center gap-3 border border-black/10 bg-white px-2 py-2 text-left transition hover:border-[#181512] sm:min-w-56 sm:px-3"
+          className="flex min-w-0 items-center gap-3 border border-black/10 bg-white px-2 py-2 text-left transition hover:border-[#181512] lg:min-w-56 lg:px-3"
           onClick={() => setIsProfileOpen((current) => !current)}
           type="button"
         >
@@ -76,7 +76,7 @@ function NavbarProfileMenu() {
               <UserRound className="h-4 w-4" />
             )}
           </span>
-          <span className="hidden min-w-0 flex-1 sm:block">
+          <span className="hidden min-w-0 flex-1 lg:block">
             <span className="block truncate text-sm font-bold">
               {displayName}
             </span>
@@ -84,7 +84,7 @@ function NavbarProfileMenu() {
               {displayEmail}
             </span>
           </span>
-          <ChevronDown className="hidden h-4 w-4 shrink-0 text-[#6b5f53] sm:block" />
+          <ChevronDown className="hidden h-4 w-4 shrink-0 text-[#6b5f53] lg:block" />
         </button>
 
         {isProfileOpen ? (

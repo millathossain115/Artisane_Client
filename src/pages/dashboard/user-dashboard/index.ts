@@ -1,5 +1,0 @@
-export { default as UserAccountOverview } from './UserAccountOverview'
-export { default as UserSummaryTiles } from './UserSummaryTiles'
-export { default as UserWishlistReviewsSection } from './UserWishlistReviewsSection'
-export { default as WishlistPage } from './WishlistPage'
-export { getUserMetrics } from './userDashboardMetrics'

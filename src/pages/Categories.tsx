@@ -281,7 +281,7 @@ function Categories() {
               </div>
             ) : null}
 
-            <div className="mt-8 grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="mt-8 grid grid-cols-3 gap-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
               {isProductsLoading
                 ? Array.from({ length: 10 }).map((_, index) => (
                     <div
@@ -320,7 +320,7 @@ function Categories() {
             </Link>
           </div>
 
-          <div className="mt-8 grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="mt-8 grid grid-cols-3 gap-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
             {isProductsLoading
               ? Array.from({ length: 5 }).map((_, index) => (
                   <div

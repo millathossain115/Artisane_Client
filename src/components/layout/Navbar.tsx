@@ -40,7 +40,7 @@ function Navbar({ fullWidth = false }: NavbarProps) {
             <span className="font-display text-2xl font-bold">Artisane</span>
           </Link>
 
-          <NavbarSearch className="ml-auto hidden min-w-64 max-w-md flex-1 md:block" />
+          <NavbarSearch className="ml-auto hidden min-w-0 max-w-xs flex-1 md:block lg:max-w-md" />
           <NavbarProfileMenu />
         </div>
 

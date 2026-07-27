@@ -91,7 +91,7 @@ function Products() {
   const { data: activeCategory } = useGetCategoryByIdQuery(categoryFilter, {
     skip: !categoryFilter,
   })
-  const products = productList?.data ?? []
+  const products = useMemo(() => productList?.data ?? [], [productList?.data])
   const brandOptions = useMemo(
     () =>
       Array.from(
@@ -231,9 +231,9 @@ function Products() {
 
           <div className="min-w-0" ref={productGridRef}>
             {isProductsLoading ? (
-              <SkeletonCard count={DEFAULT_LIMIT} gridCols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" />
+              <SkeletonCard count={DEFAULT_LIMIT} gridCols="grid-cols-3 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" />
             ) : (
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
                 {products.map((product) => (
                   <ProductTile key={product._id} product={product} />
                 ))}

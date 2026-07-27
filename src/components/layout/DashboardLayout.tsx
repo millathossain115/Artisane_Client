@@ -390,11 +390,11 @@ function DashboardLayout({
 
   if (isCustomerLayout) {
     return (
-      <div className="min-h-screen bg-[#f8f3ea] text-[#181512]">
+      <div className="min-h-screen overflow-x-hidden bg-[#f8f3ea] text-[#181512]">
         <Navbar />
 
         <div
-          className={`fixed inset-0 z-50 lg:hidden ${
+          className={`fixed inset-0 z-50 overflow-hidden lg:hidden ${
             isSidebarOpen ? '' : 'pointer-events-none'
           }`}
           aria-hidden={!isSidebarOpen}
@@ -408,7 +408,7 @@ function DashboardLayout({
             type="button"
           />
           <aside
-            className={`absolute inset-y-0 left-0 flex w-[min(20rem,86vw)] flex-col border-r border-black/10 bg-white text-[#181512] shadow-[24px_0_60px_rgba(24,21,18,0.22)] transition-transform duration-200 ${
+            className={`absolute inset-y-0 left-0 flex w-[min(18rem,84vw)] max-w-[calc(100vw-1rem)] flex-col border-r border-black/10 bg-white text-[#181512] shadow-[24px_0_60px_rgba(24,21,18,0.22)] transition-transform duration-200 ${
               isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
             }`}
           >
@@ -448,13 +448,13 @@ function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f3ea] text-[#181512]">
+    <div className="min-h-screen overflow-x-hidden bg-[#f8f3ea] text-[#181512]">
       <aside className="fixed bottom-0 left-0 top-0 z-40 hidden w-72 border-r border-black/10 bg-[#181512] text-white lg:flex lg:flex-col">
         {renderSidebarContent()}
       </aside>
 
       <div
-        className={`fixed inset-0 z-50 lg:hidden ${
+        className={`fixed inset-0 z-50 overflow-hidden lg:hidden ${
           isSidebarOpen ? '' : 'pointer-events-none'
         }`}
         aria-hidden={!isSidebarOpen}
@@ -468,7 +468,7 @@ function DashboardLayout({
           type="button"
         />
         <aside
-          className={`absolute inset-y-0 left-0 flex w-[min(20rem,86vw)] flex-col border-r border-white/10 bg-[#181512] text-white shadow-[24px_0_60px_rgba(24,21,18,0.28)] transition-transform duration-200 ${
+          className={`absolute inset-y-0 left-0 flex w-[min(18rem,84vw)] max-w-[calc(100vw-1rem)] flex-col border-r border-white/10 bg-[#181512] text-white shadow-[24px_0_60px_rgba(24,21,18,0.28)] transition-transform duration-200 ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >

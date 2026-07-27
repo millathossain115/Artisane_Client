@@ -135,7 +135,7 @@ function ProductTile({
       role="link"
       tabIndex={0}
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#f8f3ea]">
+      <div className="relative aspect-square overflow-hidden bg-[#f8f3ea] sm:aspect-[4/5]">
         {imageUrl ? (
           <img
             alt={product.name}
@@ -148,7 +148,7 @@ function ProductTile({
           </div>
         )}
 
-        <div className="absolute left-1.5 top-1.5 flex flex-col gap-1 sm:left-3 sm:top-3">
+        <div className="absolute left-1.5 top-1.5 hidden flex-col gap-1 sm:left-3 sm:top-3 sm:flex">
           {priceInfo.hasDiscount && (
             <ProductBadge variant="danger">
               -{priceInfo.discountPercent}% OFF
@@ -166,7 +166,7 @@ function ProductTile({
                 : `Add ${product.name} to wishlist`
             }
             aria-pressed={isWishlisted}
-            className="btn-secondary absolute right-1.5 top-1.5 grid h-8 w-8 !p-0 sm:right-3 sm:top-3 sm:h-9 sm:w-9"
+            className="btn-secondary absolute right-1 top-1 grid h-7 w-7 !p-0 sm:right-3 sm:top-3 sm:h-9 sm:w-9"
             disabled={isWishlistLoading}
             onClick={handleWishlistClick}
             type="button"
@@ -181,7 +181,7 @@ function ProductTile({
       </div>
 
       <div className={variant === 'compact' ? 'p-2 sm:p-3' : 'p-2 sm:p-4'}>
-        <div className="flex items-center justify-between gap-1 text-[10px] font-semibold text-[#7a3f1d] sm:gap-3 sm:text-xs">
+        <div className="hidden items-center justify-between gap-1 text-[10px] font-semibold text-[#7a3f1d] sm:flex sm:gap-3 sm:text-xs">
           <span className="truncate">{getCategoryName(product.category)}</span>
           <span className="inline-flex shrink-0 items-center gap-1 text-[#4f463d]">
             <Star className="h-3.5 w-3.5 fill-[#c85f2f] text-[#c85f2f]" />
@@ -192,24 +192,24 @@ function ProductTile({
         <h3
           className={`mt-2 line-clamp-2 font-bold leading-snug sm:mt-3 ${
             variant === 'compact'
-              ? 'min-h-8 text-xs sm:min-h-10 sm:text-base'
-              : 'min-h-8 text-xs sm:min-h-12 sm:text-lg'
+              ? 'min-h-8 text-[11px] sm:min-h-10 sm:text-base'
+              : 'min-h-8 text-[11px] sm:min-h-12 sm:text-lg'
           }`}
         >
           {product.name}
         </h3>
-        <p className="mt-1 truncate text-[11px] text-[#6b5f53] sm:text-sm">
+        <p className="mt-1 hidden truncate text-[11px] text-[#6b5f53] sm:block sm:text-sm">
           {product.brand ?? 'Artisane Studio'}
         </p>
 
-        <div className="mt-2 flex items-end justify-between gap-2 sm:mt-4 sm:gap-3">
+        <div className="mt-1 flex items-end justify-between gap-2 sm:mt-4 sm:gap-3">
           <div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-sm font-bold sm:text-xl">
+              <span className="text-xs font-bold sm:text-xl">
                 {formatPrice(priceInfo.finalPrice)}
               </span>
               {priceInfo.hasDiscount && (
-                <span className="text-xs font-semibold text-[#8a7d71] line-through">
+                <span className="hidden text-xs font-semibold text-[#8a7d71] line-through sm:inline">
                   {formatPrice(priceInfo.originalPrice)}
                 </span>
               )}
@@ -221,10 +221,10 @@ function ProductTile({
         </div>
 
         {!isAdmin ? (
-          <div className="mt-2 sm:mt-4">
+          <div className="mt-1.5 sm:mt-4">
             <button
               aria-label={`Add ${product.name} to cart`}
-              className="btn-primary w-full"
+              className="btn-primary min-h-8 w-full !gap-1 !px-1.5 !py-1.5 !text-[10px] sm:min-h-0 sm:!gap-2 sm:!px-5 sm:!py-2.5 sm:!text-xs"
               disabled={product.stock <= 0}
               onClick={handleAddToCart}
               type="button"

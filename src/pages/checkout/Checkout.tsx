@@ -262,7 +262,7 @@ function Checkout() {
           Continue shopping
         </Link>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_420px] lg:items-start">
+        <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start">
           <CheckoutForm
             savedAddresses={savedAddresses}
             selectedAddressId={selectedAddressId}

@@ -113,7 +113,101 @@ function AdminReviewsSection({
         </div>
       ) : null}
 
-      <div className="overflow-x-auto">
+      <div className="lg:hidden">
+        {isLoading ? (
+          <div className="grid gap-3 p-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div
+                className="h-36 animate-pulse border border-black/10 bg-[#f8f3ea]"
+                key={index}
+              />
+            ))}
+          </div>
+        ) : visibleReviews.length ? (
+          <div className="grid gap-3 p-4">
+            {visibleReviews.map((review) => (
+              <article
+                className="border border-black/10 bg-white p-4"
+                key={review._id}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <Link
+                      className="line-clamp-2 font-bold transition hover:text-[#7a3f1d]"
+                      to={`/products/${
+                        review.product && typeof review.product !== 'string'
+                          ? review.product._id
+                          : '#'
+                      }`}
+                    >
+                      {getReviewProductName(review)}
+                    </Link>
+                    <p className="mt-1 truncate text-xs text-[#6b5f53]">
+                      {getReviewUserName(review)} - {getReviewUserEmail(review)}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 px-2 py-1 text-xs font-bold ${
+                      review.isHidden
+                        ? 'bg-[#fff5ef] text-[#8f3f1d]'
+                        : 'bg-[#effaf3] text-[#1f6b43]'
+                    }`}
+                  >
+                    {review.isHidden ? 'Hidden' : 'Visible'}
+                  </span>
+                </div>
+
+                <div className="mt-3 flex gap-1">
+                  {renderStars(review.rating)}
+                </div>
+                <p className="mt-3 line-clamp-3 text-sm font-semibold text-[#4f463d]">
+                  {review.comment || 'No comment.'}
+                </p>
+
+                <div className="mt-3 flex items-center justify-between gap-3 border-t border-black/10 pt-3">
+                  <p className="text-xs font-semibold text-[#6b5f53]">
+                    {formatDate(review.createdAt)}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      aria-label={
+                        review.isHidden ? 'Show review' : 'Hide review'
+                      }
+                      className="grid h-9 w-9 place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-white disabled:cursor-not-allowed disabled:opacity-45"
+                      disabled={isTogglingVisibility}
+                      onClick={() =>
+                        setConfirmTarget({ review, type: 'visibility' })
+                      }
+                      type="button"
+                    >
+                      {review.isHidden ? (
+                        <Eye className="h-4 w-4" />
+                      ) : (
+                        <EyeOff className="h-4 w-4" />
+                      )}
+                    </button>
+                    <button
+                      aria-label="Delete review"
+                      className="grid h-9 w-9 place-items-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef] disabled:cursor-not-allowed disabled:opacity-45"
+                      disabled={isDeleting}
+                      onClick={() => setConfirmTarget({ review, type: 'delete' })}
+                      type="button"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="p-8 text-center font-semibold text-[#6b5f53]">
+            No reviews found.
+          </p>
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[1200px] border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
