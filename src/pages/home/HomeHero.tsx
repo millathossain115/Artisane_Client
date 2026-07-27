@@ -6,19 +6,25 @@ import type {
   HomeHeroContent,
   HomeHeroSlide,
 } from '../../features/homeContent/homeContentApi'
+import { getAssetUrl } from '../../utils/productDisplay'
 
 type HomeHeroProps = {
   fallbackImage: string
   heroContent?: HomeHeroContent | null
+  isLoading?: boolean
 }
 
 function usePrefersReducedMotion() {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false
+    }
+
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  })
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-
-    setPrefersReducedMotion(mediaQuery.matches)
 
     function handleChange(event: MediaQueryListEvent) {
       setPrefersReducedMotion(event.matches)
@@ -49,11 +55,16 @@ function getFallbackSlide(fallbackImage: string): HomeHeroSlide {
   }
 }
 
-function HomeHero({ fallbackImage, heroContent }: HomeHeroProps) {
+function HomeHero({ fallbackImage, heroContent, isLoading }: HomeHeroProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const prefersReducedMotion = usePrefersReducedMotion()
+  const isWaitingForHeroContent = isLoading && !heroContent
   const slides = useMemo(() => {
+    if (isWaitingForHeroContent) {
+      return []
+    }
+
     const cmsSlides =
       heroContent?.isActive && heroContent.slides.length
         ? heroContent.slides
@@ -64,14 +75,12 @@ function HomeHero({ fallbackImage, heroContent }: HomeHeroProps) {
         : []
 
     return cmsSlides.length ? cmsSlides : [getFallbackSlide(fallbackImage)]
-  }, [fallbackImage, heroContent])
+  }, [fallbackImage, heroContent, isWaitingForHeroContent])
   const autoplayMs =
     Math.min(10, Math.max(1, heroContent?.autoplaySeconds ?? 5)) * 1000
   const fadeMs = Math.min(1500, Math.max(300, heroContent?.fadeMs ?? 800))
-
-  useEffect(() => {
-    setActiveIndex(0)
-  }, [slides.length])
+  const currentActiveIndex =
+    slides.length > 0 ? Math.min(activeIndex, slides.length - 1) : 0
 
   useEffect(() => {
     if (slides.length <= 1 || isPaused || prefersReducedMotion) {
@@ -91,10 +100,16 @@ function HomeHero({ fallbackImage, heroContent }: HomeHeroProps) {
       onBlur={() => setIsPaused(false)}
       onFocus={() => setIsPaused(true)}
     >
+      {isWaitingForHeroContent ? (
+        <div className="absolute inset-0 bg-[#181512]">
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(24,21,18,0.96),rgba(24,21,18,0.82),rgba(24,21,18,0.64))]" />
+        </div>
+      ) : null}
+
       {slides.map((slide, index) => (
         <div
           className={`absolute inset-0 transition-opacity ${
-            index === activeIndex ? 'opacity-100' : 'opacity-0'
+            index === currentActiveIndex ? 'opacity-100' : 'opacity-0'
           }`}
           key={`${slide.title}-${index}`}
           style={{ transitionDuration: `${fadeMs}ms` }}
@@ -102,7 +117,7 @@ function HomeHero({ fallbackImage, heroContent }: HomeHeroProps) {
           <img
             alt={slide.imageAlt}
             className="h-full w-full object-cover opacity-72"
-            src={slide.image || fallbackImage}
+            src={getAssetUrl(slide.image) || fallbackImage}
           />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(24,21,18,0.94),rgba(24,21,18,0.64),rgba(24,21,18,0.18))]" />
         </div>
@@ -113,7 +128,7 @@ function HomeHero({ fallbackImage, heroContent }: HomeHeroProps) {
         {slides.map((slide, index) => (
           <div
             className={`absolute inset-0 flex items-center px-4 py-16 transition-opacity sm:px-6 lg:px-8 ${
-              index === activeIndex
+              index === currentActiveIndex
                 ? 'pointer-events-auto opacity-100'
                 : 'pointer-events-none opacity-0'
             }`}
@@ -158,9 +173,9 @@ function HomeHero({ fallbackImage, heroContent }: HomeHeroProps) {
             {slides.map((slide, index) => (
               <button
                 aria-label={`Show hero slide ${index + 1}: ${slide.title}`}
-                aria-current={index === activeIndex}
+                aria-current={index === currentActiveIndex}
                 className={`h-2.5 transition-all ${
-                  index === activeIndex
+                  index === currentActiveIndex
                     ? 'w-8 bg-white'
                     : 'w-2.5 bg-white/45 hover:bg-white/75'
                 }`}

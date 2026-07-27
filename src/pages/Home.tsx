@@ -74,7 +74,8 @@ function Home() {
   const [recentProducts] = useState<RecentProduct[]>(() =>
     loadRecentProducts(),
   )
-  const { data: heroContent } = useGetHomeHeroQuery()
+  const { data: heroContent, isLoading: isHeroLoading } =
+    useGetHomeHeroQuery()
   const {
     data: categoryList,
     isError: hasCategoriesError,
@@ -122,7 +123,11 @@ function Home() {
       <FlashDealModal />
 
       <main>
-        <HomeHero fallbackImage={homeWallArtBanner} heroContent={heroContent} />
+        <HomeHero
+          fallbackImage={homeWallArtBanner}
+          heroContent={heroContent}
+          isLoading={isHeroLoading}
+        />
         <FlashDealBanner />
         <VoucherBanner />
         <HomeStats
