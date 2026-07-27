@@ -46,6 +46,6 @@ export const adminNavItems = [
   { label: 'Promo Banner', to: '/dashboard/admin/promo', icon: Flame },
   { label: 'Home Hero', to: '/dashboard/admin/home-hero', icon: Images },
   { label: 'Messages', to: '#messages', icon: MessageSquareText },
-  { label: 'Analytics', to: '#analytics', icon: BarChart3 },
+  { label: 'Analytics', to: '/dashboard/admin/analytics', icon: BarChart3 },
   { label: 'Settings', to: '#settings', icon: Settings },
 ]

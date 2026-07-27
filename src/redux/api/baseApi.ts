@@ -20,6 +20,7 @@ export const baseApi = createApi({
   reducerPath: 'baseApi',
   tagTypes: [
     'ActivityLog',
+    'Analytics',
     'Auth',
     'Category',
     'Dashboard',
