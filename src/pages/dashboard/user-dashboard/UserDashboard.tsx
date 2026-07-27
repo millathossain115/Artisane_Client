@@ -6,11 +6,9 @@ import { useGetMyDashboardStatsQuery } from '../../../features/dashboard/dashboa
 import { useGetMyOrdersQuery } from '../../../features/orders/orderApi'
 import DashboardMetricGrid from '../DashboardMetricGrid'
 import DashboardNotice from '../DashboardNotice'
-import UserAccountOverview from './UserAccountOverview'
-import UserSummaryTiles from './UserSummaryTiles'
-import UserWishlistReviewsSection from './UserWishlistReviewsSection'
 import { getUserMetrics } from './userDashboardMetrics'
 import { userNavItems } from './userNavItems'
+import UserOverviewSections from './UserOverviewSections'
 
 function UserDashboard() {
   const user = getStoredUser()
@@ -21,7 +19,7 @@ function UserDashboard() {
     isLoading: isStatsLoading,
   } = useGetMyDashboardStatsQuery()
   const { data: myOrderList } = useGetMyOrdersQuery(
-    { limit: 100, page: 1 },
+    { limit: 3, page: 1 },
     { refetchOnMountOrArgChange: true },
   )
   const myOrders = myOrderList?.data ?? []
@@ -36,10 +34,10 @@ function UserDashboard() {
         { label: 'Track order', to: '/dashboard/orders', variant: 'primary' },
       ]}
       eyebrow="My account"
-      helperText="Track orders, finish profile details, and keep an eye on saved artwork before it sells."
+      helperText="Check your current order, saved products, and account shortcuts."
       layoutVariant="customer"
       sidebarItems={userNavItems}
-      subtitle="Manage your orders, saved artwork, reviews, messages, and account details."
+      subtitle="A simple account overview for orders, wishlist, addresses, and support."
       title={`Welcome${user?.name ? `, ${user.name.split(' ')[0]}` : ''}`}
       workspaceLabel="Collector account"
     >
@@ -57,9 +55,7 @@ function UserDashboard() {
       <DashboardMetricGrid
         metrics={getUserMetrics(userStats, myOrders, myOrderList?.meta.total)}
       />
-      <UserAccountOverview orders={myOrders} stats={userStats} />
-      <UserWishlistReviewsSection stats={userStats} />
-      <UserSummaryTiles />
+      <UserOverviewSections orders={myOrders} stats={userStats} />
     </DashboardLayout>
   )
 }

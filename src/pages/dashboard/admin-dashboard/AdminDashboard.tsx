@@ -1,17 +1,13 @@
 import { useState } from 'react'
 
 import DashboardLayout from '../../../components/layout/DashboardLayout'
-import { useGetCategoriesQuery } from '../../../features/categories/categoryApi'
 import { useGetAdminStatsQuery } from '../../../features/dashboard/dashboardApi'
 import { useGetAllOrdersQuery } from '../../../features/orders/orderApi'
 import { adminNavItems } from '../../admin/adminNavItems'
 import DashboardMetricGrid from '../DashboardMetricGrid'
 import DashboardNotice from '../DashboardNotice'
-import AdminCategoriesSection from './AdminCategoriesSection'
-import AdminOperationsSection from './AdminOperationsSection'
-import AdminReviewActivitySection from './AdminReviewActivitySection'
-import AdminSummaryTiles from './AdminSummaryTiles'
 import { getAdminMetrics } from './adminDashboardMetrics'
+import AdminOverviewSections from './AdminOverviewSections'
 
 function AdminDashboard() {
   const [isNoticeDismissed, setIsNoticeDismissed] = useState(false)
@@ -25,20 +21,13 @@ function AdminDashboard() {
     isError: hasOrdersError,
     isLoading: isOrdersLoading,
   } = useGetAllOrdersQuery({ limit: 5, page: 1 })
-  const {
-    data: categoryList,
-    isError: hasCategoriesError,
-    isLoading: isCategoriesLoading,
-  } = useGetCategoriesQuery({ limit: 5, page: 1 })
-  const previewCategories = categoryList?.data ?? []
-  const totalCategories = categoryList?.meta.total ?? previewCategories.length
   const previewOrders = orderList?.data ?? []
 
   return (
     <DashboardLayout
-      helperText="Review pending orders and low-stock handmade pieces before publishing new drops."
+      helperText="Scan priority work, then jump into the dedicated admin pages for detail."
       sidebarItems={adminNavItems}
-      subtitle="Monitor sales, orders, inventory, reviews, and marketplace tasks from one focused workspace."
+      subtitle="A compact overview for orders, catalog signals, reviews, and admin shortcuts."
       title="Admin dashboard"
       workspaceLabel="Marketplace studio"
     >
@@ -55,19 +44,12 @@ function AdminDashboard() {
 
       <DashboardMetricGrid metrics={getAdminMetrics(adminStats)} />
 
-      <AdminCategoriesSection
-        categories={previewCategories}
-        hasError={hasCategoriesError}
-        isLoading={isCategoriesLoading}
-        totalCategories={totalCategories}
-      />
-      <AdminOperationsSection
-        hasError={hasOrdersError}
-        isLoading={isOrdersLoading}
+      <AdminOverviewSections
+        hasOrdersError={hasOrdersError}
+        isOrdersLoading={isOrdersLoading}
         orders={previewOrders}
+        stats={adminStats}
       />
-      <AdminReviewActivitySection stats={adminStats} />
-      <AdminSummaryTiles totalCategories={totalCategories} />
     </DashboardLayout>
   )
 }

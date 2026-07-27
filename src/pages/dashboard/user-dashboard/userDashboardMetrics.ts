@@ -1,9 +1,9 @@
-import { Heart, PackageCheck, ShoppingBag, Truck } from 'lucide-react'
+import { Heart, PackageCheck, ShoppingBag, Star, Truck } from 'lucide-react'
 
 import type { UserDashboardStats } from '../../../features/dashboard/dashboardApi'
 import type { Order } from '../../../features/orders/orderApi'
 import type { DashboardMetric } from '../DashboardMetricGrid'
-import { formatCount, formatCurrency } from '../dashboardFormat'
+import { formatCount } from '../dashboardFormat'
 
 function getStatusCount(stats: UserDashboardStats | null, status: string) {
   return (
@@ -25,15 +25,9 @@ export function getUserMetrics(
       order.orderStatus ?? '',
     ),
   ).length
-  const cancelledOrders = orders.filter(
-    (order) => order.orderStatus === 'cancelled',
-  ).length
   const deliveredOrders = orders.filter(
     (order) => order.orderStatus === 'delivered',
   ).length
-  const totalOrderValue = orders
-    .filter((order) => order.orderStatus !== 'cancelled')
-    .reduce((total, order) => total + (order.totalPrice ?? 0), 0)
 
   return [
     {
@@ -63,13 +57,11 @@ export function getUserMetrics(
       icon: Truck,
     },
     {
-      label: 'Order value',
-      value: formatCurrency(
-        shouldUseOrdersFallback ? totalOrderValue : stats?.totalOrderValue,
+      label: 'Delivered',
+      value: formatCount(
+        shouldUseOrdersFallback ? deliveredOrders : stats?.deliveredOrders,
       ),
-      detail: `${formatCount(
-        shouldUseOrdersFallback ? cancelledOrders : stats?.cancelledOrders,
-      )} cancelled orders`,
+      detail: 'Completed orders',
       icon: PackageCheck,
     },
     {
@@ -80,6 +72,15 @@ export function getUserMetrics(
           ? 'Saved products ready to revisit'
           : 'Save products before buying',
       icon: Heart,
+    },
+    {
+      label: 'Reviews',
+      value: formatCount(stats?.totalReviews),
+      detail:
+        stats && stats.totalReviews > 0
+          ? 'Feedback shared'
+          : 'Review purchased products',
+      icon: Star,
     },
   ]
 }
