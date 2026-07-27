@@ -19,6 +19,7 @@ export const baseApi = createApi({
   endpoints: () => ({}),
   reducerPath: 'baseApi',
   tagTypes: [
+    'ActivityLog',
     'Auth',
     'Category',
     'Dashboard',

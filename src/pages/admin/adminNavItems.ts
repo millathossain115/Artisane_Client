@@ -2,6 +2,7 @@ import {
   BarChart3,
   Boxes,
   ClipboardList,
+  History,
   Flame,
   FolderTree,
   Images,
@@ -17,6 +18,7 @@ export const adminNavItems = [
   { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
   { label: 'Orders', to: '/dashboard/admin/orders', icon: ClipboardList },
   { label: 'Payment Logs', to: '/dashboard/admin/payment-logs', icon: Receipt },
+  { label: 'Activity Logs', to: '/dashboard/admin/activity-logs', icon: History },
   {
     label: 'Product',
     items: [

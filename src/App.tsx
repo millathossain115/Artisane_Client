@@ -28,6 +28,7 @@ import ManagePromoBanner from './pages/admin/promo/ManagePromoBanner'
 import ManageHomeHero from './pages/admin/homeHero/ManageHomeHero'
 import ManagePaymentLogs from './pages/admin/paymentLog/ManagePaymentLogs'
 import PaymentLogDetailPage from './pages/admin/paymentLog/PaymentLogDetailPage'
+import ManageActivityLogs from './pages/admin/activityLogs/ManageActivityLogs'
 import Home from './pages/Home'
 import InfoPage from './pages/info/InfoPage'
 import NotFound from './pages/NotFound'
@@ -217,6 +218,14 @@ function App() {
           element={
             <AdminRoute>
               <PaymentLogDetailPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/activity-logs"
+          element={
+            <AdminRoute>
+              <ManageActivityLogs />
             </AdminRoute>
           }
         />

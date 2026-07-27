@@ -1,0 +1,824 @@
+import { useState } from 'react'
+import {
+  Activity,
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Database,
+  Eye,
+  Filter,
+  Laptop,
+  RefreshCw,
+  RotateCcw,
+  Search,
+  ShieldCheck,
+  X,
+} from 'lucide-react'
+
+import DashboardLayout from '../../../components/layout/DashboardLayout'
+import {
+  EmptyState,
+  ErrorState,
+  SkeletonTable,
+} from '../../../components/loaders'
+import {
+  type ActivityActorRole,
+  type ActivityLog,
+  type ActivityModule,
+  type ActivitySource,
+  type ActivityStatus,
+  useGetActivityLogsQuery,
+  useGetActivityLogStatsQuery,
+} from '../../../features/activityLogs/activityLogApi'
+import { formatOrderDate } from '../../../utils/orderDisplay'
+import { adminNavItems } from '../adminNavItems'
+
+const pageSize = 15
+
+const moduleOptions: ActivityModule[] = [
+  'auth',
+  'users',
+  'orders',
+  'products',
+  'categories',
+  'reviews',
+  'payments',
+  'shipping',
+  'wishlist',
+  'promo',
+  'home_content',
+]
+
+const roleOptions: ActivityActorRole[] = ['admin', 'user', 'system']
+const sourceOptions: ActivitySource[] = [
+  'admin',
+  'user',
+  'system',
+  'payment_gateway',
+  'courier_webhook',
+  'scheduler',
+]
+const statusOptions: ActivityStatus[] = ['success', 'warning', 'failed']
+
+function formatLabel(value?: string) {
+  return value
+    ? value
+        .split('_')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ')
+    : 'Not set'
+}
+
+function truncateText(value: string, maxLength = 32) {
+  return value.length > maxLength ? `${value.slice(0, maxLength - 2)}..` : value
+}
+
+function normalizeIpAddress(value?: string) {
+  if (!value) return 'Not captured'
+  if (value === '::1' || value === '127.0.0.1') return 'Localhost'
+  if (value.startsWith('::ffff:')) return value.replace('::ffff:', '')
+  return value
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isObjectIdString(value: string) {
+  return /^[a-f\d]{24}$/i.test(value)
+}
+
+function isTechnicalIdField(field: string) {
+  return /(^_?id$|id$|Id$|hiddenBy|actorId|targetId)/.test(field)
+}
+
+function getReadableObjectValue(value: Record<string, unknown>) {
+  const readableKeys = [
+    'name',
+    'title',
+    'email',
+    'slug',
+    'label',
+    'transactionId',
+    'orderNumber',
+    'code',
+  ]
+
+  for (const key of readableKeys) {
+    const item = value[key]
+
+    if (typeof item === 'string' && item.trim() && !isObjectIdString(item)) {
+      return item
+    }
+  }
+
+  if ('buffer' in value || '$oid' in value || '_id' in value) {
+    return 'Record reference hidden'
+  }
+
+  return undefined
+}
+
+function sanitizeDisplayValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(sanitizeDisplayValue)
+  }
+
+  if (!isRecord(value)) {
+    return typeof value === 'string' && isObjectIdString(value)
+      ? 'Record reference hidden'
+      : value
+  }
+
+  const readableValue = getReadableObjectValue(value)
+
+  if (readableValue) {
+    return readableValue
+  }
+
+  return Object.entries(value).reduce<Record<string, unknown>>(
+    (cleanValue, [key, item]) => {
+      if (key === 'buffer' || key === '_id' || key === 'id' || isTechnicalIdField(key)) {
+        return cleanValue
+      }
+
+      cleanValue[key] = sanitizeDisplayValue(item)
+      return cleanValue
+    },
+    {},
+  )
+}
+
+function formatValue(value: unknown) {
+  const displayValue = sanitizeDisplayValue(value)
+
+  if (displayValue === undefined) return 'Not set'
+  if (displayValue === null) return 'None'
+  if (typeof displayValue === 'string') return displayValue || 'Empty'
+  if (typeof displayValue === 'number' || typeof displayValue === 'boolean') {
+    return String(displayValue)
+  }
+
+  try {
+    return JSON.stringify(displayValue, null, 2)
+  } catch {
+    return String(displayValue)
+  }
+}
+
+function formatCompactValue(value: unknown) {
+  return truncateText(formatValue(value).replace(/\s+/g, ' '), 56)
+}
+
+function getFieldLabel(field: string) {
+  const fieldLabels: Record<string, string> = {
+    actorEmail: 'Actor email',
+    actorId: 'Actor ID',
+    actorName: 'Actor name',
+    actorRole: 'Actor role',
+    address: 'Address',
+    alternativePhone: 'Alternative phone',
+    autoplaySeconds: 'Autoplay seconds',
+    avatar: 'Profile photo',
+    bankTransactionId: 'Bank transaction',
+    brand: 'Brand',
+    cardType: 'Payment card type',
+    category: 'Category',
+    city: 'City',
+    comment: 'Review comment',
+    courierOrderId: 'Courier order ID',
+    courierProvider: 'Courier provider',
+    courierStatus: 'Courier status',
+    deliveredAt: 'Delivered time',
+    description: 'Description',
+    email: 'Email',
+    fadeMs: 'Fade speed',
+    hiddenAt: 'Hidden time',
+    hiddenBy: 'Hidden by',
+    image: 'Image',
+    images: 'Images',
+    isActive: 'Active',
+    isDefault: 'Default address',
+    isDeleted: 'Deleted',
+    isHidden: 'Hidden',
+    label: 'Label',
+    name: 'Name',
+    orderStatus: 'Order status',
+    paidAt: 'Paid time',
+    paymentStatus: 'Payment status',
+    phone: 'Phone',
+    postalCode: 'Postal code',
+    price: 'Price',
+    rating: 'Rating',
+    recipientName: 'Recipient',
+    shippedAt: 'Shipped time',
+    shipmentCreatedAt: 'Shipment created',
+    slides: 'Hero slides',
+    slug: 'URL slug',
+    stock: 'Stock',
+    streetAddress: 'Street address',
+    trackingCode: 'Tracking code',
+    trackingUrl: 'Tracking link',
+  }
+
+  return fieldLabels[field] ?? formatLabel(field)
+}
+
+function getActionLabel(action: string) {
+  const actionLabels: Record<string, string> = {
+    'address.created': 'Address added',
+    'address.default_updated': 'Default address changed',
+    'address.deleted': 'Address deleted',
+    'address.updated': 'Address updated',
+    'category.created': 'Category created',
+    'category.deleted': 'Category deleted',
+    'category.updated': 'Category updated',
+    'home_content.created': 'Home hero created',
+    'home_content.updated': 'Home hero updated',
+    'order.cancelled': 'Order cancelled',
+    'order.created': 'Order placed',
+    'order.deleted': 'Order deleted',
+    'order.status_updated': 'Order status changed',
+    'payment.failed': 'Payment failed',
+    'payment.paid': 'Payment paid',
+    'product.created': 'Product created',
+    'product.deleted': 'Product deleted',
+    'product.updated': 'Product updated',
+    'promo.created': 'Promo created',
+    'promo.updated': 'Promo updated',
+    'review.created': 'Review posted',
+    'review.deleted': 'Review deleted',
+    'review.hidden': 'Review hidden',
+    'review.unhidden': 'Review restored',
+    'review.updated': 'Review updated',
+    'shipment.created': 'Shipment created',
+    'shipment.scheduled_sync': 'Shipment auto-sync',
+    'shipment.scheduled_sync_failed': 'Shipment auto-sync failed',
+    'shipment.synced': 'Shipment synced',
+    'shipment.webhook_received': 'Courier update received',
+    'user.blocked': 'User blocked',
+    'user.created': 'User created',
+    'user.deleted': 'User deleted',
+    'user.google_login': 'Google login',
+    'user.google_login_failed': 'Google login failed',
+    'user.login': 'Login',
+    'user.login_failed': 'Login failed',
+    'user.profile_updated': 'Profile updated',
+    'user.registered': 'Account registered',
+    'user.unblocked': 'User unblocked',
+    'user.updated': 'User updated',
+    'wishlist.added': 'Wishlist item added',
+    'wishlist.cleared': 'Wishlist cleared',
+    'wishlist.removed': 'Wishlist item removed',
+  }
+
+  return actionLabels[action] ?? formatLabel(action.replace('.', '_'))
+}
+
+function getResultLabel(status: ActivityStatus) {
+  switch (status) {
+    case 'failed':
+      return 'Failed'
+    case 'warning':
+      return 'Needs review'
+    default:
+      return 'Done'
+  }
+}
+
+function getStatusClass(status: ActivityStatus) {
+  switch (status) {
+    case 'failed':
+      return 'bg-[#fff5ef] text-[#8f3f1d]'
+    case 'warning':
+      return 'bg-[#fbf4e6] text-[#784f17]'
+    default:
+      return 'bg-[#effaf3] text-[#1f6b43]'
+  }
+}
+
+function getActorName(log: ActivityLog) {
+  if (log.actorRole === 'system') return 'System'
+  return log.actorName || log.actorEmail || 'Unknown actor'
+}
+
+function getDeviceLabel(log: ActivityLog) {
+  const device = formatLabel(log.deviceType)
+  const browser = log.browser && log.browser !== 'Other' ? log.browser : ''
+  const os = log.os && log.os !== 'Other' ? log.os : ''
+
+  return [device, browser, os].filter(Boolean).join(' / ')
+}
+
+function getTargetLabel(log: ActivityLog) {
+  if (log.targetLabel && !isObjectIdString(log.targetLabel)) {
+    return log.targetLabel
+  }
+
+  return log.targetType ? formatLabel(log.targetType) : 'Not set'
+}
+
+function getVisibleChanges(log: ActivityLog) {
+  return (log.changes ?? []).filter((change) => {
+    if (isTechnicalIdField(change.field)) return false
+
+    const before = formatValue(change.before)
+    const after = formatValue(change.after)
+
+    return before !== 'Record reference hidden' || after !== 'Record reference hidden'
+  })
+}
+
+function ActivityLogDetailModal({
+  log,
+  onClose,
+}: {
+  log: ActivityLog
+  onClose: () => void
+}) {
+  const visibleChanges = getVisibleChanges(log)
+
+  return (
+    <div className="fixed inset-0 z-50">
+      <button
+        aria-label="Close activity detail"
+        className="absolute inset-0 bg-[#181512]/55"
+        onClick={onClose}
+        type="button"
+      />
+      <section className="absolute right-0 top-0 flex h-full w-[min(42rem,94vw)] flex-col bg-white text-[#181512] shadow-[0_0_60px_rgba(24,21,18,0.24)]">
+        <div className="flex items-start justify-between gap-4 border-b border-black/10 p-5">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#7a3f1d]">
+              {formatLabel(log.module)} audit event
+            </p>
+            <h2 className="mt-2 text-2xl font-bold">{getActionLabel(log.action)}</h2>
+            <p className="mt-2 text-sm leading-6 text-[#6b5f53]">
+              {log.summary}
+            </p>
+          </div>
+          <button
+            aria-label="Close activity detail"
+            className="grid h-10 w-10 shrink-0 place-items-center border border-black/10 transition hover:border-[#181512]"
+            onClick={onClose}
+            type="button"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="dashboard-sidebar-scroll flex-1 overflow-y-auto p-5">
+          <dl className="divide-y divide-black/10 border-y border-black/10">
+            {[
+              ['Time', formatOrderDate(log.createdAt)],
+              ['Person', getActorName(log)],
+              ['Role', formatLabel(log.actorRole)],
+              ['Source', formatLabel(log.source)],
+              ['Area', formatLabel(log.module)],
+              ['Target', getTargetLabel(log)],
+              ['IP address', normalizeIpAddress(log.ipAddress)],
+              ['Device', getDeviceLabel(log)],
+              ['Result', getResultLabel(log.status)],
+            ].map(([label, value]) => (
+              <div
+                className="grid gap-1 px-1 py-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-4"
+                key={label}
+              >
+                <dt className="text-xs font-bold uppercase tracking-wider text-[#7a3f1d]">
+                  {label}
+                </dt>
+                <dd className="break-words text-sm font-bold">{value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <section className="mt-5">
+            <h3 className="text-lg font-bold">Changed fields</h3>
+            {!visibleChanges.length ? (
+              <p className="mt-2 border border-black/10 bg-[#f8f3ea] p-4 text-sm font-semibold text-[#6b5f53]">
+                No changed fields were captured for this event.
+              </p>
+            ) : (
+              <div className="mt-3 overflow-x-auto border border-black/10">
+                <table className="w-full min-w-[560px] text-left text-sm">
+                  <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
+                    <tr>
+                      <th className="px-4 py-3">Field</th>
+                      <th className="px-4 py-3">Before</th>
+                      <th className="px-4 py-3">After</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleChanges.map((change) => (
+                      <tr className="border-t border-black/10" key={change.field}>
+                        <td className="px-4 py-3 font-bold">
+                          {getFieldLabel(change.field)}
+                        </td>
+                        <td
+                          className="max-w-[16rem] truncate px-4 py-3 text-[#6b5f53]"
+                          title={formatValue(change.before)}
+                        >
+                          {formatCompactValue(change.before)}
+                        </td>
+                        <td
+                          className="max-w-[16rem] truncate px-4 py-3 text-[#181512]"
+                          title={formatValue(change.after)}
+                        >
+                          {formatCompactValue(change.after)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+          <details className="mt-5 border border-black/10">
+            <summary className="cursor-pointer bg-[#f8f3ea] px-4 py-3 text-sm font-bold">
+              Technical details
+            </summary>
+            <pre className="max-h-72 overflow-auto bg-[#181512] p-4 text-xs leading-5 text-white">
+              {formatValue({
+                metadata: log.metadata ?? {},
+                userAgent: log.userAgent || 'Not captured',
+              })}
+            </pre>
+          </details>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function ManageActivityLogs() {
+  const [page, setPage] = useState(1)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [moduleFilter, setModuleFilter] = useState<ActivityModule | ''>('')
+  const [roleFilter, setRoleFilter] = useState<ActivityActorRole | ''>('')
+  const [sourceFilter, setSourceFilter] = useState<ActivitySource | ''>('')
+  const [statusFilter, setStatusFilter] = useState<ActivityStatus | ''>('')
+  const [selectedLog, setSelectedLog] = useState<ActivityLog | null>(null)
+
+  const {
+    data: logsResponse,
+    isError,
+    isFetching,
+    isLoading,
+    refetch: refetchLogs,
+  } = useGetActivityLogsQuery(
+    {
+      actorRole: roleFilter || undefined,
+      limit: pageSize,
+      module: moduleFilter || undefined,
+      page,
+      searchTerm: searchTerm.trim() || undefined,
+      source: sourceFilter || undefined,
+      status: statusFilter || undefined,
+    },
+    { refetchOnMountOrArgChange: true },
+  )
+  const {
+    data: stats,
+    isLoading: isStatsLoading,
+    refetch: refetchStats,
+  } = useGetActivityLogStatsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  })
+
+  const logs = logsResponse?.data ?? []
+  const meta = logsResponse?.meta
+  const totalPages = Math.max(1, meta?.totalPage ?? 1)
+
+  function resetFilters() {
+    setSearchTerm('')
+    setModuleFilter('')
+    setRoleFilter('')
+    setSourceFilter('')
+    setStatusFilter('')
+    setPage(1)
+  }
+
+  async function handleRefresh() {
+    await Promise.all([refetchLogs(), refetchStats()])
+  }
+
+  return (
+    <DashboardLayout
+      eyebrow="Audit trail"
+      helperText="Review admin, user, and system events with actor, device, IP, and changed-field context."
+      sidebarItems={adminNavItems}
+      subtitle="Monitor important sitewide actions across orders, payments, users, catalog, content, shipping, and reviews."
+      title="Activity logs"
+      workspaceLabel="Marketplace studio"
+    >
+      <div className="space-y-5">
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            {
+              icon: Activity,
+              label: 'Total events',
+              value: stats?.totalLogs ?? 0,
+            },
+            {
+              icon: Clock,
+              label: 'Today',
+              value: stats?.todayLogs ?? 0,
+            },
+            {
+              icon: ShieldCheck,
+              label: 'User events',
+              value: stats?.userLogs ?? 0,
+            },
+            {
+              icon: AlertTriangle,
+              label: 'Warnings / failed',
+              value: `${stats?.warningLogs ?? 0} / ${stats?.failedLogs ?? 0}`,
+            },
+          ].map((kpi) => {
+            const Icon = kpi.icon
+
+            return (
+              <div className="border border-black/10 bg-white p-5" key={kpi.label}>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#6b5f53]">
+                    {kpi.label}
+                  </p>
+                  <span className="grid h-10 w-10 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                </div>
+                {isStatsLoading ? (
+                  <div className="mt-4 h-8 w-20 animate-pulse bg-[#f1dfc8]" />
+                ) : (
+                  <p className="mt-4 text-3xl font-bold">{kpi.value}</p>
+                )}
+              </div>
+            )
+          })}
+        </section>
+
+        <section className="border border-black/10 bg-white">
+          <div className="flex flex-col gap-4 border-b border-black/10 p-5 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex items-center gap-3">
+              <span className="grid h-10 w-10 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
+                <Database className="h-5 w-5" />
+              </span>
+              <div>
+                <h2 className="text-2xl font-bold">Sitewide audit trail</h2>
+                <p className="mt-1 text-sm text-[#6b5f53]">
+                  {meta?.total ?? logs.length} events found.
+                </p>
+              </div>
+            </div>
+
+            <button
+              className="inline-flex min-h-10 items-center justify-center gap-2 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea] disabled:cursor-wait disabled:opacity-60"
+              disabled={isFetching}
+              onClick={() => void handleRefresh()}
+              type="button"
+            >
+              <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
+
+          <div className="grid gap-3 border-b border-black/10 p-5 xl:grid-cols-[minmax(0,1fr)_repeat(4,auto)_auto] xl:items-end">
+            <label className="grid gap-2">
+              <span className="text-sm font-bold">Search activity</span>
+              <span className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7a3f1d]" />
+                <input
+                  className="min-h-12 w-full border border-black/10 pl-10 pr-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+                  onChange={(event) => {
+                    setSearchTerm(event.target.value)
+                    setPage(1)
+                  }}
+                  placeholder="Person, activity, target, IP"
+                  value={searchTerm}
+                />
+              </span>
+            </label>
+
+            {[
+              {
+                label: 'Module',
+                onChange: (value: string) => setModuleFilter(value as ActivityModule | ''),
+                options: moduleOptions,
+                value: moduleFilter,
+              },
+              {
+                label: 'Role',
+                onChange: (value: string) => setRoleFilter(value as ActivityActorRole | ''),
+                options: roleOptions,
+                value: roleFilter,
+              },
+              {
+                label: 'Source',
+                onChange: (value: string) => setSourceFilter(value as ActivitySource | ''),
+                options: sourceOptions,
+                value: sourceFilter,
+              },
+              {
+                label: 'Status',
+                onChange: (value: string) => setStatusFilter(value as ActivityStatus | ''),
+                options: statusOptions,
+                value: statusFilter,
+              },
+            ].map((filterItem) => (
+              <label className="grid gap-2" key={filterItem.label}>
+                <span className="text-sm font-bold">{filterItem.label}</span>
+                <select
+                  className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+                  onChange={(event) => {
+                    filterItem.onChange(event.target.value)
+                    setPage(1)
+                  }}
+                  value={filterItem.value}
+                >
+                  <option value="">All {filterItem.label.toLowerCase()}</option>
+                  {filterItem.options.map((option) => (
+                    <option key={option} value={option}>
+                      {formatLabel(option)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ))}
+
+            <button
+              className="inline-flex min-h-12 items-center justify-center gap-2 border border-black/10 px-4 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+              onClick={resetFilters}
+              type="button"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Reset
+            </button>
+          </div>
+
+          {isError ? (
+            <ErrorState
+              className="mx-5"
+              message="Activity log data could not be loaded."
+              onRetry={() => void handleRefresh()}
+              title="Could not load activity logs"
+            />
+          ) : isLoading ? (
+            <div className="p-5">
+              <SkeletonTable cols={9} rows={7} />
+            </div>
+          ) : !logs.length ? (
+            <EmptyState
+              action={
+                <button className="btn-secondary" onClick={resetFilters} type="button">
+                  Reset Filters
+                </button>
+              }
+              icon={<Filter className="h-7 w-7" />}
+              message="No audit events match the current filters."
+              title="No activity logs found"
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1040px] border-collapse text-left text-sm">
+                <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
+                  <tr>
+                    <th className="px-5 py-3">Time</th>
+                    <th className="px-5 py-3">Person</th>
+                    <th className="px-5 py-3">Area</th>
+                    <th className="px-5 py-3">Activity</th>
+                    <th className="px-5 py-3">Target</th>
+                    <th className="px-5 py-3">Device / IP</th>
+                    <th className="px-5 py-3">Result</th>
+                    <th className="px-5 py-3">View</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logs.map((log) => (
+                    <tr
+                      className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
+                      key={log._id}
+                    >
+                      <td className="px-5 py-4 text-xs font-bold text-[#6b5f53]">
+                        {formatOrderDate(log.createdAt)}
+                      </td>
+                      <td className="px-5 py-4">
+                        <p
+                          className="max-w-[12rem] truncate font-bold"
+                          title={getActorName(log)}
+                        >
+                          {truncateText(getActorName(log), 28)}
+                        </p>
+                        <p
+                          className="mt-1 max-w-[12rem] truncate text-xs text-[#6b5f53]"
+                          title={log.actorEmail || 'No email'}
+                        >
+                          {truncateText(log.actorEmail || 'No email', 30)}
+                        </p>
+                        <span className="mt-2 inline-block bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
+                          {formatLabel(log.actorRole)}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 font-bold">
+                        {formatLabel(log.module)}
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="font-bold">{getActionLabel(log.action)}</p>
+                        <p
+                          className="mt-1 max-w-[14rem] truncate text-xs text-[#6b5f53]"
+                          title={log.summary}
+                        >
+                          {truncateText(log.summary, 44)}
+                        </p>
+                      </td>
+                      <td className="px-5 py-4">
+                        <p
+                          className="max-w-[12rem] truncate font-bold"
+                          title={getTargetLabel(log)}
+                        >
+                          {truncateText(getTargetLabel(log))}
+                        </p>
+                        <p className="mt-1 text-xs text-[#6b5f53]">
+                          {formatLabel(log.targetType)}
+                        </p>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span
+                          className="inline-flex max-w-[11rem] items-center gap-1.5 truncate text-xs font-bold"
+                          title={getDeviceLabel(log)}
+                        >
+                          <Laptop className="h-3.5 w-3.5 text-[#7a3f1d]" />
+                          {truncateText(getDeviceLabel(log), 24)}
+                        </span>
+                        <p
+                          className="mt-1 max-w-[11rem] truncate font-mono text-xs text-[#6b5f53]"
+                          title={normalizeIpAddress(log.ipAddress)}
+                        >
+                          {truncateText(normalizeIpAddress(log.ipAddress), 24)}
+                        </p>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-bold ${getStatusClass(
+                            log.status,
+                          )}`}
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          {getResultLabel(log.status)}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <button
+                          aria-label={`View activity ${log.action}`}
+                          className="grid h-9 w-9 place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-white"
+                          onClick={() => setSelectedLog(log)}
+                          type="button"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
+            <p className="text-sm font-semibold text-[#6b5f53]">
+              Page {meta?.page ?? page} of {totalPages}
+            </p>
+            <div className="flex gap-2">
+              <button
+                className="inline-flex h-10 w-10 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+                disabled={page <= 1}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                type="button"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                className="inline-flex h-10 w-10 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+                disabled={page >= totalPages}
+                onClick={() => setPage((current) => current + 1)}
+                type="button"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {selectedLog ? (
+        <ActivityLogDetailModal
+          log={selectedLog}
+          onClose={() => setSelectedLog(null)}
+        />
+      ) : null}
+    </DashboardLayout>
+  )
+}
+
+export default ManageActivityLogs
