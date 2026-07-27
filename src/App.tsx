@@ -30,6 +30,7 @@ import ManagePaymentLogs from './pages/admin/paymentLog/ManagePaymentLogs'
 import PaymentLogDetailPage from './pages/admin/paymentLog/PaymentLogDetailPage'
 import ManageActivityLogs from './pages/admin/activityLogs/ManageActivityLogs'
 import AdminAnalytics from './pages/admin/analytics/AdminAnalytics'
+import AdminMaintenancePage from './pages/admin/AdminMaintenancePage'
 import Home from './pages/Home'
 import InfoPage from './pages/info/InfoPage'
 import NotFound from './pages/NotFound'
@@ -235,6 +236,22 @@ function App() {
           element={
             <AdminRoute>
               <AdminAnalytics />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/messages"
+          element={
+            <AdminRoute>
+              <AdminMaintenancePage feature="messages" />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/settings"
+          element={
+            <AdminRoute>
+              <AdminMaintenancePage feature="settings" />
             </AdminRoute>
           }
         />

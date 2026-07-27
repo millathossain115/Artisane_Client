@@ -45,7 +45,7 @@ export const adminNavItems = [
   { label: 'Reviews', to: '/dashboard/admin/reviews', icon: Star },
   { label: 'Promo Banner', to: '/dashboard/admin/promo', icon: Flame },
   { label: 'Home Hero', to: '/dashboard/admin/home-hero', icon: Images },
-  { label: 'Messages', to: '#messages', icon: MessageSquareText },
+  { label: 'Messages', to: '/dashboard/admin/messages', icon: MessageSquareText },
   { label: 'Analytics', to: '/dashboard/admin/analytics', icon: BarChart3 },
-  { label: 'Settings', to: '#settings', icon: Settings },
+  { label: 'Settings', to: '/dashboard/admin/settings', icon: Settings },
 ]
