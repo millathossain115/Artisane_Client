@@ -1,7 +1,7 @@
-import artistImage from '../../assets/artist-optimized.jpg'
-import brushLineImage from '../../assets/brush-line-optimized.jpg'
-import paintTableImage from '../../assets/paint-table-optimized.jpg'
-import paletteImage from '../../assets/palette-optimized.jpg'
+import artistImage from '../../assets/home-banners/artist-optimized.jpg'
+import brushLineImage from '../../assets/home-banners/brush-line-optimized.jpg'
+import paintTableImage from '../../assets/home-banners/paint-table-optimized.jpg'
+import paletteImage from '../../assets/home-banners/palette-optimized.jpg'
 
 export const categoryFallbackImages = [
   paletteImage,

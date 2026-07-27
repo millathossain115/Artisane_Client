@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import paletteImage from '../../assets/palette-optimized.jpg'
+import paletteImage from '../../assets/home-banners/palette-optimized.jpg'
 import Footer from '../../components/layout/Footer'
 import Navbar from '../../components/layout/Navbar'
 import {

@@ -25,7 +25,7 @@ import {
 import type { ComponentType } from 'react'
 import { Link } from 'react-router-dom'
 
-import studioImage from '../../assets/paint-table-optimized.jpg'
+import studioImage from '../../assets/home-banners/paint-table-optimized.jpg'
 import Footer from '../../components/layout/Footer'
 import Navbar from '../../components/layout/Navbar'
 

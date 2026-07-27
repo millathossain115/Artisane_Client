@@ -1,7 +1,7 @@
 import { ArrowLeft, Home, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import brushLineImage from '../assets/brush-line-optimized.jpg'
+import brushLineImage from '../assets/home-banners/brush-line-optimized.jpg'
 import Footer from '../components/layout/Footer'
 import Navbar from '../components/layout/Navbar'
 

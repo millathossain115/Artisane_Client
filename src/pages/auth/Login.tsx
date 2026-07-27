@@ -4,7 +4,7 @@ import { Eye, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import artistImage from '../../assets/artist-optimized.jpg'
+import artistImage from '../../assets/home-banners/artist-optimized.jpg'
 import Footer from '../../components/layout/Footer'
 import Navbar from '../../components/layout/Navbar'
 import {
