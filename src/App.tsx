@@ -24,6 +24,7 @@ import OrderDetailPage from './pages/dashboard/OrderDetailPage'
 import SupportPage from './pages/dashboard/SupportPage'
 import AddressesPage from './pages/dashboard/profile-page/AddressesPage'
 import ProfilePage from './pages/dashboard/profile-page/ProfilePage'
+import SecuritySettingsPage from './pages/dashboard/settings/SecuritySettingsPage'
 import UserReviewsPage from './pages/dashboard/reviews/ReviewsPage'
 import WishlistPage from './pages/dashboard/user-dashboard/WishlistPage'
 import AdminReviewsPage from './pages/admin/reviews/ReviewsPage'
@@ -131,6 +132,14 @@ function App() {
           element={
             <ProtectedRoute>
               <AddressesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/settings/security"
+          element={
+            <ProtectedRoute>
+              <SecuritySettingsPage />
             </ProtectedRoute>
           }
         />

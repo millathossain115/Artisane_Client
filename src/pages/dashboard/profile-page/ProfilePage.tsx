@@ -15,7 +15,6 @@ import {
 import { adminNavItems } from '../../admin/adminNavItems'
 import { userNavItems } from '../user-dashboard/userNavItems'
 import AccountSummaryCard from './AccountSummaryCard'
-import ChangePasswordPanel from './ChangePasswordPanel'
 import ConfirmSaveModal from './ConfirmSaveModal'
 import ProfileDetailsSection from './ProfileDetailsSection'
 import {
@@ -224,23 +223,19 @@ function ProfilePage() {
       )}
 
       <div className="grid gap-6 xl:grid-cols-[1fr_0.48fr]">
-        <div className="grid gap-6">
-          <ProfileDetailsSection
-            fieldClass={fieldClass}
-            isEditing={isEditing}
-            isFormChanged={isFormChanged}
-            isSaving={isSaving}
-            onCancelEdit={() => setIsEditing(false)}
-            onFieldChange={updateField}
-            onRequestSave={handleRequestSave}
-            onStartEditing={handleStartEditing}
-            profileForm={visibleProfileForm}
-            readonlyClass={readonlyClass}
-            savedAvatar={loadedProfileForm.avatar}
-          />
-
-          <ChangePasswordPanel />
-        </div>
+        <ProfileDetailsSection
+          fieldClass={fieldClass}
+          isEditing={isEditing}
+          isFormChanged={isFormChanged}
+          isSaving={isSaving}
+          onCancelEdit={() => setIsEditing(false)}
+          onFieldChange={updateField}
+          onRequestSave={handleRequestSave}
+          onStartEditing={handleStartEditing}
+          profileForm={visibleProfileForm}
+          readonlyClass={readonlyClass}
+          savedAvatar={loadedProfileForm.avatar}
+        />
 
         <AccountSummaryCard
           error={error}

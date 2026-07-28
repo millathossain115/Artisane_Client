@@ -10,6 +10,7 @@ import {
   MessageSquareText,
   Receipt,
   Settings,
+  ShieldCheck,
   Star,
   UsersRound,
 } from 'lucide-react'
@@ -66,5 +67,11 @@ export const adminNavItems: SidebarItem[] = [
     icon: MessageSquareText,
   },
   { label: 'Analytics', to: '/dashboard/admin/analytics', icon: BarChart3 },
-  { label: 'Settings', to: '/dashboard/admin/settings', icon: Settings },
+  {
+    label: 'Settings',
+    items: [
+      { label: 'Security', to: '/dashboard/settings/security', icon: ShieldCheck },
+      { label: 'System', to: '/dashboard/admin/settings', icon: Settings },
+    ],
+  },
 ]
