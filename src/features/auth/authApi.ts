@@ -40,6 +40,20 @@ export type LoginPayload = {
   password: string
 }
 
+export type ForgotPasswordPayload = {
+  email: string
+}
+
+export type ResetPasswordPayload = {
+  password: string
+  token: string
+}
+
+export type ChangePasswordPayload = {
+  currentPassword: string
+  newPassword: string
+}
+
 export type GoogleLoginPayload = {
   credential: string
 }
@@ -83,6 +97,28 @@ export async function login(payload: LoginPayload) {
 export async function loginWithGoogle(payload: GoogleLoginPayload) {
   return request<AuthData>('/google', {
     method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function forgotPassword(payload: ForgotPasswordPayload) {
+  return request<null>('/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function resetPassword(payload: ResetPasswordPayload) {
+  return request<null>('/reset-password', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function changePassword(payload: ChangePasswordPayload) {
+  return request<null>('/change-password', {
+    method: 'PATCH',
+    headers: getAuthHeader(),
     body: JSON.stringify(payload),
   })
 }

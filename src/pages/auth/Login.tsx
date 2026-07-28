@@ -258,12 +258,12 @@ function Login() {
                       />
                       Remember me
                     </label>
-                    <a
+                    <Link
                       className="font-bold text-[#7a3f1d] transition hover:text-[#181512]"
-                      href="#"
+                      to="/forgot-password"
                     >
                       Forgot password?
-                    </a>
+                    </Link>
                   </div>
 
                   <div className="grid gap-3 pt-1">

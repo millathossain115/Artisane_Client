@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import paletteImage from '../../assets/home-banners/palette-optimized.jpg'
+import PasswordStrengthMeter from '../../components/auth/PasswordStrengthMeter'
 import Footer from '../../components/layout/Footer'
 import Navbar from '../../components/layout/Navbar'
 import {
@@ -12,6 +13,7 @@ import {
   register,
   saveAuthSession,
 } from '../../features/auth/authApi'
+import { isPasswordMediumEnough } from '../../features/auth/passwordStrength'
 import { syncCartForCurrentUser } from '../../features/cart/cartSlice'
 import { useAppDispatch } from '../../redux/hooks'
 import GoogleAuthButton from './GoogleAuthButton'
@@ -27,6 +29,7 @@ function Register() {
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const isPasswordValid = isPasswordMediumEnough(password)
 
   function handleAuthSuccess(message: string) {
     dispatch(syncCartForCurrentUser())
@@ -170,7 +173,7 @@ function Register() {
                     <LockKeyhole className="h-4 w-4 text-[#7a3f1d]" />
                     <input
                       className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#8a7d71]"
-                      minLength={6}
+                      minLength={8}
                       onChange={(event) => setPassword(event.target.value)}
                       placeholder="Create password"
                       required
@@ -186,6 +189,7 @@ function Register() {
                       <Eye className="h-4 w-4" />
                     </button>
                   </span>
+                  <PasswordStrengthMeter password={password} />
                 </label>
 
                 <label className="inline-flex items-start gap-2.5 text-xs font-medium leading-6 text-[#6b5f53]">
@@ -223,7 +227,7 @@ function Register() {
 
                 <button
                   className="flex min-h-12 w-full items-center justify-center gap-2 bg-[#181512] px-5 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:pointer-events-none disabled:opacity-60"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !isPasswordValid}
                   type="submit"
                 >
                   {isSubmitting ? 'Creating account...' : 'Create account'}

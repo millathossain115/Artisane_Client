@@ -22,6 +22,8 @@ const TITLE_MAP: Record<string, string> = {
   '/checkout': 'Checkout',
   '/login': 'Login',
   '/register': 'Register',
+  '/forgot-password': 'Forgot Password',
+  '/reset-password': 'Reset Password',
   '/dashboard': 'Dashboard',
   '/dashboard/profile': 'My Profile',
   '/dashboard/orders': 'My Orders',
