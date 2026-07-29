@@ -37,6 +37,7 @@ import MyOrdersMessageBanner from './components/MyOrdersMessageBanner'
 import { getApiErrorMessage, type OrderMessage } from './myOrdersUtils'
 import { getDashboardOrderLookupRef } from './orderRouteState'
 import { userNavItems } from './user-dashboard/userNavItems'
+import { OrderDetailSkeleton } from './user-dashboard/UserDashboardSkeletons'
 
 function OrderDetailPage() {
   const { id: routeRef = '' } = useParams<{ id: string }>()
@@ -124,7 +125,9 @@ function OrderDetailPage() {
       if (addedCount > 0) {
         setMessage({
           text: `Added ${addedCount} item(s) to cart with live pricing. ${
-            skippedCount > 0 ? `${skippedCount} out-of-stock item(s) skipped.` : ''
+            skippedCount > 0
+              ? `${skippedCount} out-of-stock item(s) skipped.`
+              : ''
           } Proceeding to checkout...`,
           type: 'success',
         })
@@ -156,14 +159,8 @@ function OrderDetailPage() {
     try {
       if (productId) {
         const freshProduct = await fetchProduct(productId).unwrap()
-        if (
-          freshProduct &&
-          !freshProduct.isDeleted &&
-          freshProduct.stock > 0
-        ) {
-          dispatch(
-            addToCart(createCartItem(freshProduct, item.quantity ?? 1)),
-          )
+        if (freshProduct && !freshProduct.isDeleted && freshProduct.stock > 0) {
+          dispatch(addToCart(createCartItem(freshProduct, item.quantity ?? 1)))
           setMessage({
             text: `"${freshProduct.name}" added to cart with current live price (${formatPrice(freshProduct.price)}).`,
             type: 'success',
@@ -191,12 +188,19 @@ function OrderDetailPage() {
       helperText="Track delivery progress, shipping details, courier tracking, and itemized receipt."
       layoutVariant="customer"
       sidebarItems={userNavItems}
-      subtitle={order ? `Order details for ${formatOrderId(order._id)}` : 'Order details'}
+      subtitle={
+        order
+          ? `Order details for ${formatOrderId(order._id)}`
+          : 'Order details'
+      }
       title={order ? formatOrderId(order._id) : 'Order details'}
       workspaceLabel="Collector account"
     >
       {message ? (
-        <MyOrdersMessageBanner message={message} onClose={() => setMessage(null)} />
+        <MyOrdersMessageBanner
+          message={message}
+          onClose={() => setMessage(null)}
+        />
       ) : null}
 
       <div className="mb-4">
@@ -210,10 +214,7 @@ function OrderDetailPage() {
       </div>
 
       {isLoading ? (
-        <div className="border border-black/10 bg-white p-8 text-center font-semibold text-[#6b5f53]">
-          <LoaderCircle className="mx-auto h-6 w-6 animate-spin text-[#7a3f1d]" />
-          <p className="mt-2">Loading order details...</p>
-        </div>
+        <OrderDetailSkeleton />
       ) : isError || !order ? (
         <div className="border border-[#c85f2f]/30 bg-[#fff5ef] p-6 text-center text-[#8f3f1d]">
           <h3 className="text-xl font-bold">Order not found</h3>
@@ -236,7 +237,9 @@ function OrderDetailPage() {
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#7a3f1d]">
                   Order summary
                 </p>
-                <h2 className="mt-1 text-2xl font-bold">{formatOrderId(order._id)}</h2>
+                <h2 className="mt-1 text-2xl font-bold">
+                  {formatOrderId(order._id)}
+                </h2>
                 <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
                   Placed on {formatOrderDate(order.createdAt)}
                 </p>
@@ -284,16 +287,19 @@ function OrderDetailPage() {
                 <p className="text-xs font-bold uppercase text-[#7a3f1d]">
                   Shipping address
                 </p>
-                <p className="mt-1 font-bold">{order.shippingAddress ?? 'Not set'}</p>
+                <p className="mt-1 font-bold">
+                  {order.shippingAddress ?? 'Not set'}
+                </p>
               </div>
 
               <div className="border border-black/10 p-3">
                 <p className="text-xs font-bold uppercase text-[#7a3f1d]">
                   Contact phone
                 </p>
-                <p className="mt-1 font-bold">{order.contactPhone ?? 'Not set'}</p>
+                <p className="mt-1 font-bold">
+                  {order.contactPhone ?? 'Not set'}
+                </p>
               </div>
-
             </div>
           </section>
 
@@ -338,7 +344,10 @@ function OrderDetailPage() {
                     key={item._id ?? index}
                   >
                     {productUrl ? (
-                      <Link className="h-16 w-16 overflow-hidden bg-[#f8f3ea] transition hover:opacity-80" to={productUrl}>
+                      <Link
+                        className="h-16 w-16 overflow-hidden bg-[#f8f3ea] transition hover:opacity-80"
+                        to={productUrl}
+                      >
                         {imageUrl ? (
                           <img
                             alt={getOrderItemName(item)}
@@ -360,7 +369,10 @@ function OrderDetailPage() {
                     )}
                     <div>
                       {productUrl ? (
-                        <Link className="font-bold hover:underline" to={productUrl}>
+                        <Link
+                          className="font-bold hover:underline"
+                          to={productUrl}
+                        >
                           {getOrderItemName(item)}
                         </Link>
                       ) : (

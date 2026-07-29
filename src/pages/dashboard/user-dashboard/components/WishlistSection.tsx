@@ -19,6 +19,7 @@ import {
   getProductUrl,
 } from '../../../../utils/productDisplay'
 import { getWishlistProduct } from '../../../../features/wishlists/wishlistApi'
+import { WishlistTableSkeleton } from '../UserDashboardSkeletons'
 import { getVisibleWishlistIds } from '../wishlistUtils'
 
 const truncateProductName = (name: string, maxLength = 48) =>
@@ -148,13 +149,7 @@ function WishlistSection({
           </thead>
           <tbody>
             {isLoading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <tr className="border-t border-black/10" key={index}>
-                  <td className="px-5 py-5" colSpan={7}>
-                    <div className="h-5 animate-pulse bg-[#f8f3ea]" />
-                  </td>
-                </tr>
-              ))
+              <WishlistTableSkeleton />
             ) : wishlistItems.length ? (
               wishlistItems.map((item) => {
                 const product = getWishlistProduct(item)

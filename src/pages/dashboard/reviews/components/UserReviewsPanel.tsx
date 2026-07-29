@@ -6,6 +6,10 @@ import type {
   ReviewableProduct,
 } from '../../../../features/reviews/reviewApi'
 import type { ReviewDraft, ReviewMode } from '../reviewPageUtils'
+import {
+  ReviewableSkeleton,
+  ReviewHistorySkeleton,
+} from '../../user-dashboard/UserDashboardSkeletons'
 import ReviewableProductCard from './ReviewableProductCard'
 import ReviewCard from './ReviewCard'
 
@@ -98,14 +102,7 @@ function UserReviewsPanel({
       {mode === 'to-review' ? (
         <div className="p-5">
           {isReviewableLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 2 }).map((_, index) => (
-                <div
-                  className="h-72 animate-pulse border border-black/10 bg-[#f8f3ea]"
-                  key={index}
-                />
-              ))}
-            </div>
+            <ReviewableSkeleton />
           ) : reviewableItems.length ? (
             <div className="space-y-4">
               {reviewableItems.map((product) => {
@@ -153,14 +150,7 @@ function UserReviewsPanel({
       ) : (
         <div className="p-5">
           {isLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div
-                  className="h-28 animate-pulse border border-black/10 bg-[#f8f3ea]"
-                  key={index}
-                />
-              ))}
-            </div>
+            <ReviewHistorySkeleton />
           ) : isError ? (
             <div className="border border-[#c85f2f]/30 bg-[#fff5ef] p-4 text-sm font-bold text-[#8f3f1d]">
               Failed to load your reviews.
@@ -169,7 +159,10 @@ function UserReviewsPanel({
             <div className="space-y-4">
               {myReviews.map((review) => {
                 const editing = editingReviewId === review._id
-                const productId = typeof review.product === 'object' && review.product ? review.product._id : undefined
+                const productId =
+                  typeof review.product === 'object' && review.product
+                    ? review.product._id
+                    : undefined
 
                 return (
                   <ReviewCard
@@ -193,7 +186,9 @@ function UserReviewsPanel({
                     onDelete={() => onDeleteReview(review)}
                     onEdit={() => onStartEdit(review)}
                     onSave={() => onSaveEdit(review)}
-                    orderId={productId ? productOrderMap?.[productId] : undefined}
+                    orderId={
+                      productId ? productOrderMap?.[productId] : undefined
+                    }
                     review={review}
                     saving={isUpdatingReview || isDeletingReview}
                   />

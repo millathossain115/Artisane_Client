@@ -14,6 +14,7 @@ import {
   useGetDistrictsQuery,
   useGetZonesQuery,
 } from '../../../features/locations/locationApi'
+import { AddressBookSkeleton } from '../user-dashboard/UserDashboardSkeletons'
 
 type ProfileAddressSectionProps = {
   fieldClass: string
@@ -224,7 +225,7 @@ function ProfileAddressSection({
       ) : null}
 
       {loading ? (
-        <p className="mt-5 text-sm text-[#6b5f53]">Loading address book...</p>
+        <AddressBookSkeleton />
       ) : addresses.length === 0 ? (
         <p className="mt-5 text-sm text-[#6b5f53]">
           No saved addresses found. Click &quot;Add new address&quot; to save

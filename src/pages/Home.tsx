@@ -71,11 +71,8 @@ function sortTopRatedProducts(products: Product[]) {
 }
 
 function Home() {
-  const [recentProducts] = useState<RecentProduct[]>(() =>
-    loadRecentProducts(),
-  )
-  const { data: heroContent, isLoading: isHeroLoading } =
-    useGetHomeHeroQuery()
+  const [recentProducts] = useState<RecentProduct[]>(() => loadRecentProducts())
+  const { data: heroContent, isLoading: isHeroLoading } = useGetHomeHeroQuery()
   const {
     data: categoryList,
     isError: hasCategoriesError,
@@ -162,6 +159,7 @@ function Home() {
         />
         <KitProducts
           fallbackProducts={featuredProducts}
+          isLoading={isProductsLoading}
           kitCategory={kitCategory}
           products={moreProducts}
         />

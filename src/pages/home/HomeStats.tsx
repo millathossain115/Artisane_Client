@@ -1,4 +1,5 @@
 import { PackageSearch, Palette, Truck } from 'lucide-react'
+import { HomeStatSkeleton } from './HomeSkeletons'
 
 type HomeStatsProps = {
   isCategoriesLoading: boolean
@@ -18,16 +19,19 @@ function HomeStats({
       icon: PackageSearch,
       label: 'Products in catalog',
       value: isProductsLoading ? '...' : `${totalProducts}+`,
+      isLoading: isProductsLoading,
     },
     {
       icon: Palette,
       label: 'Active craft categories',
       value: isCategoriesLoading ? '...' : `${totalCategories}`,
+      isLoading: isCategoriesLoading,
     },
     {
       icon: Truck,
       label: 'Ready to ship',
       value: 'Stocked',
+      isLoading: false,
     },
   ]
 
@@ -38,6 +42,10 @@ function HomeStats({
     >
       {stats.map((item) => {
         const Icon = item.icon
+
+        if (item.isLoading) {
+          return <HomeStatSkeleton key={item.label} />
+        }
 
         return (
           <div

@@ -125,6 +125,27 @@ function HomeHero({ fallbackImage, heroContent, isLoading }: HomeHeroProps) {
       <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(0deg,#f6f0e5,rgba(246,240,229,0))]" />
 
       <div className="relative mx-auto min-h-[calc(100svh-132px)] max-w-7xl lg:min-h-[620px]">
+        {isWaitingForHeroContent ? (
+          <div className="absolute inset-0 flex items-center px-4 py-16 sm:px-6 lg:px-8">
+            <div className="w-full max-w-2xl animate-pulse">
+              <div className="mb-5 flex items-center gap-2">
+                <div className="h-4 w-4 bg-[#f1c9a6]/70" />
+                <div className="h-3 w-44 bg-[#f1c9a6]/55" />
+              </div>
+              <div className="h-14 w-72 bg-white/75 sm:h-16 sm:w-[30rem] lg:h-20" />
+              <div className="mt-4 h-14 w-56 bg-white/60 sm:h-16 sm:w-[24rem] lg:h-20" />
+              <div className="mt-7 max-w-xl space-y-3">
+                <div className="h-4 w-full bg-white/35" />
+                <div className="h-4 w-5/6 bg-white/30" />
+              </div>
+              <div className="mt-8 flex gap-3">
+                <div className="h-12 w-36 bg-white/70" />
+                <div className="h-12 w-40 border border-white/30 bg-white/10" />
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         {slides.map((slide, index) => (
           <div
             className={`absolute inset-0 flex items-center px-4 py-16 transition-opacity sm:px-6 lg:px-8 ${

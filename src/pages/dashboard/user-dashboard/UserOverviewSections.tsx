@@ -31,8 +31,13 @@ import {
   getProductImage,
 } from '../../../utils/productDisplay'
 import { formatCount } from '../dashboardFormat'
+import {
+  CurrentOrderSkeleton,
+  WishlistPreviewSkeleton,
+} from './UserDashboardSkeletons'
 
 type UserOverviewSectionsProps = {
+  isOrdersLoading?: boolean
   orders: Order[]
   stats: UserDashboardStats | null
 }
@@ -80,7 +85,11 @@ function getCurrentOrder(orders: Order[]) {
   )
 }
 
-function UserOverviewSections({ orders, stats }: UserOverviewSectionsProps) {
+function UserOverviewSections({
+  isOrdersLoading = false,
+  orders,
+  stats,
+}: UserOverviewSectionsProps) {
   const currentOrder = getCurrentOrder(orders)
   const {
     data: wishlistList,
@@ -109,7 +118,9 @@ function UserOverviewSections({ orders, stats }: UserOverviewSectionsProps) {
             </span>
           </div>
 
-          {currentOrder ? (
+          {isOrdersLoading ? (
+            <CurrentOrderSkeleton />
+          ) : currentOrder ? (
             <div className="mt-5 grid gap-5 border-t border-black/10 pt-5 md:grid-cols-[76px_1fr_auto] md:items-center">
               <Link
                 className="grid h-20 w-20 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d] transition hover:opacity-80"
@@ -119,7 +130,9 @@ function UserOverviewSections({ orders, stats }: UserOverviewSectionsProps) {
                   <img
                     alt={getOrderItemName(currentOrder.items?.[0])}
                     className="h-full w-full object-cover"
-                    src={getAssetUrl(getOrderItemImage(currentOrder.items?.[0]))}
+                    src={getAssetUrl(
+                      getOrderItemImage(currentOrder.items?.[0]),
+                    )}
                   />
                 ) : (
                   <ReceiptText className="h-6 w-6" />
@@ -199,12 +212,7 @@ function UserOverviewSections({ orders, stats }: UserOverviewSectionsProps) {
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {isWishlistLoading ? (
-              Array.from({ length: 2 }).map((_, index) => (
-                <div
-                  className="h-24 animate-pulse border border-black/10 bg-[#f8f3ea]"
-                  key={index}
-                />
-              ))
+              <WishlistPreviewSkeleton />
             ) : wishlistItems.length ? (
               wishlistItems.slice(0, 2).map((item) => {
                 const product = getWishlistProduct(item)
@@ -214,7 +222,11 @@ function UserOverviewSections({ orders, stats }: UserOverviewSectionsProps) {
                   <Link
                     className="grid grid-cols-[64px_1fr] gap-3 border border-black/10 p-3 transition hover:border-[#181512] hover:bg-[#f8f3ea]"
                     key={item._id}
-                    to={product ? `/products/${product._id}` : '/dashboard/wishlist'}
+                    to={
+                      product
+                        ? `/products/${product._id}`
+                        : '/dashboard/wishlist'
+                    }
                   >
                     <span className="grid h-16 w-16 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]">
                       {imageUrl ? (

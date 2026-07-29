@@ -3,15 +3,18 @@ import { ArrowRight } from 'lucide-react'
 import ProductTile from '../../components/product/ProductTile'
 import type { Category } from '../../features/categories/categoryApi'
 import type { Product } from '../../features/products/productApi'
+import { HomeProductGridSkeleton } from './HomeSkeletons'
 
 type KitProductsProps = {
   fallbackProducts: Product[]
+  isLoading?: boolean
   kitCategory?: Category
   products: Product[]
 }
 
 function KitProducts({
   fallbackProducts,
+  isLoading = false,
   kitCategory,
   products,
 }: KitProductsProps) {
@@ -42,15 +45,19 @@ function KitProducts({
           </a>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 sm:gap-5">
-          {visibleProducts.map((product) => (
-            <ProductTile
-              key={product._id}
-              product={product}
-              variant="compact"
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <HomeProductGridSkeleton count={9} />
+        ) : (
+          <div className="grid grid-cols-3 gap-2 sm:gap-5">
+            {visibleProducts.map((product) => (
+              <ProductTile
+                key={product._id}
+                product={product}
+                variant="compact"
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

@@ -9,6 +9,7 @@ import DashboardNotice from '../DashboardNotice'
 import { getUserMetrics } from './userDashboardMetrics'
 import { userNavItems } from './userNavItems'
 import UserOverviewSections from './UserOverviewSections'
+import { DashboardMetricsSkeleton } from './UserDashboardSkeletons'
 
 function UserDashboard() {
   const user = getStoredUser()
@@ -18,7 +19,7 @@ function UserDashboard() {
     isError: hasStatsError,
     isLoading: isStatsLoading,
   } = useGetMyDashboardStatsQuery()
-  const { data: myOrderList } = useGetMyOrdersQuery(
+  const { data: myOrderList, isLoading: isOrdersLoading } = useGetMyOrdersQuery(
     { limit: 3, page: 1 },
     { refetchOnMountOrArgChange: true },
   )
@@ -52,10 +53,18 @@ function UserDashboard() {
         show={shouldShowStatsNotice}
       />
 
-      <DashboardMetricGrid
-        metrics={getUserMetrics(userStats, myOrders, myOrderList?.meta.total)}
+      {isStatsLoading && !userStats ? (
+        <DashboardMetricsSkeleton />
+      ) : (
+        <DashboardMetricGrid
+          metrics={getUserMetrics(userStats, myOrders, myOrderList?.meta.total)}
+        />
+      )}
+      <UserOverviewSections
+        isOrdersLoading={isOrdersLoading}
+        orders={myOrders}
+        stats={userStats}
       />
-      <UserOverviewSections orders={myOrders} stats={userStats} />
     </DashboardLayout>
   )
 }

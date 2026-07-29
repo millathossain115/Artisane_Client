@@ -1,9 +1,9 @@
 import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import { SkeletonCard } from '../../components/loaders'
 import ProductTile from '../../components/product/ProductTile'
 import type { Product } from '../../features/products/productApi'
+import { HomeProductGridSkeleton } from './HomeSkeletons'
 
 type LatestProductsProps = {
   isLoading: boolean
@@ -42,7 +42,7 @@ function LatestProducts({ isLoading, products }: LatestProductsProps) {
 
         <div className="mt-8">
           {isLoading ? (
-            <SkeletonCard count={10} gridCols="grid-cols-3 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" />
+            <HomeProductGridSkeleton count={10} tone="dark" />
           ) : (
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
               {products.map((product) => (

@@ -14,6 +14,7 @@ import {
 } from '../../../features/auth/profileApi'
 import { adminNavItems } from '../../admin/adminNavItems'
 import { userNavItems } from '../user-dashboard/userNavItems'
+import { ProfilePageSkeleton } from '../user-dashboard/UserDashboardSkeletons'
 import AccountSummaryCard from './AccountSummaryCard'
 import ConfirmSaveModal from './ConfirmSaveModal'
 import ProfileDetailsSection from './ProfileDetailsSection'
@@ -208,41 +209,37 @@ function ProfilePage() {
         isAdminProfile ? 'Marketplace studio' : 'Collector account'
       }
     >
-      {(isProfileLoading || hasProfileError) && (
-        <div
-          className={`mb-4 border px-4 py-3 text-sm font-semibold ${
-            hasProfileError
-              ? 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d]'
-              : 'border-black/10 bg-white text-[#6b5f53]'
-          }`}
-        >
-          {hasProfileError
-            ? 'Failed to load profile. Showing locally saved account info.'
-            : 'Loading profile details...'}
+      {hasProfileError && (
+        <div className="mb-4 border border-[#c85f2f]/30 bg-[#fff5ef] px-4 py-3 text-sm font-semibold text-[#8f3f1d]">
+          Failed to load profile. Showing locally saved account info.
         </div>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_0.48fr]">
-        <ProfileDetailsSection
-          fieldClass={fieldClass}
-          isEditing={isEditing}
-          isFormChanged={isFormChanged}
-          isSaving={isSaving}
-          onCancelEdit={() => setIsEditing(false)}
-          onFieldChange={updateField}
-          onRequestSave={handleRequestSave}
-          onStartEditing={handleStartEditing}
-          profileForm={visibleProfileForm}
-          readonlyClass={readonlyClass}
-          savedAvatar={loadedProfileForm.avatar}
-        />
+      {isProfileLoading && !profile ? (
+        <ProfilePageSkeleton />
+      ) : (
+        <div className="grid gap-6 xl:grid-cols-[1fr_0.48fr]">
+          <ProfileDetailsSection
+            fieldClass={fieldClass}
+            isEditing={isEditing}
+            isFormChanged={isFormChanged}
+            isSaving={isSaving}
+            onCancelEdit={() => setIsEditing(false)}
+            onFieldChange={updateField}
+            onRequestSave={handleRequestSave}
+            onStartEditing={handleStartEditing}
+            profileForm={visibleProfileForm}
+            readonlyClass={readonlyClass}
+            savedAvatar={loadedProfileForm.avatar}
+          />
 
-        <AccountSummaryCard
-          error={error}
-          profileForm={visibleProfileForm}
-          status={status}
-        />
-      </div>
+          <AccountSummaryCard
+            error={error}
+            profileForm={visibleProfileForm}
+            status={status}
+          />
+        </div>
+      )}
 
       {isConfirmOpen ? (
         <ConfirmSaveModal
