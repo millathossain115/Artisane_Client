@@ -14,14 +14,10 @@ export type PaymentMethod = 'bkash' | 'cod' | 'nagad' | 'rocket' | 'sslcommerz'
 export type CourierProvider = 'redx' | 'steadfast' | 'pathao'
 
 export type OrderStatus =
-  | 'cancelled'
-  | 'confirmed'
-  | 'delivered'
-  | 'pending'
-  | 'processing'
-  | 'shipped'
+  'cancelled' | 'confirmed' | 'delivered' | 'pending' | 'processing' | 'shipped'
 
-export type PaymentStatus = 'failed' | 'paid' | 'pending' | 'refunded' | 'unpaid'
+export type PaymentStatus =
+  'failed' | 'paid' | 'pending' | 'refunded' | 'unpaid'
 
 export type OrderItem = {
   _id?: string
@@ -32,6 +28,7 @@ export type OrderItem = {
   productName?: string
   productSlug?: string
   quantity?: number
+  unitPrice?: number
   subtotal?: number
 }
 
@@ -240,16 +237,18 @@ export const orderApi = baseApi.injectEndpoints({
       transformResponse: (response: ApiResponse<Order>) =>
         response.data ?? null,
     }),
-    createOrder: builder.mutation<CreateOrderResult | null, CreateOrderPayload>({
-      invalidatesTags: ['Order', 'Dashboard', 'Product', 'Review'],
-      query: (body) => ({
-        body,
-        method: 'POST',
-        url: '/orders/create-order',
-      }),
-      transformResponse: (response: ApiResponse<CreateOrderResult | Order>) =>
-        createOrderResult(response),
-    }),
+    createOrder: builder.mutation<CreateOrderResult | null, CreateOrderPayload>(
+      {
+        invalidatesTags: ['Order', 'Dashboard', 'Product', 'Review'],
+        query: (body) => ({
+          body,
+          method: 'POST',
+          url: '/orders/create-order',
+        }),
+        transformResponse: (response: ApiResponse<CreateOrderResult | Order>) =>
+          createOrderResult(response),
+      },
+    ),
     deleteOrder: builder.mutation<ApiResponse<null>, string>({
       invalidatesTags: ['Order', 'Dashboard', 'Review'],
       query: (id) => ({
@@ -261,8 +260,10 @@ export const orderApi = baseApi.injectEndpoints({
       providesTags: (result) => [
         'Order',
         { id: 'LIST', type: 'Order' },
-        ...(result?.data.map((order) => ({ id: order._id, type: 'Order' as const })) ??
-          []),
+        ...(result?.data.map((order) => ({
+          id: order._id,
+          type: 'Order' as const,
+        })) ?? []),
       ],
       query: (params) => ({
         params: createOrderParams(params ?? undefined),
@@ -275,8 +276,10 @@ export const orderApi = baseApi.injectEndpoints({
       providesTags: (result) => [
         'Order',
         { id: 'LIST', type: 'Order' },
-        ...(result?.data.map((order) => ({ id: order._id, type: 'Order' as const })) ??
-          []),
+        ...(result?.data.map((order) => ({
+          id: order._id,
+          type: 'Order' as const,
+        })) ?? []),
       ],
       query: (params) => ({
         params: createOrderParams(params ?? undefined),
