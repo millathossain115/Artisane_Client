@@ -23,6 +23,12 @@ import { adminNavItems } from '../adminNavItems'
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024
 const MAX_SLIDES = 5
+const FIXED_HERO_BUTTONS = {
+  primaryButtonText: 'Shop products',
+  primaryButtonLink: '/products',
+  secondaryButtonText: 'Browse categories',
+  secondaryButtonLink: '/categories',
+} as const
 
 type EditableHeroSlide = HomeHeroSlide & {
   uid: string
@@ -47,10 +53,7 @@ function createDefaultSlide(index: number): EditableHeroSlide {
       'Shop stocked kits, tools, and craft materials from the latest marketplace edit.',
     image: '',
     imageAlt: 'Living room with abstract wall painting',
-    primaryButtonText: 'Shop products',
-    primaryButtonLink: '/products',
-    secondaryButtonText: 'Browse categories',
-    secondaryButtonLink: '/categories',
+    ...FIXED_HERO_BUTTONS,
     isActive: true,
     sortOrder: index,
   }
@@ -62,6 +65,7 @@ function createEditableSlide(
 ): EditableHeroSlide {
   return {
     ...slide,
+    ...FIXED_HERO_BUTTONS,
     uid: slide._id ?? `slide-${Date.now()}-${index}`,
     sortOrder: index,
   }
@@ -248,10 +252,7 @@ function ManageHomeHero() {
           description: slide.description,
           image: slide.image,
           imageAlt: slide.imageAlt,
-          primaryButtonText: slide.primaryButtonText,
-          primaryButtonLink: slide.primaryButtonLink,
-          secondaryButtonText: slide.secondaryButtonText,
-          secondaryButtonLink: slide.secondaryButtonLink,
+          ...FIXED_HERO_BUTTONS,
           isActive: slide.isActive,
           sortOrder: index,
         })),
@@ -283,28 +284,28 @@ function ManageHomeHero() {
       title="Home hero"
       workspaceLabel="Marketplace studio"
     >
-      <form className="space-y-6" onSubmit={handleSubmit}>
-        <section className="border border-black/10 bg-white p-5">
-          <div className="grid gap-4 md:grid-cols-3">
-            <label className="flex items-center justify-between gap-4 border border-black/10 bg-[#f8f3ea] px-4 py-3 text-sm font-bold">
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        <section className="border border-black/10 bg-white p-3 sm:p-4">
+          <div className="grid gap-2 md:grid-cols-3">
+            <label className="flex items-center justify-between gap-3 border border-black/10 bg-[#f8f3ea] px-3 py-2 text-xs font-bold">
               <span>
                 <span className="block">Hero status</span>
-                <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
+                <span className="mt-0.5 block text-[11px] font-semibold text-[#6b5f53]">
                   {isActive ? 'Visible on homepage' : 'Fallback hero shown'}
                 </span>
               </span>
               <input
                 checked={isActive}
-                className="h-5 w-5 accent-[#181512]"
+                className="h-4 w-4 accent-[#181512]"
                 onChange={(event) => setIsActive(event.target.checked)}
                 type="checkbox"
               />
             </label>
 
-            <label className="grid gap-2 text-sm font-bold">
+            <label className="grid gap-1.5 text-xs font-bold">
               Autoplay seconds
               <input
-                className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition focus:border-[#181512]"
+                className="min-h-9 border border-black/10 px-2 text-xs font-semibold outline-none transition focus:border-[#181512]"
                 max="10"
                 min="1"
                 onChange={(event) =>
@@ -317,10 +318,10 @@ function ManageHomeHero() {
               />
             </label>
 
-            <label className="grid gap-2 text-sm font-bold">
+            <label className="grid gap-1.5 text-xs font-bold">
               Fade milliseconds
               <input
-                className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition focus:border-[#181512]"
+                className="min-h-9 border border-black/10 px-2 text-xs font-semibold outline-none transition focus:border-[#181512]"
                 max="1500"
                 min="300"
                 onChange={(event) => setFadeMs(Number(event.target.value))}
@@ -332,7 +333,7 @@ function ManageHomeHero() {
 
           {message ? (
             <div
-              className={`mt-5 flex items-center justify-between gap-3 border px-4 py-3 text-sm font-semibold ${
+              className={`mt-3 flex items-center justify-between gap-3 border px-3 py-2 text-xs font-semibold ${
                 message.type === 'success'
                   ? 'border-[#1f7a4d]/20 bg-[#effaf3] text-[#1f6b43]'
                   : 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d]'
@@ -341,7 +342,7 @@ function ManageHomeHero() {
               <span>{message.text}</span>
               <button
                 aria-label="Close message"
-                className="grid h-8 w-8 place-items-center border border-current/20"
+                className="grid h-7 w-7 place-items-center border border-current/20"
                 onClick={() => setMessage(null)}
                 type="button"
               >
@@ -351,9 +352,9 @@ function ManageHomeHero() {
           ) : null}
         </section>
 
-        <div className="space-y-5">
+        <div className="space-y-4">
           {isLoading ? (
-            <div className="border border-black/10 bg-white p-8 text-center text-sm font-bold text-[#6b5f53]">
+            <div className="border border-black/10 bg-white p-5 text-center text-sm font-bold text-[#6b5f53]">
               Loading hero content...
             </div>
           ) : (
@@ -362,23 +363,23 @@ function ManageHomeHero() {
 
               return (
                 <section
-                  className="grid gap-5 border border-black/10 bg-white p-5 2xl:grid-cols-[1fr_0.42fr]"
+                  className="grid gap-4 border border-black/10 bg-white p-3 sm:p-4 xl:grid-cols-[minmax(0,1fr)_320px]"
                   key={slide.uid}
                 >
-                  <div className="space-y-5">
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/10 pb-4">
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-3">
                       <div>
-                        <p className="text-sm font-bold text-[#7a3f1d]">
+                        <p className="text-xs font-bold text-[#7a3f1d]">
                           Slide {index + 1}
                         </p>
-                        <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
+                        <p className="mt-0.5 text-[11px] font-semibold text-[#6b5f53]">
                           {slide.isActive ? 'Active' : 'Hidden'} on storefront
                         </p>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
                         <button
-                          className="grid h-10 w-10 place-items-center border border-black/10 transition hover:border-[#181512]"
+                          className="grid h-8 w-8 place-items-center border border-black/10 transition hover:border-[#181512]"
                           disabled={index === 0}
                           onClick={() => moveSlide(index, 'up')}
                           type="button"
@@ -386,7 +387,7 @@ function ManageHomeHero() {
                           <ArrowUp className="h-4 w-4" />
                         </button>
                         <button
-                          className="grid h-10 w-10 place-items-center border border-black/10 transition hover:border-[#181512]"
+                          className="grid h-8 w-8 place-items-center border border-black/10 transition hover:border-[#181512]"
                           disabled={index === slides.length - 1}
                           onClick={() => moveSlide(index, 'down')}
                           type="button"
@@ -394,7 +395,7 @@ function ManageHomeHero() {
                           <ArrowDown className="h-4 w-4" />
                         </button>
                         <button
-                          className="grid h-10 w-10 place-items-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:bg-[#fff5ef]"
+                          className="grid h-8 w-8 place-items-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:bg-[#fff5ef]"
                           disabled={slides.length === 1}
                           onClick={() => removeSlide(index)}
                           type="button"
@@ -404,11 +405,11 @@ function ManageHomeHero() {
                       </div>
                     </div>
 
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <label className="grid gap-2 text-sm font-bold">
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <label className="grid gap-1.5 text-xs font-bold">
                         Eyebrow
                         <input
-                          className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition focus:border-[#181512]"
+                          className="min-h-9 border border-black/10 px-2 text-xs font-semibold outline-none transition focus:border-[#181512]"
                           onChange={(event) =>
                             updateSlide(index, { eyebrow: event.target.value })
                           }
@@ -417,10 +418,10 @@ function ManageHomeHero() {
                         />
                       </label>
 
-                      <label className="grid gap-2 text-sm font-bold">
+                      <label className="grid gap-1.5 text-xs font-bold">
                         Title
                         <input
-                          className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition focus:border-[#181512]"
+                          className="min-h-9 border border-black/10 px-2 text-xs font-semibold outline-none transition focus:border-[#181512]"
                           onChange={(event) =>
                             updateSlide(index, { title: event.target.value })
                           }
@@ -430,10 +431,10 @@ function ManageHomeHero() {
                       </label>
                     </div>
 
-                    <label className="grid gap-2 text-sm font-bold">
+                    <label className="grid gap-1.5 text-xs font-bold">
                       Description
                       <textarea
-                        className="min-h-28 resize-y border border-black/10 px-3 py-3 text-sm font-medium leading-6 outline-none transition focus:border-[#181512]"
+                        className="min-h-20 resize-y border border-black/10 px-2 py-2 text-xs font-semibold leading-5 outline-none transition focus:border-[#181512]"
                         onChange={(event) =>
                           updateSlide(index, {
                             description: event.target.value,
@@ -444,69 +445,49 @@ function ManageHomeHero() {
                       />
                     </label>
 
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <label className="grid gap-2 text-sm font-bold">
-                        Primary button text
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                      <label className="grid gap-1.5 text-xs font-bold">
+                        Primary text
                         <input
-                          className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition focus:border-[#181512]"
-                          onChange={(event) =>
-                            updateSlide(index, {
-                              primaryButtonText: event.target.value,
-                            })
-                          }
-                          required
-                          value={slide.primaryButtonText}
+                          className="min-h-9 cursor-not-allowed border border-black/10 bg-[#f8f3ea] px-2 text-xs font-semibold text-[#6b5f53] outline-none"
+                          disabled
+                          value={FIXED_HERO_BUTTONS.primaryButtonText}
                         />
                       </label>
 
-                      <label className="grid gap-2 text-sm font-bold">
-                        Primary button link
+                      <label className="grid gap-1.5 text-xs font-bold">
+                        Primary link
                         <input
-                          className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition focus:border-[#181512]"
-                          onChange={(event) =>
-                            updateSlide(index, {
-                              primaryButtonLink: event.target.value,
-                            })
-                          }
-                          required
-                          value={slide.primaryButtonLink}
+                          className="min-h-9 cursor-not-allowed border border-black/10 bg-[#f8f3ea] px-2 text-xs font-semibold text-[#6b5f53] outline-none"
+                          disabled
+                          value={FIXED_HERO_BUTTONS.primaryButtonLink}
                         />
                       </label>
 
-                      <label className="grid gap-2 text-sm font-bold">
-                        Secondary button text
+                      <label className="grid gap-1.5 text-xs font-bold">
+                        Secondary text
                         <input
-                          className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition focus:border-[#181512]"
-                          onChange={(event) =>
-                            updateSlide(index, {
-                              secondaryButtonText: event.target.value,
-                            })
-                          }
-                          required
-                          value={slide.secondaryButtonText}
+                          className="min-h-9 cursor-not-allowed border border-black/10 bg-[#f8f3ea] px-2 text-xs font-semibold text-[#6b5f53] outline-none"
+                          disabled
+                          value={FIXED_HERO_BUTTONS.secondaryButtonText}
                         />
                       </label>
 
-                      <label className="grid gap-2 text-sm font-bold">
-                        Secondary button link
+                      <label className="grid gap-1.5 text-xs font-bold">
+                        Secondary link
                         <input
-                          className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition focus:border-[#181512]"
-                          onChange={(event) =>
-                            updateSlide(index, {
-                              secondaryButtonLink: event.target.value,
-                            })
-                          }
-                          required
-                          value={slide.secondaryButtonLink}
+                          className="min-h-9 cursor-not-allowed border border-black/10 bg-[#f8f3ea] px-2 text-xs font-semibold text-[#6b5f53] outline-none"
+                          disabled
+                          value={FIXED_HERO_BUTTONS.secondaryButtonLink}
                         />
                       </label>
                     </div>
 
-                    <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
-                      <label className="grid gap-2 text-sm font-bold">
+                    <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+                      <label className="grid gap-1.5 text-xs font-bold">
                         Image alt text
                         <input
-                          className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition focus:border-[#181512]"
+                          className="min-h-9 border border-black/10 px-2 text-xs font-semibold outline-none transition focus:border-[#181512]"
                           onChange={(event) =>
                             updateSlide(index, { imageAlt: event.target.value })
                           }
@@ -515,7 +496,7 @@ function ManageHomeHero() {
                         />
                       </label>
 
-                      <label className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d]">
+                      <label className="inline-flex min-h-9 cursor-pointer items-center justify-center gap-1.5 bg-[#181512] px-3 text-xs font-bold text-white transition hover:bg-[#7a3f1d]">
                         <Upload className="h-4 w-4" />
                         Upload image
                         <input
@@ -529,11 +510,11 @@ function ManageHomeHero() {
                       </label>
                     </div>
 
-                    <label className="flex items-center justify-between gap-4 border border-black/10 bg-[#f8f3ea] px-4 py-3 text-sm font-bold">
+                    <label className="flex items-center justify-between gap-3 border border-black/10 bg-[#f8f3ea] px-3 py-2 text-xs font-bold">
                       <span>Show this slide</span>
                       <input
                         checked={slide.isActive}
-                        className="h-5 w-5 accent-[#181512]"
+                        className="h-4 w-4 accent-[#181512]"
                         onChange={(event) =>
                           updateSlide(index, {
                             isActive: event.target.checked,
@@ -544,11 +525,11 @@ function ManageHomeHero() {
                     </label>
                   </div>
 
-                  <aside className="bg-[#181512] p-4 text-white 2xl:sticky 2xl:top-[132px] 2xl:max-h-[calc(100dvh-132px)] 2xl:self-start 2xl:overflow-y-auto">
+                  <aside className="bg-[#181512] p-3 text-white xl:sticky xl:top-[132px] xl:max-h-[calc(100dvh-132px)] xl:self-start xl:overflow-y-auto">
                     <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#f1c9a6]">
                       Live preview
                     </p>
-                    <div className="relative mt-4 aspect-[4/5] overflow-hidden bg-white/10">
+                    <div className="relative mt-3 aspect-[4/3] overflow-hidden bg-white/10">
                       {previewImage ? (
                         <img
                           alt=""
@@ -557,18 +538,18 @@ function ManageHomeHero() {
                         />
                       ) : (
                         <div className="grid h-full place-items-center text-white/45">
-                          <ImagePlus className="h-10 w-10" />
+                          <ImagePlus className="h-8 w-8" />
                         </div>
                       )}
                       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(24,21,18,0.08),rgba(24,21,18,0.9))]" />
-                      <div className="absolute inset-x-0 bottom-0 p-4">
+                      <div className="absolute inset-x-0 bottom-0 p-3">
                         <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#f1c9a6]">
                           {slide.eyebrow}
                         </p>
-                        <h3 className="mt-2 text-4xl font-bold">
+                        <h3 className="mt-1.5 text-3xl font-bold">
                           {slide.title}
                         </h3>
-                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-white/75">
+                        <p className="mt-2 line-clamp-2 text-xs leading-5 text-white/75">
                           {slide.description}
                         </p>
                       </div>
@@ -580,9 +561,9 @@ function ManageHomeHero() {
           )}
         </div>
 
-        <div className="flex flex-wrap justify-between gap-3 border border-black/10 bg-white p-5">
+        <div className="flex flex-wrap justify-between gap-2 border border-black/10 bg-white p-3 sm:p-4">
           <button
-            className="inline-flex min-h-11 items-center gap-2 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
+            className="inline-flex min-h-9 items-center gap-1.5 border border-black/10 bg-white px-3 text-xs font-bold transition hover:border-[#181512]"
             disabled={slides.length >= MAX_SLIDES}
             onClick={addSlide}
             type="button"
@@ -592,7 +573,7 @@ function ManageHomeHero() {
           </button>
 
           <button
-            className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-5 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-9 items-center gap-1.5 bg-[#181512] px-3 text-xs font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isSaving}
             type="submit"
           >
@@ -613,30 +594,30 @@ function ManageHomeHero() {
         >
           <div
             aria-modal="true"
-            className="w-full max-w-md border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
+            className="w-full max-w-sm border border-black/10 bg-white p-4 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
             role="dialog"
           >
             <div className="flex items-start gap-3">
-              <span className="grid h-11 w-11 shrink-0 place-items-center bg-[#fff5ef] text-[#8f3f1d]">
-                <AlertTriangle className="h-5 w-5" />
+              <span className="grid h-9 w-9 shrink-0 place-items-center bg-[#fff5ef] text-[#8f3f1d]">
+                <AlertTriangle className="h-4 w-4" />
               </span>
               <div>
-                <p className="text-sm font-bold text-[#8f3f1d]">
+                <p className="text-xs font-bold text-[#8f3f1d]">
                   Confirm hero update
                 </p>
-                <h2 className="mt-2 text-2xl font-bold">
+                <h2 className="mt-1 text-xl font-bold">
                   Update homepage hero?
                 </h2>
               </div>
             </div>
 
-            <p className="mt-4 text-sm leading-6 text-[#6b5f53]">
+            <p className="mt-3 text-xs leading-5 text-[#6b5f53]">
               Saving will update public homepage hero slides immediately.
             </p>
 
-            <div className="mt-5 flex flex-wrap justify-end gap-2">
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
               <button
-                className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
+                className="min-h-9 border border-black/10 bg-white px-3 text-xs font-bold transition hover:border-[#181512]"
                 disabled={isSaving}
                 onClick={() => setIsConfirmOpen(false)}
                 type="button"
@@ -644,7 +625,7 @@ function ManageHomeHero() {
                 Cancel
               </button>
               <button
-                className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex min-h-9 items-center gap-1.5 bg-[#181512] px-3 text-xs font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isSaving}
                 onClick={handleConfirmSave}
                 type="button"

@@ -53,26 +53,26 @@ function AdminReviewsSection({
 }: AdminReviewsSectionProps) {
   return (
     <section className="border border-black/10 bg-white">
-      <div className="flex flex-col gap-3 border-b border-black/10 p-5 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-3 border-b border-black/10 px-4 py-3.5 sm:px-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
             Review monitor
           </p>
-          <h2 className="mt-2 text-2xl font-bold">
+          <h2 className="mt-1.5 text-xl font-bold">
             {meta?.total ?? reviews.length} reviews
           </h2>
-          <p className="mt-1 text-sm text-[#6b5f53]">
+          <p className="mt-0.5 text-xs font-semibold text-[#6b5f53]">
             Visible and hidden reviews stay in admin view unless deleted.
           </p>
         </div>
 
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">
-          <label className="grid gap-2">
-            <span className="text-sm font-bold">Search</span>
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(18rem,1fr)_minmax(9rem,0.34fr)_auto] xl:items-end">
+          <label className="grid gap-1.5 sm:col-span-2 xl:col-span-1">
+            <span className="text-xs font-bold">Search</span>
             <span className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7a3f1d]" />
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#7a3f1d]" />
               <input
-                className="min-h-12 w-full border border-black/10 pl-10 pr-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+                className="min-h-9 w-full border border-black/10 pl-8 pr-2 text-xs font-semibold outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Product, user, comment"
                 value={searchTerm}
@@ -80,10 +80,10 @@ function AdminReviewsSection({
             </span>
           </label>
 
-          <label className="grid gap-2">
-            <span className="text-sm font-bold">Visibility</span>
+          <label className="grid gap-1.5">
+            <span className="text-xs font-bold">Visibility</span>
             <select
-              className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+              className="min-h-9 border border-black/10 bg-white px-2 text-xs font-bold outline-none transition focus:border-[#181512]"
               onChange={(event) =>
                 setVisibilityFilter(
                   event.target.value as ReviewVisibilityFilter,
@@ -97,13 +97,16 @@ function AdminReviewsSection({
             </select>
           </label>
 
-          <button
-            className="inline-flex min-h-12 items-center justify-center gap-2 border border-black/10 px-4 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
-            onClick={onResetFilters}
-            type="button"
-          >
-            Reset filters
-          </button>
+          <div className="grid gap-1.5">
+            <span className="hidden text-xs font-bold xl:block">&nbsp;</span>
+            <button
+              className="inline-flex min-h-9 items-center justify-center border border-black/10 px-3 text-xs font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+              onClick={onResetFilters}
+              type="button"
+            >
+              Reset
+            </button>
+          </div>
         </div>
       </div>
 
@@ -343,13 +346,13 @@ function AdminReviewsSection({
         </table>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
-        <p className="text-sm font-semibold text-[#6b5f53]">
+      <div className="flex flex-col gap-2 border-t border-black/10 px-4 py-3 md:flex-row md:items-center md:justify-between">
+        <p className="text-xs font-semibold text-[#6b5f53]">
           Page {meta?.page ?? page} of {meta?.totalPage ?? 1}
         </p>
         <div className="flex gap-2">
           <button
-            className="inline-flex h-10 w-10 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-8 w-8 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
             disabled={page <= 1}
             onClick={() => setPage((current) => Math.max(1, current - 1))}
             type="button"
@@ -357,7 +360,7 @@ function AdminReviewsSection({
             <span className="text-lg leading-none">‹</span>
           </button>
           <button
-            className="inline-flex h-10 w-10 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-8 w-8 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
             disabled={page >= (meta?.totalPage ?? 1)}
             onClick={() => setPage((current) => current + 1)}
             type="button"
