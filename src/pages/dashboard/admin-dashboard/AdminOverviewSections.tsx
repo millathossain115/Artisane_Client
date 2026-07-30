@@ -22,13 +22,13 @@ import type {
   DashboardReview,
 } from '../../../features/dashboard/dashboardApi'
 import type { Order } from '../../../features/orders/orderApi'
-import { getAdminOrderRouteRef } from '../../admin/orders/orderRouteState'
 import {
   formatOrderDate,
   formatOrderId,
   formatOrderStatus,
   getOrderCustomer,
 } from '../../../utils/orderDisplay'
+import { getAdminOrderRouteRef } from '../../admin/orders/orderRouteState'
 import { formatCount, readNumericStat } from '../dashboardFormat'
 
 type AdminOverviewSectionsProps = {
@@ -185,7 +185,7 @@ function AdminOverviewSections({
   const activityItems = getActivityItems(orders, stats?.recentReviews ?? [])
 
   return (
-    <section className="mt-6 grid gap-6 2xl:grid-cols-[1.15fr_0.85fr]">
+    <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] 2xl:grid-cols-[1.15fr_0.85fr]">
       <div className="space-y-6">
         <section className="border border-black/10 bg-white p-5">
           <div className="flex items-start justify-between gap-4">
@@ -293,73 +293,75 @@ function AdminOverviewSections({
         </section>
       </div>
 
-      <aside className="flex h-fit flex-col border border-black/10 bg-[#181512] p-5 text-white 2xl:sticky 2xl:top-[132px] 2xl:max-h-[calc(100dvh-132px)] 2xl:self-start 2xl:overflow-y-auto">
-        <div>
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center bg-white text-[#181512]">
-              <Palette className="h-5 w-5" />
-            </span>
-            <div>
-              <h2 className="text-2xl font-bold">Quick actions</h2>
-              <p className="mt-1 text-sm text-white/65">
-                Jump to dedicated admin pages.
-              </p>
+      <div className="lg:self-stretch">
+        <aside className="flex h-fit flex-col border border-black/10 bg-[#181512] p-5 text-white lg:sticky lg:top-28">
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="grid h-10 w-10 place-items-center bg-white text-[#181512]">
+                <Palette className="h-5 w-5" />
+              </span>
+              <div>
+                <h2 className="text-2xl font-bold">Quick actions</h2>
+                <p className="mt-1 text-sm text-white/65">
+                  Jump to dedicated admin pages.
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="mt-5 grid gap-2">
-            {quickActions.map((action) => {
-              const Icon = action.icon
-
-              return (
-                <Link
-                  className="flex min-h-12 items-center justify-between border border-white/10 px-4 text-sm font-bold transition hover:border-[#f1c9a6] hover:bg-white/10"
-                  key={action.href}
-                  to={action.href}
-                >
-                  <span className="inline-flex min-w-0 items-center gap-2">
-                    <Icon className="h-4 w-4 text-[#f1c9a6]" />
-                    <span className="truncate">{action.label}</span>
-                  </span>
-                  <ArrowUpRight className="h-4 w-4 text-[#f1c9a6]" />
-                </Link>
-              )
-            })}
-          </div>
-
-          <div className="mt-6 border-t border-white/10 pt-5">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#f1c9a6]">
-              More admin links
-            </p>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {secondaryActions.map((action) => {
+            <div className="mt-5 grid gap-2">
+              {quickActions.map((action) => {
                 const Icon = action.icon
 
                 return (
                   <Link
-                    className="grid min-h-20 content-between border border-white/10 p-3 text-xs font-bold transition hover:border-[#f1c9a6] hover:bg-white/10"
+                    className="flex min-h-12 items-center justify-between border border-white/10 px-4 text-sm font-bold transition hover:border-[#f1c9a6] hover:bg-white/10"
                     key={action.href}
                     to={action.href}
                   >
-                    <Icon className="h-4 w-4 text-[#f1c9a6]" />
-                    <span className="truncate">{action.label}</span>
+                    <span className="inline-flex min-w-0 items-center gap-2">
+                      <Icon className="h-4 w-4 text-[#f1c9a6]" />
+                      <span className="truncate">{action.label}</span>
+                    </span>
+                    <ArrowUpRight className="h-4 w-4 text-[#f1c9a6]" />
                   </Link>
                 )
               })}
             </div>
-          </div>
-        </div>
 
-        <div className="mt-auto border-t border-white/10 pt-5">
-          <div className="flex items-start gap-3">
-            <MessageSquareText className="mt-0.5 h-5 w-5 text-[#f1c9a6]" />
-            <p className="text-sm leading-6 text-white/72">
-              Keep this page for orientation. Use sidebar pages for full tables,
-              edits, and audit detail.
-            </p>
+            <div className="mt-6 border-t border-white/10 pt-5">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#f1c9a6]">
+                More admin links
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {secondaryActions.map((action) => {
+                  const Icon = action.icon
+
+                  return (
+                    <Link
+                      className="grid min-h-20 content-between border border-white/10 p-3 text-xs font-bold transition hover:border-[#f1c9a6] hover:bg-white/10"
+                      key={action.href}
+                      to={action.href}
+                    >
+                      <Icon className="h-4 w-4 text-[#f1c9a6]" />
+                      <span className="truncate">{action.label}</span>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
           </div>
-        </div>
-      </aside>
+
+          <div className="mt-auto border-t border-white/10 pt-5">
+            <div className="flex items-start gap-3">
+              <MessageSquareText className="mt-0.5 h-5 w-5 text-[#f1c9a6]" />
+              <p className="text-sm leading-6 text-white/72">
+                Keep this page for orientation. Use sidebar pages for full
+                tables, edits, and audit detail.
+              </p>
+            </div>
+          </div>
+        </aside>
+      </div>
     </section>
   )
 }

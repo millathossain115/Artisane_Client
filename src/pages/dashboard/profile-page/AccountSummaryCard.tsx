@@ -14,7 +14,7 @@ function AccountSummaryCard({
   status,
 }: AccountSummaryCardProps) {
   return (
-    <aside className="h-fit border border-black/10 bg-[#181512] p-5 text-white 2xl:sticky 2xl:top-[132px] 2xl:max-h-[calc(100dvh-132px)] 2xl:self-start 2xl:overflow-y-auto">
+    <aside className="h-fit border border-black/10 bg-[#181512] p-5 text-white 2xl:sticky 2xl:top-[132px] 2xl:self-start">
       <div className="flex items-center gap-4">
         <span className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden border border-white/15 bg-white/10 text-[#f1c9a6]">
           {profileForm.avatar ? (

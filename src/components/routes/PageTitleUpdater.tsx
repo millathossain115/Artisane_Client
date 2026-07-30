@@ -36,6 +36,7 @@ const TITLE_MAP: Record<string, string> = {
   '/dashboard/admin/reviews': 'Manage Reviews',
   '/dashboard/admin/promo': 'Manage Promo',
   '/dashboard/admin/home-hero': 'Manage Home Hero',
+  '/dashboard/admin/analytics': 'Admin Analytics',
   '/dashboard/categories': 'Manage Categories',
   '/dashboard/categories/create': 'Create Category',
   '/dashboard/products': 'Manage Products',

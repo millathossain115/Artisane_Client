@@ -38,6 +38,12 @@ const orderStatusOptions = [
 const paymentStatusOptions = ['unpaid', 'paid', 'failed', 'refunded']
 const paymentMethodOptions = ['cod', 'sslcommerz', 'bkash', 'nagad', 'rocket']
 const courierProviderOptions = ['steadfast']
+const chartColors = {
+  grid: '#eadfce',
+  paidRevenue: '#d59b6a',
+  revenue: '#8f3f1d',
+  track: '#f1dfc8',
+}
 
 function formatCurrency(value?: number) {
   return `৳${Math.round(value ?? 0).toLocaleString()}`
@@ -86,16 +92,24 @@ function MiniBarList({
     <div className="space-y-3">
       {rows.map((row) => (
         <div key={row.label}>
-          <div className="mb-1 flex items-center justify-between gap-3 text-sm">
-            <span className="font-bold">{formatLabel(row.label)}</span>
-            <span className="text-xs font-bold text-[#6b5f53]">
+          <div className="mb-1.5 flex items-center justify-between gap-2 text-sm">
+            <span className="min-w-0 truncate font-bold">
+              {formatLabel(row.label)}
+            </span>
+            <span className="shrink-0 text-xs font-bold text-[#6b5f53]">
               {valueLabel ? valueLabel(row) : formatCount(row.count)}
             </span>
           </div>
-          <div className="h-2 bg-[#f1dfc8]">
+          <div
+            className="h-2"
+            style={{ backgroundColor: chartColors.track }}
+          >
             <div
-              className="h-2 bg-[#7a3f1d]"
-              style={{ width: `${Math.max(5, (row.count / maxValue) * 100)}%` }}
+              className="h-2"
+              style={{
+                backgroundColor: chartColors.revenue,
+                width: `${Math.max(5, (row.count / maxValue) * 100)}%`,
+              }}
             />
           </div>
         </div>
@@ -106,11 +120,11 @@ function MiniBarList({
 
 function Panel({ children, title }: { children: ReactNode; title: string }) {
   return (
-    <section className="border border-black/10 bg-white">
-      <div className="border-b border-black/10 px-5 py-4">
-        <h2 className="text-xl font-bold">{title}</h2>
+    <section className="overflow-hidden border border-black/10 bg-white shadow-sm">
+      <div className="border-b border-black/10 px-4 py-3.5 sm:px-5">
+        <h2 className="text-lg font-bold sm:text-xl">{title}</h2>
       </div>
-      <div className="p-5">{children}</div>
+      <div className="p-4 sm:p-5">{children}</div>
     </section>
   )
 }
@@ -136,39 +150,47 @@ function DataTable({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[420px] text-left text-sm">
+    <div className="overflow-hidden">
+      <table className="w-full table-fixed text-left text-sm">
+        <colgroup>
+          <col className="w-[58%]" />
+          <col />
+        </colgroup>
         <tbody>
           {rows.map((row) => (
             <tr
               className="border-b border-black/10 last:border-b-0"
               key={row.label}
             >
-              <td className="py-3 pr-3">
+              <td className="py-3 pr-2 align-top">
                 <p
-                  className="max-w-[16rem] truncate font-bold"
+                  className="min-w-0 truncate font-bold"
                   title={row.label}
                 >
-                  {truncateText(row.label, 34)}
+                  {truncateText(row.label, 32)}
                 </p>
                 {row.detail ? (
                   <p
-                    className="mt-1 max-w-[16rem] truncate text-xs text-[#6b5f53]"
+                    className="mt-1 min-w-0 truncate text-xs text-[#6b5f53]"
                     title={row.detail}
                   >
-                    {truncateText(row.detail, 36)}
+                    {truncateText(row.detail, 34)}
                   </p>
                 ) : null}
               </td>
-              <td className="py-3 text-right font-bold">
-                {valueKind === 'currency'
-                  ? formatCurrency(row.metric)
-                  : formatCount(row.metric)}
-                {row.secondary !== undefined ? (
-                  <span className="ml-2 text-xs text-[#6b5f53]">
-                    {formatCount(row.secondary)} sold
+              <td className="py-3 pl-2 text-right align-top">
+                <div className="flex flex-col items-end gap-0.5">
+                  <span className="whitespace-nowrap font-bold">
+                    {valueKind === 'currency'
+                      ? formatCurrency(row.metric)
+                      : formatCount(row.metric)}
                   </span>
-                ) : null}
+                  {row.secondary !== undefined ? (
+                    <span className="whitespace-nowrap text-[11px] font-semibold text-[#6b5f53]">
+                      {formatCount(row.secondary)} sold
+                    </span>
+                  ) : null}
+                </div>
               </td>
             </tr>
           ))}
@@ -199,30 +221,46 @@ function TrendChart({
   }
 
   return (
-    <div className="flex h-64 items-end gap-2 border-b border-l border-black/10 px-2 pt-4">
-      {rows.slice(-30).map((row) => (
-        <div
-          className="flex min-w-6 flex-1 flex-col items-center gap-2"
-          key={row.period}
-        >
-          <div className="flex h-48 w-full items-end gap-1">
-            <div
-              className="w-full bg-[#7a3f1d]"
-              style={{
-                height: `${Math.max(4, (row.revenue / maxRevenue) * 100)}%`,
-              }}
-              title={`${row.period}: ${formatCurrency(row.revenue)}`}
-            />
-            <div
-              className="w-full bg-[#2d5a27]"
-              style={{
-                height: `${Math.max(4, (row.paidRevenue / maxRevenue) * 100)}%`,
-              }}
-              title={`${row.period}: paid ${formatCurrency(row.paidRevenue)}`}
-            />
+    <div className="relative h-64 overflow-hidden border border-black/10 bg-[#f8fafc] px-3 pb-4 pt-5">
+      <div
+        className="pointer-events-none absolute inset-x-3 top-1/4 border-t"
+        style={{ borderColor: chartColors.grid }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-3 top-1/2 border-t"
+        style={{ borderColor: chartColors.grid }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-3 top-3/4 border-t"
+        style={{ borderColor: chartColors.grid }}
+      />
+      <div className="relative flex h-full items-end gap-1.5">
+        {rows.slice(-30).map((row) => (
+          <div
+            className="flex h-full min-w-4 flex-1 flex-col items-center gap-2"
+            key={row.period}
+          >
+            <div className="flex h-full w-full items-end gap-1">
+              <div
+                className="w-full"
+                style={{
+                  backgroundColor: chartColors.revenue,
+                  height: `${Math.max(4, (row.revenue / maxRevenue) * 100)}%`,
+                }}
+                title={`${row.period}: ${formatCurrency(row.revenue)}`}
+              />
+              <div
+                className="w-full"
+                style={{
+                  backgroundColor: chartColors.paidRevenue,
+                  height: `${Math.max(4, (row.paidRevenue / maxRevenue) * 100)}%`,
+                }}
+                title={`${row.period}: paid ${formatCurrency(row.paidRevenue)}`}
+              />
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }
@@ -281,12 +319,12 @@ function AdminAnalytics() {
       workspaceLabel="Marketplace studio"
     >
       <div className="space-y-5">
-        <section className="border border-black/10 bg-white p-5">
-          <div className="grid gap-3 2xl:grid-cols-[repeat(6,minmax(0,1fr))_auto] 2xl:items-end">
-            <label className="grid gap-2">
-              <span className="text-sm font-bold">From</span>
+        <section className="border border-black/10 bg-white p-3 sm:p-4">
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-[repeat(7,minmax(0,1fr))_auto] xl:items-end">
+            <label className="grid gap-1.5">
+              <span className="text-xs font-bold">From</span>
               <input
-                className="min-h-11 border border-black/10 px-3 text-sm font-bold outline-none focus:border-[#181512]"
+                className="min-h-9 border border-black/10 px-2 text-xs font-bold outline-none focus:border-[#181512]"
                 onChange={(event) =>
                   updateFilter('dateFrom', event.target.value)
                 }
@@ -294,10 +332,10 @@ function AdminAnalytics() {
                 value={filters.dateFrom ?? ''}
               />
             </label>
-            <label className="grid gap-2">
-              <span className="text-sm font-bold">To</span>
+            <label className="grid gap-1.5">
+              <span className="text-xs font-bold">To</span>
               <input
-                className="min-h-11 border border-black/10 px-3 text-sm font-bold outline-none focus:border-[#181512]"
+                className="min-h-9 border border-black/10 px-2 text-xs font-bold outline-none focus:border-[#181512]"
                 onChange={(event) => updateFilter('dateTo', event.target.value)}
                 type="date"
                 value={filters.dateTo ?? ''}
@@ -309,10 +347,10 @@ function AdminAnalytics() {
               ['Payment method', 'paymentMethod', paymentMethodOptions],
               ['Courier', 'courierProvider', courierProviderOptions],
             ].map(([label, key, options]) => (
-              <label className="grid gap-2" key={String(key)}>
-                <span className="text-sm font-bold">{label as string}</span>
+              <label className="grid gap-1.5" key={String(key)}>
+                <span className="text-xs font-bold">{label as string}</span>
                 <select
-                  className="min-h-11 border border-black/10 bg-white px-3 text-sm font-bold outline-none focus:border-[#181512]"
+                  className="min-h-9 border border-black/10 bg-white px-2 text-xs font-bold outline-none focus:border-[#181512]"
                   onChange={(event) =>
                     updateFilter(key as FilterKey, event.target.value)
                   }
@@ -327,32 +365,33 @@ function AdminAnalytics() {
                 </select>
               </label>
             ))}
-            <div className="grid gap-2">
+            <label className="grid gap-1.5 sm:col-span-2 xl:col-span-1">
+              <span className="text-xs font-bold">Category</span>
+              <select
+                className="min-h-9 border border-black/10 bg-white px-2 text-xs font-bold outline-none focus:border-[#181512]"
+                onChange={(event) => updateFilter('category', event.target.value)}
+                value={filters.category ?? ''}
+              >
+                <option value="">All categories</option>
+                {categories.map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="grid gap-1.5">
+              <span className="hidden text-xs font-bold xl:block">&nbsp;</span>
               <button
-                className="inline-flex min-h-11 items-center justify-center gap-2 border border-black/10 px-4 text-sm font-bold hover:border-[#181512] hover:bg-[#f8f3ea]"
+                className="inline-flex min-h-9 items-center justify-center gap-1.5 border border-black/10 px-3 text-xs font-bold hover:border-[#181512] hover:bg-[#f8f3ea]"
                 onClick={resetFilters}
                 type="button"
               >
-                <RotateCcw className="h-4 w-4" />
+                <RotateCcw className="h-3.5 w-3.5" />
                 Reset
               </button>
             </div>
           </div>
-          <label className="mt-3 grid gap-2 md:max-w-sm">
-            <span className="text-sm font-bold">Category</span>
-            <select
-              className="min-h-11 border border-black/10 bg-white px-3 text-sm font-bold outline-none focus:border-[#181512]"
-              onChange={(event) => updateFilter('category', event.target.value)}
-              value={filters.category ?? ''}
-            >
-              <option value="">All categories</option>
-              {categories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </label>
         </section>
 
         {isError ? (
@@ -414,15 +453,21 @@ function AdminAnalytics() {
               ))}
             </section>
 
-            <section className="grid gap-5 2xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]">
+            <section className="grid gap-4 2xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]">
               <Panel title="Sales trend">
                 <div className="mb-3 flex flex-wrap gap-4 text-xs font-bold text-[#6b5f53]">
                   <span className="inline-flex items-center gap-2">
-                    <span className="h-2 w-5 bg-[#7a3f1d]" />
+                    <span
+                      className="h-2 w-5"
+                      style={{ backgroundColor: chartColors.revenue }}
+                    />
                     Total revenue
                   </span>
                   <span className="inline-flex items-center gap-2">
-                    <span className="h-2 w-5 bg-[#2d5a27]" />
+                    <span
+                      className="h-2 w-5"
+                      style={{ backgroundColor: chartColors.paidRevenue }}
+                    />
                     Paid revenue
                   </span>
                 </div>
@@ -455,7 +500,7 @@ function AdminAnalytics() {
               </Panel>
             </section>
 
-            <section className="grid gap-5 2xl:grid-cols-3">
+            <section className="grid gap-4 2xl:grid-cols-3">
               <Panel title="Payment results">
                 <MiniBarList
                   emptyText="No payment result data found."
@@ -498,7 +543,7 @@ function AdminAnalytics() {
               </Panel>
             </section>
 
-            <section className="grid gap-5 2xl:grid-cols-2">
+            <section className="grid gap-4 2xl:grid-cols-2">
               <Panel title="Top products">
                 <DataTable
                   emptyText="No product sales found."
@@ -513,7 +558,7 @@ function AdminAnalytics() {
               </Panel>
             </section>
 
-            <section className="grid gap-5 2xl:grid-cols-3">
+            <section className="grid gap-4 2xl:grid-cols-3">
               <Panel title="Top categories">
                 <DataTable
                   emptyText="No category sales found."
