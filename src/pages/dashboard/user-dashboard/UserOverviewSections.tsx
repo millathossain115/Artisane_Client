@@ -103,7 +103,7 @@ function UserOverviewSections({
     wishlistItems.length
 
   return (
-    <section className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+    <section className="mt-6 grid gap-6 2xl:grid-cols-[1.2fr_0.8fr]">
       <div className="space-y-6">
         <section className="border border-black/10 bg-white p-5">
           <div className="flex items-start justify-between gap-4">
@@ -138,14 +138,14 @@ function UserOverviewSections({
                   <ReceiptText className="h-6 w-6" />
                 )}
               </Link>
-              <div>
+              <div className="min-w-0">
                 <Link
                   className="text-lg font-bold text-[#7a3f1d] hover:underline"
                   to={getOrderUrl(currentOrder)}
                 >
                   {formatOrderId(currentOrder._id)}
                 </Link>
-                <p className="mt-1 font-bold">
+                <p className="mt-1 truncate font-bold">
                   {getOrderItemName(currentOrder.items?.[0])}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -273,7 +273,7 @@ function UserOverviewSections({
         </section>
       </div>
 
-      <aside className="border border-black/10 bg-[#181512] p-5 text-white">
+      <aside className="border border-black/10 bg-[#181512] p-5 text-white 2xl:sticky 2xl:top-[132px] 2xl:max-h-[calc(100dvh-132px)] 2xl:self-start 2xl:overflow-y-auto">
         <h2 className="text-2xl font-bold">Account shortcuts</h2>
         <p className="mt-1 text-sm text-white/65">
           Standard account pages in one place.
@@ -289,9 +289,9 @@ function UserOverviewSections({
                 key={link.href}
                 to={link.href}
               >
-                <span className="inline-flex items-center gap-2">
+                <span className="inline-flex min-w-0 items-center gap-2">
                   <Icon className="h-4 w-4 text-[#f1c9a6]" />
-                  {link.label}
+                  <span className="truncate">{link.label}</span>
                 </span>
                 <ArrowUpRight className="h-4 w-4 text-[#f1c9a6]" />
               </Link>

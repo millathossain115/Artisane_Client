@@ -218,7 +218,7 @@ function ProfilePage() {
       {isProfileLoading && !profile ? (
         <ProfilePageSkeleton />
       ) : (
-        <div className="grid gap-6 xl:grid-cols-[1fr_0.48fr]">
+        <div className="grid gap-6 2xl:grid-cols-[1fr_0.48fr]">
           <ProfileDetailsSection
             fieldClass={fieldClass}
             isEditing={isEditing}

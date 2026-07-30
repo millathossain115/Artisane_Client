@@ -64,8 +64,8 @@ function UserRow({ onDelete, onEdit, onToggleStatus, user }: UserRowProps) {
 
   return (
     <tr className="border-t border-black/10 transition hover:bg-[#f8f3ea]">
-      <td className="px-5 py-4">
-        <div className="flex items-center gap-3">
+      <td className="min-w-0 px-3 py-4 2xl:px-5">
+        <div className="flex min-w-0 items-center gap-3">
           <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-sm font-bold text-[#7a3f1d]">
             {user.avatar ? (
               <img
@@ -77,51 +77,67 @@ function UserRow({ onDelete, onEdit, onToggleStatus, user }: UserRowProps) {
               getInitials(user.name)
             )}
           </span>
-          <span>
-            <span className="block font-bold">{user.name}</span>
-            <span className="mt-1 flex items-center gap-1 text-xs font-semibold text-[#6b5f53]">
-              <Mail className="h-3.5 w-3.5" />
-              {user.email}
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-bold" title={user.name}>
+              {user.name}
+            </span>
+            <span
+              className="mt-1 flex min-w-0 items-center gap-1 text-xs font-semibold text-[#6b5f53]"
+              title={user.email}
+            >
+              <Mail className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{user.email}</span>
             </span>
           </span>
         </div>
       </td>
-      <td className="px-5 py-4">
+      <td className="px-3 py-4 2xl:px-5">
         <span
-          className={`inline-flex min-h-8 items-center px-3 text-xs font-bold ${
+          className={`inline-flex max-w-full min-h-8 items-center px-2 text-xs font-bold 2xl:px-3 ${
             isAdmin ? 'bg-[#181512] text-white' : 'bg-[#f8f3ea] text-[#7a3f1d]'
           }`}
         >
-          {formatRole(user.role)}
+          <span className="truncate">{formatRole(user.role)}</span>
         </span>
       </td>
-      <td className="px-5 py-4">
+      <td className="px-3 py-4 2xl:px-5">
         <span
-          className={`inline-flex min-h-8 items-center px-3 text-xs font-bold ${
+          className={`inline-flex max-w-full min-h-8 items-center px-2 text-xs font-bold 2xl:px-3 ${
             isBlocked
               ? 'bg-[#fff5ef] text-[#8f3f1d]'
               : 'bg-[#effaf3] text-[#1f6b43]'
           }`}
         >
-          {formatStatus(user.status)}
+          <span className="truncate">{formatStatus(user.status)}</span>
         </span>
       </td>
-      <td className="px-5 py-4 text-[#6b5f53]">{user.phone || 'No phone'}</td>
-      <td className="px-5 py-4 text-[#6b5f53]">
+      <td
+        className="truncate px-3 py-4 text-[#6b5f53] 2xl:px-5"
+        title={user.phone || 'No phone'}
+      >
+        {user.phone || 'No phone'}
+      </td>
+      <td className="min-w-0 px-3 py-4 text-[#6b5f53] 2xl:px-5">
         {user.city ? (
-          <span className="inline-flex items-center gap-1">
-            <MapPin className="h-4 w-4 text-[#7a3f1d]" />
-            {user.city}
+          <span className="inline-flex min-w-0 max-w-full items-center gap-1">
+            <MapPin className="h-4 w-4 shrink-0 text-[#7a3f1d]" />
+            <span className="truncate" title={user.city}>
+              {user.city}
+            </span>
           </span>
         ) : (
           'No city'
         )}
       </td>
-      <td className="max-w-xs px-5 py-4 text-[#6b5f53]">
-        <span className="line-clamp-2">{user.address || 'No address'}</span>
+      <td className="min-w-0 px-3 py-4 text-[#6b5f53] 2xl:px-5">
+        <span className="line-clamp-2" title={user.address || 'No address'}>
+          {user.address || 'No address'}
+        </span>
       </td>
-      <td className="px-5 py-4 text-[#6b5f53]">{formatDate(user.createdAt)}</td>
-      <td className="px-5 py-4">
+      <td className="truncate px-3 py-4 text-[#6b5f53] 2xl:px-5">
+        {formatDate(user.createdAt)}
+      </td>
+      <td className="px-3 py-4 2xl:px-5">
         <div className="relative flex" ref={menuRef}>
           <button
             aria-expanded={isMenuOpen}

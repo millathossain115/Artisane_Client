@@ -81,7 +81,7 @@ function SupportPage() {
       title="Support"
       workspaceLabel="Collector account"
     >
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="grid gap-6">
           <section className="grid gap-4 sm:grid-cols-3">
             {quickHelpItems.map((item) => {
@@ -149,7 +149,7 @@ function SupportPage() {
           </section>
         </div>
 
-        <aside className="border border-black/10 bg-white p-5 xl:self-start">
+        <aside className="border border-black/10 bg-white p-5 2xl:sticky 2xl:top-[132px] 2xl:max-h-[calc(100dvh-132px)] 2xl:self-start 2xl:overflow-y-auto">
           <span className="grid h-11 w-11 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
             <CircleHelp className="h-5 w-5" />
           </span>

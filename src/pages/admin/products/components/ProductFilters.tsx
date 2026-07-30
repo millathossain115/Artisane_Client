@@ -2,10 +2,7 @@ import { RotateCcw, Search } from 'lucide-react'
 import type { Dispatch, SetStateAction } from 'react'
 
 import type { Category } from '../../../../features/categories/categoryApi'
-import {
-  PAGE_SIZE_OPTIONS,
-  type SortFilter,
-} from '../productTableUtils'
+import { PAGE_SIZE_OPTIONS, type SortFilter } from '../productTableUtils'
 
 type ProductFiltersProps = {
   categories: Category[]
@@ -44,7 +41,7 @@ function ProductFilters({
 
   return (
     <div className="border-b border-black/10 p-5">
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] xl:items-end">
+      <div className="grid gap-3 2xl:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] 2xl:items-end">
         <label className="grid gap-2">
           <span className="text-sm font-bold">Search products</span>
           <span className="relative">

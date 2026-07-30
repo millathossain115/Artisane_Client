@@ -56,7 +56,9 @@ function truncateText(value: string, maxLength = 30) {
   return value.length > maxLength ? `${value.slice(0, maxLength - 2)}..` : value
 }
 
-function getMaxValue(rows: Array<{ count?: number; revenue?: number; soldQuantity?: number }>) {
+function getMaxValue(
+  rows: Array<{ count?: number; revenue?: number; soldQuantity?: number }>,
+) {
   return Math.max(
     1,
     ...rows.map((row) => row.revenue ?? row.soldQuantity ?? row.count ?? 0),
@@ -75,7 +77,9 @@ function MiniBarList({
   const maxValue = getMaxValue(rows)
 
   if (!rows.length) {
-    return <p className="py-8 text-sm font-semibold text-[#6b5f53]">{emptyText}</p>
+    return (
+      <p className="py-8 text-sm font-semibold text-[#6b5f53]">{emptyText}</p>
+    )
   }
 
   return (
@@ -100,13 +104,7 @@ function MiniBarList({
   )
 }
 
-function Panel({
-  children,
-  title,
-}: {
-  children: ReactNode
-  title: string
-}) {
+function Panel({ children, title }: { children: ReactNode; title: string }) {
   return (
     <section className="border border-black/10 bg-white">
       <div className="border-b border-black/10 px-5 py-4">
@@ -123,11 +121,18 @@ function DataTable({
   valueKind = 'currency',
 }: {
   emptyText: string
-  rows: Array<{ detail?: string; label: string; metric: number; secondary?: number }>
+  rows: Array<{
+    detail?: string
+    label: string
+    metric: number
+    secondary?: number
+  }>
   valueKind?: 'count' | 'currency'
 }) {
   if (!rows.length) {
-    return <p className="py-8 text-sm font-semibold text-[#6b5f53]">{emptyText}</p>
+    return (
+      <p className="py-8 text-sm font-semibold text-[#6b5f53]">{emptyText}</p>
+    )
   }
 
   return (
@@ -135,13 +140,22 @@ function DataTable({
       <table className="w-full min-w-[420px] text-left text-sm">
         <tbody>
           {rows.map((row) => (
-            <tr className="border-b border-black/10 last:border-b-0" key={row.label}>
+            <tr
+              className="border-b border-black/10 last:border-b-0"
+              key={row.label}
+            >
               <td className="py-3 pr-3">
-                <p className="max-w-[16rem] truncate font-bold" title={row.label}>
+                <p
+                  className="max-w-[16rem] truncate font-bold"
+                  title={row.label}
+                >
                   {truncateText(row.label, 34)}
                 </p>
                 {row.detail ? (
-                  <p className="mt-1 max-w-[16rem] truncate text-xs text-[#6b5f53]" title={row.detail}>
+                  <p
+                    className="mt-1 max-w-[16rem] truncate text-xs text-[#6b5f53]"
+                    title={row.detail}
+                  >
                     {truncateText(row.detail, 36)}
                   </p>
                 ) : null}
@@ -167,27 +181,43 @@ function DataTable({
 function TrendChart({
   rows,
 }: {
-  rows: Array<{ orders: number; paidRevenue: number; period: string; revenue: number }>
+  rows: Array<{
+    orders: number
+    paidRevenue: number
+    period: string
+    revenue: number
+  }>
 }) {
   const maxRevenue = Math.max(1, ...rows.map((row) => row.revenue))
 
   if (!rows.length) {
-    return <p className="py-8 text-sm font-semibold text-[#6b5f53]">No sales trend data found.</p>
+    return (
+      <p className="py-8 text-sm font-semibold text-[#6b5f53]">
+        No sales trend data found.
+      </p>
+    )
   }
 
   return (
     <div className="flex h-64 items-end gap-2 border-b border-l border-black/10 px-2 pt-4">
       {rows.slice(-30).map((row) => (
-        <div className="flex min-w-6 flex-1 flex-col items-center gap-2" key={row.period}>
+        <div
+          className="flex min-w-6 flex-1 flex-col items-center gap-2"
+          key={row.period}
+        >
           <div className="flex h-48 w-full items-end gap-1">
             <div
               className="w-full bg-[#7a3f1d]"
-              style={{ height: `${Math.max(4, (row.revenue / maxRevenue) * 100)}%` }}
+              style={{
+                height: `${Math.max(4, (row.revenue / maxRevenue) * 100)}%`,
+              }}
               title={`${row.period}: ${formatCurrency(row.revenue)}`}
             />
             <div
               className="w-full bg-[#2d5a27]"
-              style={{ height: `${Math.max(4, (row.paidRevenue / maxRevenue) * 100)}%` }}
+              style={{
+                height: `${Math.max(4, (row.paidRevenue / maxRevenue) * 100)}%`,
+              }}
               title={`${row.period}: paid ${formatCurrency(row.paidRevenue)}`}
             />
           </div>
@@ -252,12 +282,14 @@ function AdminAnalytics() {
     >
       <div className="space-y-5">
         <section className="border border-black/10 bg-white p-5">
-          <div className="grid gap-3 xl:grid-cols-[repeat(6,minmax(0,1fr))_auto] xl:items-end">
+          <div className="grid gap-3 2xl:grid-cols-[repeat(6,minmax(0,1fr))_auto] 2xl:items-end">
             <label className="grid gap-2">
               <span className="text-sm font-bold">From</span>
               <input
                 className="min-h-11 border border-black/10 px-3 text-sm font-bold outline-none focus:border-[#181512]"
-                onChange={(event) => updateFilter('dateFrom', event.target.value)}
+                onChange={(event) =>
+                  updateFilter('dateFrom', event.target.value)
+                }
                 type="date"
                 value={filters.dateFrom ?? ''}
               />
@@ -281,7 +313,9 @@ function AdminAnalytics() {
                 <span className="text-sm font-bold">{label as string}</span>
                 <select
                   className="min-h-11 border border-black/10 bg-white px-3 text-sm font-bold outline-none focus:border-[#181512]"
-                  onChange={(event) => updateFilter(key as FilterKey, event.target.value)}
+                  onChange={(event) =>
+                    updateFilter(key as FilterKey, event.target.value)
+                  }
                   value={filters[key as FilterKey] ?? ''}
                 >
                   <option value="">All</option>
@@ -330,21 +364,43 @@ function AdminAnalytics() {
         ) : null}
 
         {isLoading ? (
-          <SkeletonCard count={8} gridCols="grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" />
+          <SkeletonCard
+            count={8}
+            gridCols="grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4"
+          />
         ) : analytics ? (
           <>
-            <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <section className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
               {[
                 ['Total revenue', formatCurrency(kpis?.totalRevenue), Wallet],
                 ['Paid revenue', formatCurrency(kpis?.paidRevenue), CreditCard],
                 ['Orders', formatCount(kpis?.totalOrders), ShoppingBag],
-                ['Avg. order value', formatCurrency(kpis?.averageOrderValue), BarChart3],
-                ['Payment success', `${kpis?.conversionProxy ?? 0}%`, PackageCheck],
+                [
+                  'Avg. order value',
+                  formatCurrency(kpis?.averageOrderValue),
+                  BarChart3,
+                ],
+                [
+                  'Payment success',
+                  `${kpis?.conversionProxy ?? 0}%`,
+                  PackageCheck,
+                ],
                 ['New customers', formatCount(kpis?.newCustomers), UsersRound],
-                ['Repeat customers', formatCount(kpis?.repeatCustomers), UsersRound],
-                ['Failed / refunded', formatCount(kpis?.failedOrRefundedPayments), AlertTriangle],
+                [
+                  'Repeat customers',
+                  formatCount(kpis?.repeatCustomers),
+                  UsersRound,
+                ],
+                [
+                  'Failed / refunded',
+                  formatCount(kpis?.failedOrRefundedPayments),
+                  AlertTriangle,
+                ],
               ].map(([label, value, Icon]) => (
-                <div className="border border-black/10 bg-white p-5" key={label as string}>
+                <div
+                  className="border border-black/10 bg-white p-5"
+                  key={label as string}
+                >
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-xs font-bold uppercase tracking-wider text-[#6b5f53]">
                       {label as string}
@@ -358,7 +414,7 @@ function AdminAnalytics() {
               ))}
             </section>
 
-            <section className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]">
+            <section className="grid gap-5 2xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]">
               <Panel title="Sales trend">
                 <div className="mb-3 flex flex-wrap gap-4 text-xs font-bold text-[#6b5f53]">
                   <span className="inline-flex items-center gap-2">
@@ -383,19 +439,23 @@ function AdminAnalytics() {
                     <span className="block text-xs font-bold uppercase text-[#6b5f53]">
                       Cancellation rate
                     </span>
-                    <span className="text-xl font-bold">{analytics.orders.cancellationRate}%</span>
+                    <span className="text-xl font-bold">
+                      {analytics.orders.cancellationRate}%
+                    </span>
                   </p>
                   <p>
                     <span className="block text-xs font-bold uppercase text-[#6b5f53]">
                       Fulfillment backlog
                     </span>
-                    <span className="text-xl font-bold">{analytics.orders.fulfillmentBacklog}</span>
+                    <span className="text-xl font-bold">
+                      {analytics.orders.fulfillmentBacklog}
+                    </span>
                   </p>
                 </div>
               </Panel>
             </section>
 
-            <section className="grid gap-5 xl:grid-cols-3">
+            <section className="grid gap-5 2xl:grid-cols-3">
               <Panel title="Payment results">
                 <MiniBarList
                   emptyText="No payment result data found."
@@ -420,8 +480,12 @@ function AdminAnalytics() {
                   ].map(([label, value]) => (
                     <div className="bg-[#f8f3ea] p-3" key={label as string}>
                       <Truck className="mx-auto h-4 w-4 text-[#7a3f1d]" />
-                      <p className="mt-2 text-lg font-bold">{value as number}</p>
-                      <p className="text-xs font-bold text-[#6b5f53]">{label as string}</p>
+                      <p className="mt-2 text-lg font-bold">
+                        {value as number}
+                      </p>
+                      <p className="text-xs font-bold text-[#6b5f53]">
+                        {label as string}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -434,16 +498,22 @@ function AdminAnalytics() {
               </Panel>
             </section>
 
-            <section className="grid gap-5 xl:grid-cols-2">
+            <section className="grid gap-5 2xl:grid-cols-2">
               <Panel title="Top products">
-                <DataTable emptyText="No product sales found." rows={topProductRows} />
+                <DataTable
+                  emptyText="No product sales found."
+                  rows={topProductRows}
+                />
               </Panel>
               <Panel title="Top customers">
-                <DataTable emptyText="No customer spend found." rows={topCustomerRows} />
+                <DataTable
+                  emptyText="No customer spend found."
+                  rows={topCustomerRows}
+                />
               </Panel>
             </section>
 
-            <section className="grid gap-5 xl:grid-cols-3">
+            <section className="grid gap-5 2xl:grid-cols-3">
               <Panel title="Top categories">
                 <DataTable
                   emptyText="No category sales found."
@@ -472,13 +542,21 @@ function AdminAnalytics() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-[#f8f3ea] p-4">
                     <Star className="h-5 w-5 text-[#7a3f1d]" />
-                    <p className="mt-3 text-2xl font-bold">{analytics.reviews.averageRating}</p>
-                    <p className="text-xs font-bold text-[#6b5f53]">Average rating</p>
+                    <p className="mt-3 text-2xl font-bold">
+                      {analytics.reviews.averageRating}
+                    </p>
+                    <p className="text-xs font-bold text-[#6b5f53]">
+                      Average rating
+                    </p>
                   </div>
                   <div className="bg-[#f8f3ea] p-4">
                     <ShieldAlert className="h-5 w-5 text-[#8f3f1d]" />
-                    <p className="mt-3 text-2xl font-bold">{analytics.reviews.hiddenReviews}</p>
-                    <p className="text-xs font-bold text-[#6b5f53]">Hidden reviews</p>
+                    <p className="mt-3 text-2xl font-bold">
+                      {analytics.reviews.hiddenReviews}
+                    </p>
+                    <p className="text-xs font-bold text-[#6b5f53]">
+                      Hidden reviews
+                    </p>
                   </div>
                 </div>
                 <div className="mt-4">
@@ -496,10 +574,16 @@ function AdminAnalytics() {
                 {[
                   ['Admin actions', analytics.activity.adminActions],
                   ['Failed logins', analytics.activity.failedLogins],
-                  ['Warnings / failed', analytics.activity.warningOrFailedEvents],
+                  [
+                    'Warnings / failed',
+                    analytics.activity.warningOrFailedEvents,
+                  ],
                   ['Shipping sync warnings', analytics.shipping.syncWarnings],
                 ].map(([label, value]) => (
-                  <div className="border border-black/10 bg-[#f8f3ea] p-4" key={label as string}>
+                  <div
+                    className="border border-black/10 bg-[#f8f3ea] p-4"
+                    key={label as string}
+                  >
                     <p className="text-xs font-bold uppercase text-[#6b5f53]">
                       {label as string}
                     </p>
@@ -533,7 +617,9 @@ function AdminAnalytics() {
           onClick={() => void refetch()}
           type="button"
         >
-          <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`}
+          />
           Refresh analytics
         </button>
       </div>

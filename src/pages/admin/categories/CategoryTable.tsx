@@ -163,23 +163,32 @@ function CategoryProductCount({ categoryId }: { categoryId: string }) {
 
   if (isLoading) {
     return (
-      <span className="inline-flex min-h-8 items-center bg-[#f8f3ea] px-3 text-xs font-bold text-[#6b5f53]">
-        Loading
+      <span
+        className="inline-flex min-h-8 min-w-10 items-center justify-center bg-[#f8f3ea] px-3 text-xs font-bold text-[#6b5f53]"
+        title="Products loading"
+      >
+        ...
       </span>
     )
   }
 
   if (isError) {
     return (
-      <span className="inline-flex min-h-8 items-center bg-[#fff5ef] px-3 text-xs font-bold text-[#8f3f1d]">
-        Failed
+      <span
+        className="inline-flex min-h-8 min-w-10 items-center justify-center bg-[#fff5ef] px-3 text-xs font-bold text-[#8f3f1d]"
+        title="Product count failed"
+      >
+        -
       </span>
     )
   }
 
   return (
-    <span className="inline-flex min-h-8 items-center bg-[#effaf3] px-3 text-xs font-bold text-[#1f6b43]">
-      {productCount} {productCount === 1 ? 'product' : 'products'}
+    <span
+      className="inline-flex min-h-8 min-w-10 items-center justify-center bg-[#effaf3] px-3 text-xs font-bold text-[#1f6b43]"
+      title={`${productCount} ${productCount === 1 ? 'product' : 'products'}`}
+    >
+      {productCount}
     </span>
   )
 }
@@ -227,7 +236,10 @@ function CategoryTable() {
   const categoryMeta = categoryList?.meta
   const totalCategories = categoryMeta?.total ?? categories.length
   const totalPages = Math.max(1, categoryMeta?.totalPage ?? 1)
-  const safeCurrentPage = Math.min(categoryMeta?.page ?? currentPage, totalPages)
+  const safeCurrentPage = Math.min(
+    categoryMeta?.page ?? currentPage,
+    totalPages,
+  )
   const resultStart = totalCategories
     ? (safeCurrentPage - 1) * (categoryMeta?.limit ?? pageSize) + 1
     : 0
@@ -241,10 +253,10 @@ function CategoryTable() {
     pageSize !== PAGE_SIZE_OPTIONS[0]
   const isEditFormChanged = Boolean(
     categoryToEdit &&
-      (editForm.name.trim() !== categoryToEdit.name ||
-        editForm.slug.trim() !== categoryToEdit.slug ||
-        editForm.description.trim() !== (categoryToEdit.description ?? '') ||
-        Boolean(editImageFile)),
+    (editForm.name.trim() !== categoryToEdit.name ||
+      editForm.slug.trim() !== categoryToEdit.slug ||
+      editForm.description.trim() !== (categoryToEdit.description ?? '') ||
+      Boolean(editImageFile)),
   )
 
   useEffect(() => {
@@ -478,7 +490,7 @@ function CategoryTable() {
         />
       ) : null}
 
-      <div className="grid gap-3 border-b border-black/10 p-5 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:items-end">
+      <div className="grid gap-3 border-b border-black/10 p-5 2xl:grid-cols-[minmax(0,1fr)_auto_auto] 2xl:items-end">
         <label className="grid gap-2 text-sm font-bold">
           Search categories
           <span className="relative">
@@ -546,186 +558,59 @@ function CategoryTable() {
 
       {isCategoriesLoading ? (
         <div className="p-5">
-          <SkeletonTable rows={pageSize} cols={7} />
+          <SkeletonTable rows={pageSize} cols={5} />
         </div>
       ) : (
         <>
-        <div className="grid gap-3 p-4 lg:hidden">
-          {categories.length ? (
-            categories.map((category) => {
-              const imageUrl = getCategoryImageUrl(category)
-              const categoryIsActive = isCategoryActive(category)
-
-              return (
-                <article
-                  className="border border-black/10 bg-white p-4"
-                  key={category._id}
-                >
-                  <div className="flex items-start gap-3">
-                    <Link
-                      className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]"
-                      to={`/products?category=${encodeURIComponent(category._id)}`}
-                    >
-                      {imageUrl ? (
-                        <img
-                          alt=""
-                          className="h-full w-full object-cover"
-                          src={imageUrl}
-                        />
-                      ) : (
-                        <Globe2 className="h-5 w-5" />
-                      )}
-                    </Link>
-                    <div className="min-w-0 flex-1">
-                      <Link
-                        className="line-clamp-2 font-bold hover:underline"
-                        to={`/products?category=${encodeURIComponent(category._id)}`}
-                      >
-                        {category.name}
-                      </Link>
-                      <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
-                        {category._id.slice(-8).toUpperCase()}
-                      </p>
-                      <p className="mt-2 line-clamp-2 text-sm text-[#6b5f53]">
-                        {category.description || 'No description added.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap gap-2 border-t border-black/10 pt-3">
-                    <CategoryProductCount categoryId={category._id} />
-                    <button
-                      className={`inline-flex min-h-8 items-center gap-2 border px-2 text-xs font-bold transition ${
-                        categoryIsActive
-                          ? 'border-[#1f7a4d]/20 bg-[#effaf3] text-[#1f6b43] hover:border-[#1f6b43]'
-                          : 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d] hover:border-[#8f3f1d]'
-                      } disabled:cursor-not-allowed disabled:opacity-60`}
-                      disabled={isUpdating}
-                      onClick={() => handleToggleCategoryStatus(category)}
-                      type="button"
-                    >
-                      {categoryIsActive ? (
-                        <Eye className="h-4 w-4" />
-                      ) : (
-                        <EyeOff className="h-4 w-4" />
-                      )}
-                      {categoryIsActive ? 'Active' : 'Inactive'}
-                    </button>
-                    <span className="inline-flex min-h-8 items-center bg-[#f8f3ea] px-2 text-xs font-bold text-[#6b5f53]">
-                      {formatDate(category.createdAt)}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 flex justify-end gap-2">
-                    <button
-                      aria-label={`Update ${category.name}`}
-                      className="grid h-9 w-9 place-items-center border border-black/10 text-[#181512] transition hover:border-[#181512] hover:bg-white"
-                      onClick={() => openEditModal(category)}
-                      type="button"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button
-                      aria-label={`Delete ${category.name}`}
-                      className="grid h-9 w-9 place-items-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef]"
-                      onClick={() => {
-                        setStatus('')
-                        setError('')
-                        setCategoryToDelete(category)
-                      }}
-                      type="button"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </article>
-              )
-            })
-          ) : (
-            <p className="border border-black/10 bg-[#f8f3ea] p-5 text-center text-sm font-semibold text-[#6b5f53]">
-              {totalCategories
-                ? 'No categories match the current filters.'
-                : 'No categories found.'}
-            </p>
-          )}
-        </div>
-
-        <div className="hidden overflow-x-auto lg:block">
-        <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
-          <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
-            <tr>
-              <th className="px-5 py-3">Category</th>
-              <th className="px-5 py-3">Description</th>
-              <th className="px-5 py-3">Products</th>
-              <th className="px-5 py-3">Created</th>
-              <th className="px-5 py-3">Updated</th>
-              <th className="px-5 py-3">Status</th>
-              <th className="px-5 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+          <div className="grid gap-3 p-4 lg:hidden">
             {categories.length ? (
               categories.map((category) => {
                 const imageUrl = getCategoryImageUrl(category)
                 const categoryIsActive = isCategoryActive(category)
 
                 return (
-                  <tr
-                    className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
+                  <article
+                    className="border border-black/10 bg-white p-4"
                     key={category._id}
                   >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3">
+                      <Link
+                        className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]"
+                        to={`/products?category=${encodeURIComponent(category._id)}`}
+                      >
+                        {imageUrl ? (
+                          <img
+                            alt=""
+                            className="h-full w-full object-cover"
+                            src={imageUrl}
+                          />
+                        ) : (
+                          <Globe2 className="h-5 w-5" />
+                        )}
+                      </Link>
+                      <div className="min-w-0 flex-1">
                         <Link
-                          className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d] transition hover:opacity-80"
+                          className="line-clamp-2 font-bold hover:underline"
                           to={`/products?category=${encodeURIComponent(category._id)}`}
                         >
-                          {imageUrl ? (
-                            <img
-                              alt=""
-                              className="h-full w-full object-cover"
-                              src={imageUrl}
-                            />
-                          ) : (
-                            <Globe2 className="h-5 w-5" />
-                          )}
+                          {category.name}
                         </Link>
-                        <span className="min-w-0">
-                          <Link
-                            className="block max-w-[200px] truncate font-bold hover:underline"
-                            title={category.name}
-                            to={`/products?category=${encodeURIComponent(category._id)}`}
-                          >
-                            {category.name}
-                          </Link>
-                          <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
-                            {category._id.slice(-8).toUpperCase()}
-                          </span>
-                        </span>
+                        <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
+                          {category._id.slice(-8).toUpperCase()}
+                        </p>
+                        <p className="mt-2 line-clamp-2 text-sm text-[#6b5f53]">
+                          {category.description || 'No description added.'}
+                        </p>
                       </div>
-                    </td>
-                    <td className="max-w-xs px-5 py-4 text-[#6b5f53]">
-                      <span
-                        className="line-clamp-2"
-                        title={category.description || ''}
-                      >
-                        {category.description
-                          ? truncateWords(category.description, 10)
-                          : 'No description added.'}
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2 border-t border-black/10 pt-3">
+                      <span className="inline-flex min-h-8 items-center bg-[#f8f3ea] px-2 text-xs font-bold text-[#6b5f53]">
+                        Products
                       </span>
-                    </td>
-                    <td className="px-5 py-4">
                       <CategoryProductCount categoryId={category._id} />
-                    </td>
-                    <td className="px-5 py-4 text-[#6b5f53]">
-                      {formatDate(category.createdAt)}
-                    </td>
-                    <td className="px-5 py-4 text-[#6b5f53]">
-                      {formatDate(category.updatedAt)}
-                    </td>
-                    <td className="px-5 py-4">
                       <button
-                        className={`inline-flex min-h-9 items-center gap-2 border px-3 text-xs font-bold transition ${
+                        className={`inline-flex min-h-8 items-center gap-2 border px-2 text-xs font-bold transition ${
                           categoryIsActive
                             ? 'border-[#1f7a4d]/20 bg-[#effaf3] text-[#1f6b43] hover:border-[#1f6b43]'
                             : 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d] hover:border-[#8f3f1d]'
@@ -741,50 +626,179 @@ function CategoryTable() {
                         )}
                         {categoryIsActive ? 'Active' : 'Inactive'}
                       </button>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
-                        <button
-                          className="inline-flex h-9 w-9 items-center justify-center border border-black/10 text-[#181512] transition hover:border-[#181512] hover:bg-white"
-                          aria-label={`Update ${category.name}`}
-                          onClick={() => openEditModal(category)}
-                          type="button"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          className="inline-flex h-9 w-9 items-center justify-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef]"
-                          aria-label={`Delete ${category.name}`}
-                          onClick={() => {
-                            setStatus('')
-                            setError('')
-                            setCategoryToDelete(category)
-                          }}
-                          type="button"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                      <span className="inline-flex min-h-8 items-center bg-[#f8f3ea] px-2 text-xs font-bold text-[#6b5f53]">
+                        {formatDate(category.createdAt)}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex justify-end gap-2">
+                      <button
+                        aria-label={`Update ${category.name}`}
+                        className="grid h-9 w-9 place-items-center border border-black/10 text-[#181512] transition hover:border-[#181512] hover:bg-white"
+                        onClick={() => openEditModal(category)}
+                        type="button"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        aria-label={`Delete ${category.name}`}
+                        className="grid h-9 w-9 place-items-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef]"
+                        onClick={() => {
+                          setStatus('')
+                          setError('')
+                          setCategoryToDelete(category)
+                        }}
+                        type="button"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </article>
                 )
               })
             ) : (
-              <tr className="border-t border-black/10">
-                <td
-                  className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
-                  colSpan={7}
-                >
-                  {totalCategories
-                    ? 'No categories match the current filters.'
-                    : 'No categories found.'}
-                </td>
-              </tr>
+              <p className="border border-black/10 bg-[#f8f3ea] p-5 text-center text-sm font-semibold text-[#6b5f53]">
+                {totalCategories
+                  ? 'No categories match the current filters.'
+                  : 'No categories found.'}
+              </p>
             )}
-          </tbody>
-        </table>
-      </div>
-      </>
+          </div>
+
+          <div className="hidden overflow-hidden lg:block">
+            <table className="w-full table-fixed border-collapse text-left text-sm">
+              <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
+                <tr>
+                  <th className="w-[48%] px-3 py-3 2xl:px-5">Category</th>
+                  <th className="w-[10%] px-2 py-3 text-center 2xl:px-4">
+                    Products
+                  </th>
+                  <th className="w-[14%] px-2 py-3 2xl:px-4">Created</th>
+                  <th className="w-[14%] px-2 py-3 2xl:px-4">Status</th>
+                  <th className="w-[14%] px-2 py-3 text-right 2xl:px-4">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.length ? (
+                  categories.map((category) => {
+                    const imageUrl = getCategoryImageUrl(category)
+                    const categoryIsActive = isCategoryActive(category)
+
+                    return (
+                      <tr
+                        className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
+                        key={category._id}
+                      >
+                        <td className="min-w-0 px-3 py-4 2xl:px-5">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <Link
+                              className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d] transition hover:opacity-80"
+                              to={`/products?category=${encodeURIComponent(category._id)}`}
+                            >
+                              {imageUrl ? (
+                                <img
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                  src={imageUrl}
+                                />
+                              ) : (
+                                <Globe2 className="h-5 w-5" />
+                              )}
+                            </Link>
+                            <span className="min-w-0 flex-1">
+                              <Link
+                                className="block truncate font-bold hover:underline"
+                                title={category.name}
+                                to={`/products?category=${encodeURIComponent(category._id)}`}
+                              >
+                                {category.name}
+                              </Link>
+                              <span
+                                className="mt-1 block truncate text-xs font-semibold text-[#6b5f53]"
+                                title={category.description || ''}
+                              >
+                                {category.description
+                                  ? truncateWords(category.description, 12)
+                                  : 'No description added.'}
+                              </span>
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-2 py-4 text-center 2xl:px-4">
+                          <CategoryProductCount categoryId={category._id} />
+                        </td>
+                        <td
+                          className="truncate px-2 py-4 text-[#6b5f53] 2xl:px-4"
+                          title={formatDate(category.createdAt)}
+                        >
+                          {formatDate(category.createdAt)}
+                        </td>
+                        <td className="px-2 py-4 2xl:px-4">
+                          <button
+                            className={`inline-flex max-w-full min-h-9 items-center gap-2 border px-2 text-xs font-bold transition 2xl:px-3 ${
+                              categoryIsActive
+                                ? 'border-[#1f7a4d]/20 bg-[#effaf3] text-[#1f6b43] hover:border-[#1f6b43]'
+                                : 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d] hover:border-[#8f3f1d]'
+                            } disabled:cursor-not-allowed disabled:opacity-60`}
+                            disabled={isUpdating}
+                            onClick={() => handleToggleCategoryStatus(category)}
+                            type="button"
+                          >
+                            {categoryIsActive ? (
+                              <Eye className="h-4 w-4" />
+                            ) : (
+                              <EyeOff className="h-4 w-4" />
+                            )}
+                            <span className="truncate">
+                              {categoryIsActive ? 'Active' : 'Inactive'}
+                            </span>
+                          </button>
+                        </td>
+                        <td className="px-2 py-4 2xl:px-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              className="inline-flex h-9 w-9 items-center justify-center border border-black/10 text-[#181512] transition hover:border-[#181512] hover:bg-white"
+                              aria-label={`Update ${category.name}`}
+                              onClick={() => openEditModal(category)}
+                              type="button"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button
+                              className="inline-flex h-9 w-9 items-center justify-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef]"
+                              aria-label={`Delete ${category.name}`}
+                              onClick={() => {
+                                setStatus('')
+                                setError('')
+                                setCategoryToDelete(category)
+                              }}
+                              type="button"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })
+                ) : (
+                  <tr className="border-t border-black/10">
+                    <td
+                      className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
+                      colSpan={5}
+                    >
+                      {totalCategories
+                        ? 'No categories match the current filters.'
+                        : 'No categories found.'}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
@@ -829,9 +843,7 @@ function CategoryTable() {
             className="w-full max-w-2xl border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
             role="dialog"
           >
-            <p className="text-sm font-bold text-[#7a3f1d]">
-              Update category
-            </p>
+            <p className="text-sm font-bold text-[#7a3f1d]">Update category</p>
             <h2 className="mt-2 text-2xl font-bold">{categoryToEdit.name}</h2>
 
             <form className="mt-5" onSubmit={handleUpdateSubmit}>
@@ -1030,13 +1042,17 @@ function CategoryTable() {
               <p className="text-sm font-bold">Status change warning</p>
             </div>
             <h2 className="mt-2 text-2xl font-bold">
-              {isCategoryActive(categoryToToggleStatus) ? 'Deactivate' : 'Activate'}{' '}
+              {isCategoryActive(categoryToToggleStatus)
+                ? 'Deactivate'
+                : 'Activate'}{' '}
               {categoryToToggleStatus.name}?
             </h2>
             <p className="mt-3 text-sm leading-6 text-[#6b5f53]">
               Are you sure you want to mark this category as{' '}
               <strong className="text-[#181512]">
-                {isCategoryActive(categoryToToggleStatus) ? 'Inactive' : 'Active'}
+                {isCategoryActive(categoryToToggleStatus)
+                  ? 'Inactive'
+                  : 'Active'}
               </strong>
               ?{' '}
               {isCategoryActive(categoryToToggleStatus)

@@ -132,17 +132,17 @@ function ProductRowsTable({
         )}
       </div>
 
-      <div className="hidden overflow-x-auto lg:block">
-        <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
+      <div className="hidden overflow-hidden lg:block">
+        <table className="w-full table-fixed border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
-              <th className="px-5 py-3">Product</th>
-              <th className="px-5 py-3">Category</th>
-              <th className="px-5 py-3">Price</th>
-              <th className="px-5 py-3">Stock</th>
-              <th className="px-5 py-3">Brand</th>
-              <th className="px-5 py-3">Created</th>
-              <th className="px-5 py-3 text-right">Action</th>
+              <th className="w-[26%] px-3 py-3 2xl:px-5">Product</th>
+              <th className="w-[14%] px-3 py-3 2xl:px-5">Category</th>
+              <th className="w-[11%] px-3 py-3 2xl:px-5">Price</th>
+              <th className="w-[11%] px-3 py-3 2xl:px-5">Stock</th>
+              <th className="w-[12%] px-3 py-3 2xl:px-5">Brand</th>
+              <th className="w-[10%] px-3 py-3 2xl:px-5">Created</th>
+              <th className="w-[16%] px-3 py-3 text-right 2xl:px-5">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -156,8 +156,8 @@ function ProductRowsTable({
                     className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
                     key={product._id}
                   >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
+                    <td className="min-w-0 px-3 py-4 2xl:px-5">
+                      <div className="flex min-w-0 items-center gap-3">
                         <Link
                           aria-label={`View ${product.name}`}
                           className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden border border-black/10 bg-[#f8f3ea] text-[#6b5f53] transition hover:border-[#181512]"
@@ -173,9 +173,10 @@ function ProductRowsTable({
                             <ImageOff className="h-5 w-5" />
                           )}
                         </Link>
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <Link
-                            className="block font-bold text-[#181512] hover:text-[#7a3f1d] hover:underline"
+                            className="block truncate font-bold text-[#181512] hover:text-[#7a3f1d] hover:underline"
+                            title={product.name}
                             to={productUrl}
                           >
                             {product.name}
@@ -183,50 +184,58 @@ function ProductRowsTable({
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-4">
-                      <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
+                    <td className="min-w-0 px-3 py-4 2xl:px-5">
+                      <span className="block truncate bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
                         {getCategoryName(product.category)}
                       </span>
                     </td>
-                    <td className="px-5 py-4 font-bold text-[#181512]">
+                    <td className="truncate px-3 py-4 font-bold text-[#181512] 2xl:px-5">
                       {formatCurrency(product.price)}
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-3 py-4 2xl:px-5">
                       {product.stock > 0 ? (
-                        <span className="inline-flex items-center gap-1.5 bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
+                        <span className="inline-flex max-w-full items-center gap-1.5 bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
                           <span className="h-1.5 w-1.5 bg-[#1f6b43]" />
-                          {product.stock} in stock
+                          <span className="truncate">
+                            {product.stock}
+                            <span className="hidden 2xl:inline"> in stock</span>
+                          </span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 bg-[#fff5ef] px-2 py-1 text-xs font-bold text-[#8f3f1d]">
+                        <span className="inline-flex max-w-full items-center gap-1.5 bg-[#fff5ef] px-2 py-1 text-xs font-bold text-[#8f3f1d]">
                           <span className="h-1.5 w-1.5 bg-[#8f3f1d]" />
-                          Out of stock
+                          <span className="truncate">Out</span>
                         </span>
                       )}
                     </td>
-                    <td className="px-5 py-4 text-xs font-semibold text-[#6b5f53]">
+                    <td
+                      className="truncate px-3 py-4 text-xs font-semibold text-[#6b5f53] 2xl:px-5"
+                      title={product.brand || 'Artisane'}
+                    >
                       {product.brand || 'Artisane'}
                     </td>
-                    <td className="px-5 py-4 text-[#6b5f53]">
+                    <td className="truncate px-3 py-4 text-[#6b5f53] 2xl:px-5">
                       {formatDate(product.createdAt)}
                     </td>
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-3 py-4 text-right 2xl:px-5">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          className="inline-flex min-h-9 items-center gap-1.5 border border-black/10 bg-white px-3 text-xs font-bold text-[#181512] transition hover:border-[#181512]"
+                          aria-label={`Edit ${product.name}`}
+                          className="inline-flex h-9 w-9 items-center justify-center border border-black/10 bg-white text-xs font-bold text-[#181512] transition hover:border-[#181512] 2xl:w-auto 2xl:px-3"
                           onClick={() => onEdit(product)}
                           type="button"
                         >
                           <Pencil className="h-3.5 w-3.5" />
-                          Edit
+                          <span className="hidden 2xl:inline">Edit</span>
                         </button>
                         <button
-                          className="inline-flex min-h-9 items-center gap-1.5 border border-[#c85f2f]/25 bg-white px-3 text-xs font-bold text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef]"
+                          aria-label={`Delete ${product.name}`}
+                          className="inline-flex h-9 w-9 items-center justify-center border border-[#c85f2f]/25 bg-white text-xs font-bold text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef] 2xl:w-auto 2xl:px-3"
                           onClick={() => onDelete(product)}
                           type="button"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
-                          Delete
+                          <span className="hidden 2xl:inline">Delete</span>
                         </button>
                       </div>
                     </td>
@@ -235,7 +244,10 @@ function ProductRowsTable({
               })
             ) : (
               <tr>
-                <td className="px-5 py-12 text-center text-sm font-semibold text-[#6b5f53]" colSpan={7}>
+                <td
+                  className="px-5 py-12 text-center text-sm font-semibold text-[#6b5f53]"
+                  colSpan={7}
+                >
                   No products match your current search or category filter.
                 </td>
               </tr>
@@ -247,9 +259,14 @@ function ProductRowsTable({
       {totalProducts > 0 && (
         <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm font-semibold text-[#6b5f53]">
-            Showing <strong className="font-bold text-[#181512]">{resultStart}</strong> to{' '}
-            <strong className="font-bold text-[#181512]">{resultEnd}</strong> of{' '}
-            <strong className="font-bold text-[#181512]">{totalProducts}</strong> products
+            Showing{' '}
+            <strong className="font-bold text-[#181512]">{resultStart}</strong>{' '}
+            to <strong className="font-bold text-[#181512]">{resultEnd}</strong>{' '}
+            of{' '}
+            <strong className="font-bold text-[#181512]">
+              {totalProducts}
+            </strong>{' '}
+            products
           </p>
           <div className="flex gap-2">
             <button

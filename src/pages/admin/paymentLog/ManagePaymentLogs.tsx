@@ -50,7 +50,8 @@ const statusOptions: IPaymentLogItem['status'][] = [
 const paymentMethodOptions = ['sslcommerz', 'cod', 'bkash', 'nagad', 'rocket']
 
 function formatPaymentAmount(value?: number, currency = 'BDT') {
-  const safeValue = typeof value === 'number' && !Number.isNaN(value) ? value : 0
+  const safeValue =
+    typeof value === 'number' && !Number.isNaN(value) ? value : 0
   const symbol = currency.toUpperCase() === 'BDT' ? '৳' : `${currency} `
 
   return `${symbol}${safeValue.toLocaleString()}`
@@ -240,7 +241,7 @@ function ManagePaymentLogs() {
           </div>
         ) : null}
 
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
           <div className="border border-black/10 bg-white p-5">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-bold uppercase tracking-wider text-[#6b5f53]">
@@ -253,7 +254,9 @@ function ManagePaymentLogs() {
             {isStatsLoading ? (
               <div className="mt-4 h-8 w-20 animate-pulse bg-[#f1dfc8]" />
             ) : (
-              <p className="mt-4 text-3xl font-bold">{stats?.totalLogs ?? 0}</p>
+              <p className="mt-4 truncate text-3xl font-bold">
+                {stats?.totalLogs ?? 0}
+              </p>
             )}
             <p className="mt-1 text-sm text-[#6b5f53]">
               Rows from logs or orders.
@@ -272,7 +275,10 @@ function ManagePaymentLogs() {
             {isStatsLoading ? (
               <div className="mt-4 h-8 w-28 animate-pulse bg-[#f1dfc8]" />
             ) : (
-              <p className="mt-4 text-3xl font-bold">
+              <p
+                className="mt-4 truncate text-3xl font-bold"
+                title={formatPaymentAmount(stats?.totalRevenue ?? 0)}
+              >
                 {formatPaymentAmount(stats?.totalRevenue ?? 0)}
               </p>
             )}
@@ -291,7 +297,7 @@ function ManagePaymentLogs() {
             {isStatsLoading ? (
               <div className="mt-4 h-8 w-24 animate-pulse bg-[#f1dfc8]" />
             ) : (
-              <p className="mt-4 text-3xl font-bold text-[#1f6b43]">
+              <p className="mt-4 truncate text-3xl font-bold text-[#1f6b43]">
                 {stats?.successRate ?? 0}%
               </p>
             )}
@@ -312,7 +318,7 @@ function ManagePaymentLogs() {
             {isStatsLoading ? (
               <div className="mt-4 h-8 w-20 animate-pulse bg-[#f1dfc8]" />
             ) : (
-              <p className="mt-4 text-3xl font-bold text-[#8f3f1d]">
+              <p className="mt-4 truncate text-3xl font-bold text-[#8f3f1d]">
                 {stats?.failedLogs ?? 0}
               </p>
             )}
@@ -354,7 +360,9 @@ function ManagePaymentLogs() {
                 onClick={handleSync}
                 type="button"
               >
-                <Database className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                <Database
+                  className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`}
+                />
                 Sync from orders
               </button>
             </div>
@@ -366,7 +374,7 @@ function ManagePaymentLogs() {
             </div>
           ) : null}
 
-          <div className="grid gap-3 border-b border-black/10 p-5 xl:grid-cols-[minmax(0,1fr)_auto_auto_auto] xl:items-end">
+          <div className="grid gap-3 border-b border-black/10 p-5 2xl:grid-cols-[minmax(0,1fr)_auto_auto_auto] 2xl:items-end">
             <label className="grid gap-2">
               <span className="text-sm font-bold">Search payments</span>
               <span className="relative">
@@ -447,7 +455,11 @@ function ManagePaymentLogs() {
           ) : !logs.length ? (
             <EmptyState
               action={
-                <button className="btn-secondary" onClick={resetFilters} type="button">
+                <button
+                  className="btn-secondary"
+                  onClick={resetFilters}
+                  type="button"
+                >
                   Reset Filters
                 </button>
               }
@@ -457,83 +469,16 @@ function ManagePaymentLogs() {
             />
           ) : (
             <>
-            <div className="grid gap-3 p-4 lg:hidden">
-              {logs.map((log) => (
-                <article
-                  className="border border-black/10 bg-white p-4"
-                  key={log._id}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <Link
-                        className="block truncate font-mono text-xs font-bold text-[#181512] hover:text-[#7a3f1d] hover:underline"
-                        to={getPaymentLogDetailUrl(log)}
-                      >
-                        {log.transactionId}
-                      </Link>
-                      {log.orderId?.orderNumber ? (
+              <div className="grid gap-3 p-4 lg:hidden">
+                {logs.map((log) => (
+                  <article
+                    className="border border-black/10 bg-white p-4"
+                    key={log._id}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
                         <Link
-                          className="mt-1 block text-xs font-bold text-[#7a3f1d] hover:underline"
-                          to={getPaymentLogDetailUrl(log)}
-                        >
-                          {log.orderId.orderNumber}
-                        </Link>
-                      ) : null}
-                    </div>
-                    <span className="shrink-0 text-sm font-bold">
-                      {formatPaymentAmount(log.amount, log.currency)}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 grid gap-1">
-                    <p className="truncate text-sm font-bold">
-                      {getCustomerName(log)}
-                    </p>
-                    <p className="truncate text-xs text-[#6b5f53]">
-                      {getCustomerEmail(log) || 'No email'}
-                    </p>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {getStatusBadge(log.status)}
-                    <span className="inline-flex items-center gap-1.5 bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#181512]">
-                      <CreditCard className="h-3.5 w-3.5 text-[#7a3f1d]" />
-                      {formatPaymentMethod(log.paymentMethod)}
-                    </span>
-                    <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
-                      {log.source === 'order' ? 'Order' : 'Payment log'}
-                    </span>
-                  </div>
-
-                  <p className="mt-3 border-t border-black/10 pt-3 text-xs font-semibold text-[#6b5f53]">
-                    {formatOrderDate(log.createdAt)}
-                  </p>
-                </article>
-              ))}
-            </div>
-
-            <div className="hidden overflow-x-auto lg:block">
-              <table className="w-full min-w-[980px] border-collapse text-left text-sm">
-                <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
-                  <tr>
-                    <th className="px-5 py-3">Transaction</th>
-                    <th className="px-5 py-3">Customer</th>
-                    <th className="px-5 py-3">Method</th>
-                    <th className="px-5 py-3">Status</th>
-                    <th className="px-5 py-3">Amount</th>
-                    <th className="px-5 py-3">Placed</th>
-                    <th className="px-5 py-3">Source</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {logs.map((log) => (
-                    <tr
-                      className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
-                      key={log._id}
-                    >
-                      <td className="px-5 py-4">
-                        <Link
-                          className="font-mono text-xs font-bold text-[#181512] hover:text-[#7a3f1d] hover:underline"
+                          className="block truncate font-mono text-xs font-bold text-[#181512] hover:text-[#7a3f1d] hover:underline"
                           to={getPaymentLogDetailUrl(log)}
                         >
                           {log.transactionId}
@@ -546,36 +491,118 @@ function ManagePaymentLogs() {
                             {log.orderId.orderNumber}
                           </Link>
                         ) : null}
-                      </td>
-                      <td className="px-5 py-4">
-                        <p className="font-bold">{getCustomerName(log)}</p>
-                        <p className="mt-1 text-xs text-[#6b5f53]">
-                          {getCustomerEmail(log) || 'No email'}
-                        </p>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#181512]">
-                          <CreditCard className="h-3.5 w-3.5 text-[#7a3f1d]" />
-                          {formatPaymentMethod(log.paymentMethod)}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">{getStatusBadge(log.status)}</td>
-                      <td className="px-5 py-4 font-bold">
+                      </div>
+                      <span className="shrink-0 text-sm font-bold">
                         {formatPaymentAmount(log.amount, log.currency)}
-                      </td>
-                      <td className="px-5 py-4 text-[#6b5f53]">
-                        {formatOrderDate(log.createdAt)}
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
-                          {log.source === 'order' ? 'Order' : 'Payment log'}
-                        </span>
-                      </td>
+                      </span>
+                    </div>
+
+                    <div className="mt-3 grid gap-1">
+                      <p className="truncate text-sm font-bold">
+                        {getCustomerName(log)}
+                      </p>
+                      <p className="truncate text-xs text-[#6b5f53]">
+                        {getCustomerEmail(log) || 'No email'}
+                      </p>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {getStatusBadge(log.status)}
+                      <span className="inline-flex items-center gap-1.5 bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#181512]">
+                        <CreditCard className="h-3.5 w-3.5 text-[#7a3f1d]" />
+                        {formatPaymentMethod(log.paymentMethod)}
+                      </span>
+                      <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
+                        {log.source === 'order' ? 'Order' : 'Payment log'}
+                      </span>
+                    </div>
+
+                    <p className="mt-3 border-t border-black/10 pt-3 text-xs font-semibold text-[#6b5f53]">
+                      {formatOrderDate(log.createdAt)}
+                    </p>
+                  </article>
+                ))}
+              </div>
+
+              <div className="hidden overflow-hidden lg:block">
+                <table className="w-full table-fixed border-collapse text-left text-sm">
+                  <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
+                    <tr>
+                      <th className="w-[24%] px-3 py-3 2xl:px-5">
+                        Transaction
+                      </th>
+                      <th className="w-[22%] px-3 py-3 2xl:px-5">Customer</th>
+                      <th className="w-[12%] px-2 py-3 2xl:px-4">Method</th>
+                      <th className="w-[13%] px-2 py-3 2xl:px-4">Status</th>
+                      <th className="w-[12%] px-2 py-3 2xl:px-4">Amount</th>
+                      <th className="w-[17%] px-2 py-3 2xl:px-4">Placed</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {logs.map((log) => (
+                      <tr
+                        className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
+                        key={log._id}
+                      >
+                        <td className="min-w-0 px-3 py-4 2xl:px-5">
+                          <Link
+                            className="block truncate font-mono text-xs font-bold text-[#181512] hover:text-[#7a3f1d] hover:underline"
+                            title={log.transactionId}
+                            to={getPaymentLogDetailUrl(log)}
+                          >
+                            {log.transactionId}
+                          </Link>
+                          {log.orderId?.orderNumber ? (
+                            <Link
+                              className="mt-1 block text-xs font-bold text-[#7a3f1d] hover:underline"
+                              to={getPaymentLogDetailUrl(log)}
+                            >
+                              {log.orderId.orderNumber}
+                            </Link>
+                          ) : null}
+                        </td>
+                        <td className="min-w-0 px-3 py-4 2xl:px-5">
+                          <p
+                            className="truncate font-bold"
+                            title={getCustomerName(log)}
+                          >
+                            {getCustomerName(log)}
+                          </p>
+                          <p
+                            className="mt-1 truncate text-xs text-[#6b5f53]"
+                            title={getCustomerEmail(log) || 'No email'}
+                          >
+                            {getCustomerEmail(log) || 'No email'}
+                          </p>
+                        </td>
+                        <td className="min-w-0 px-2 py-4 2xl:px-4">
+                          <span
+                            className="inline-flex min-w-0 max-w-full items-center gap-1.5 text-xs font-bold text-[#181512]"
+                            title={formatPaymentMethod(log.paymentMethod)}
+                          >
+                            <CreditCard className="h-3.5 w-3.5 shrink-0 text-[#7a3f1d]" />
+                            <span className="truncate">
+                              {formatPaymentMethod(log.paymentMethod)}
+                            </span>
+                          </span>
+                        </td>
+                        <td className="px-2 py-4 2xl:px-4">
+                          {getStatusBadge(log.status)}
+                        </td>
+                        <td className="truncate px-2 py-4 font-bold 2xl:px-4">
+                          {formatPaymentAmount(log.amount, log.currency)}
+                        </td>
+                        <td
+                          className="truncate px-2 py-4 text-[#6b5f53] 2xl:px-4"
+                          title={formatOrderDate(log.createdAt)}
+                        >
+                          {formatOrderDate(log.createdAt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </>
           )}
 

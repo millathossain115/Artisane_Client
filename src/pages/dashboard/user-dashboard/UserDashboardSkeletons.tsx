@@ -10,7 +10,7 @@ export function DashboardMetricsSkeleton({ count = 5 }: { count?: number }) {
   return (
     <section
       className={`grid gap-4 md:grid-cols-2 ${
-        count === 5 ? 'xl:grid-cols-5' : 'xl:grid-cols-4'
+        count === 5 ? '2xl:grid-cols-5' : '2xl:grid-cols-4'
       }`}
     >
       {Array.from({ length: count }).map((_, index) => (
@@ -162,7 +162,7 @@ export function AddressBookSkeleton() {
 
 export function ProfilePageSkeleton() {
   return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_0.48fr]">
+    <div className="grid gap-6 2xl:grid-cols-[1fr_0.48fr]">
       <section className="border border-black/10 bg-white p-5">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/10 pb-4">
           <div className="flex items-center gap-3">
@@ -183,7 +183,7 @@ export function ProfilePageSkeleton() {
           ))}
         </div>
       </section>
-      <aside className="border border-black/10 bg-white p-5">
+      <aside className="border border-black/10 bg-white p-5 2xl:sticky 2xl:top-[132px] 2xl:max-h-[calc(100dvh-132px)] 2xl:self-start 2xl:overflow-y-auto">
         <SkeletonBlock className="h-16 w-16 bg-[#f8f3ea]" />
         <SkeletonBlock className="mt-4 h-6 w-36" />
         <SkeletonBlock className="mt-2 h-3 w-44" />

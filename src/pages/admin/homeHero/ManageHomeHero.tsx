@@ -82,8 +82,7 @@ function clampAutoplaySeconds(value: number) {
 
 function ManageHomeHero() {
   const { data: heroContent, isLoading, refetch } = useGetHomeHeroQuery()
-  const [updateHomeHero, { isLoading: isSaving }] =
-    useUpdateHomeHeroMutation()
+  const [updateHomeHero, { isLoading: isSaving }] = useUpdateHomeHeroMutation()
   const [isActive, setIsActive] = useState(true)
   const [autoplaySeconds, setAutoplaySeconds] = useState(5)
   const [fadeMs, setFadeMs] = useState(800)
@@ -130,10 +129,7 @@ function ManageHomeHero() {
     previewUrlsRef.current = []
   }
 
-  function updateSlide(
-    index: number,
-    updates: Partial<EditableHeroSlide>,
-  ) {
+  function updateSlide(index: number, updates: Partial<EditableHeroSlide>) {
     setSlides((currentSlides) =>
       currentSlides.map((slide, slideIndex) =>
         slideIndex === index ? { ...slide, ...updates } : slide,
@@ -366,7 +362,7 @@ function ManageHomeHero() {
 
               return (
                 <section
-                  className="grid gap-5 border border-black/10 bg-white p-5 xl:grid-cols-[1fr_0.42fr]"
+                  className="grid gap-5 border border-black/10 bg-white p-5 2xl:grid-cols-[1fr_0.42fr]"
                   key={slide.uid}
                 >
                   <div className="space-y-5">
@@ -548,7 +544,7 @@ function ManageHomeHero() {
                     </label>
                   </div>
 
-                  <aside className="bg-[#181512] p-4 text-white">
+                  <aside className="bg-[#181512] p-4 text-white 2xl:sticky 2xl:top-[132px] 2xl:max-h-[calc(100dvh-132px)] 2xl:self-start 2xl:overflow-y-auto">
                     <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#f1c9a6]">
                       Live preview
                     </p>

@@ -22,9 +22,6 @@ import { getWishlistProduct } from '../../../../features/wishlists/wishlistApi'
 import { WishlistTableSkeleton } from '../UserDashboardSkeletons'
 import { getVisibleWishlistIds } from '../wishlistUtils'
 
-const truncateProductName = (name: string, maxLength = 48) =>
-  name.length > maxLength ? `${name.slice(0, maxLength).trim()}...` : name
-
 type WishlistSectionProps = {
   areAllWishlistItemsSelected: boolean
   isClearing: boolean
@@ -54,6 +51,33 @@ type WishlistSectionProps = {
   setPage: Dispatch<SetStateAction<number>>
   wishlistQuantities: Record<string, number>
   wishlistItems: WishlistItem[]
+}
+
+function WishlistCardSkeleton() {
+  return (
+    <div className="grid gap-3 p-4 md:hidden">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <article
+          className="animate-pulse border border-black/10 bg-white p-4"
+          key={index}
+        >
+          <div className="flex gap-3">
+            <div className="h-4 w-4 bg-[#e9dfd2]" />
+            <div className="h-20 w-20 shrink-0 bg-[#f8f3ea]" />
+            <div className="min-w-0 flex-1">
+              <div className="h-4 w-full bg-[#e9dfd2]" />
+              <div className="mt-2 h-3 w-2/3 bg-[#e9dfd2]" />
+              <div className="mt-3 h-6 w-24 bg-[#effaf3]" />
+            </div>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3 border-t border-black/10 pt-4">
+            <div className="h-8 bg-[#e9dfd2]" />
+            <div className="h-8 bg-[#e9dfd2]" />
+          </div>
+        </article>
+      ))}
+    </div>
+  )
 }
 
 function WishlistSection({
@@ -125,11 +149,167 @@ function WishlistSection({
         </div>
       ) : null}
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+      {!isLoading && !wishlistItems.length ? (
+        <div className="border-t border-black/10 px-5 py-10 text-center font-semibold text-[#6b5f53] md:hidden">
+          No wishlist items yet.
+        </div>
+      ) : null}
+
+      {isLoading ? (
+        <WishlistCardSkeleton />
+      ) : wishlistItems.length ? (
+        <div className="grid gap-3 p-4 md:hidden">
+          {wishlistItems.map((item) => {
+            const product = getWishlistProduct(item)
+            const imageUrl = getProductImage(product)
+            const canAddToCart = Boolean(product && product.stock > 0)
+            const quantity = canAddToCart
+              ? Math.min(
+                  Math.max(1, wishlistQuantities[item._id] ?? 1),
+                  product?.stock ?? 1,
+                )
+              : 0
+            const rowSelected = selectedWishlistIds.includes(item._id)
+            const isVisible = visibleWishlistIds.has(item._id)
+
+            return (
+              <article
+                className="border border-black/10 bg-white p-4 shadow-[0_14px_28px_rgba(24,21,18,0.05)]"
+                key={item._id}
+              >
+                <div className="flex gap-3">
+                  <input
+                    aria-label={`Select ${
+                      product?.name ?? 'wishlist product'
+                    } for cart`}
+                    checked={rowSelected && isVisible}
+                    className="mt-1 h-4 w-4 shrink-0 accent-[#181512] disabled:cursor-not-allowed disabled:opacity-40"
+                    disabled={!canAddToCart || !isVisible}
+                    onChange={() => onToggleWishlistSelection(item._id)}
+                    type="checkbox"
+                  />
+                  <Link
+                    className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]"
+                    to={product ? getProductUrl(product) : '#'}
+                  >
+                    {imageUrl ? (
+                      <img
+                        alt={product?.name ?? 'Wishlist product'}
+                        className="h-full w-full object-cover"
+                        src={imageUrl}
+                      />
+                    ) : (
+                      <ImageOff className="h-5 w-5" />
+                    )}
+                  </Link>
+                  <div className="min-w-0 flex-1">
+                    {product ? (
+                      <Link
+                        className="line-clamp-2 font-bold leading-5 transition hover:text-[#7a3f1d]"
+                        title={product.name}
+                        to={getProductUrl(product)}
+                      >
+                        {product.name}
+                      </Link>
+                    ) : (
+                      <p className="font-bold">Product unavailable</p>
+                    )}
+                    <p className="mt-1 truncate text-sm text-[#6b5f53]">
+                      {product?.brand ?? 'Artisane Studio'}
+                    </p>
+                    <span className="mt-2 inline-flex bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
+                      {product?.stock ?? 0} in stock
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 items-center gap-3 border-t border-black/10 pt-4">
+                  <div>
+                    <p className="text-xs font-bold uppercase text-[#6b5f53]">
+                      Price
+                    </p>
+                    <p className="mt-1 font-bold">
+                      {formatPrice(product?.price ?? 0)}
+                    </p>
+                  </div>
+                  <div className="justify-self-end">
+                    <p className="mb-1 text-right text-xs font-bold uppercase text-[#6b5f53]">
+                      Qty
+                    </p>
+                    <div className="inline-grid grid-cols-[32px_40px_32px] overflow-hidden border border-black/10 bg-white">
+                      <button
+                        aria-label={`Decrease ${product?.name ?? 'product'} quantity`}
+                        className="grid h-8 place-items-center transition hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"
+                        disabled={!canAddToCart || quantity <= 1}
+                        onClick={() =>
+                          onUpdateWishlistQuantity(
+                            item._id,
+                            product,
+                            quantity - 1,
+                          )
+                        }
+                        type="button"
+                      >
+                        <Minus className="h-3.5 w-3.5" />
+                      </button>
+                      <span className="grid h-8 place-items-center border-x border-black/10 text-xs font-bold">
+                        {quantity}
+                      </span>
+                      <button
+                        aria-label={`Increase ${product?.name ?? 'product'} quantity`}
+                        className="grid h-8 place-items-center transition hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"
+                        disabled={
+                          !canAddToCart || quantity >= (product?.stock ?? 0)
+                        }
+                        onClick={() =>
+                          onUpdateWishlistQuantity(
+                            item._id,
+                            product,
+                            quantity + 1,
+                          )
+                        }
+                        type="button"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-[1fr_40px] gap-2">
+                  <button
+                    aria-label={`Add ${product?.name ?? 'product'} to cart`}
+                    className="btn-primary !min-h-10 !py-2 !px-3"
+                    disabled={!canAddToCart}
+                    onClick={() => onAddProductToCart(product, quantity)}
+                    type="button"
+                  >
+                    <ShoppingBag className="h-3.5 w-3.5" />
+                    Cart
+                  </button>
+                  <button
+                    aria-label={`Remove ${product?.name ?? 'product'} from wishlist`}
+                    className="btn-danger grid h-10 w-10 !p-0"
+                    disabled={removingId === item._id}
+                    onClick={() =>
+                      onRemoveWishlistItem(item._id, product?.name)
+                    }
+                    type="button"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      ) : null}
+
+      <div className="hidden overflow-hidden md:block">
+        <table className="w-full table-fixed border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
-              <th className="w-12 px-5 py-3">
+              <th className="w-12 px-3 py-3 lg:px-4">
                 <input
                   aria-label="Select all cart-ready wishlist products"
                   checked={areAllWishlistItemsSelected}
@@ -139,12 +319,16 @@ function WishlistSection({
                   type="checkbox"
                 />
               </th>
-              <th className="px-5 py-3">Product</th>
-              <th className="px-5 py-3">Stock</th>
-              <th className="px-5 py-3 text-center">Qty</th>
-              <th className="px-5 py-3">Price</th>
-              <th className="px-5 py-3 text-center">Buy</th>
-              <th className="px-5 py-3 text-right">Remove</th>
+              <th className="w-[32%] px-3 py-3 lg:w-[38%] lg:px-4">Product</th>
+              <th className="w-24 px-3 py-3 lg:px-4">Stock</th>
+              <th className="w-28 px-3 py-3 text-center lg:px-4">Qty</th>
+              <th className="w-24 px-3 py-3 lg:px-4">Price</th>
+              <th className="w-16 px-3 py-3 text-center lg:px-4 xl:w-20">
+                Buy
+              </th>
+              <th className="w-16 px-3 py-3 text-right lg:px-4 xl:w-20">
+                Remove
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -169,7 +353,7 @@ function WishlistSection({
                     className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
                     key={item._id}
                   >
-                    <td className="px-5 py-4">
+                    <td className="px-3 py-4 lg:px-4">
                       <input
                         aria-label={`Select ${
                           product?.name ?? 'wishlist product'
@@ -181,7 +365,7 @@ function WishlistSection({
                         type="checkbox"
                       />
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="min-w-0 px-3 py-4 lg:px-4">
                       <div className="flex min-w-0 items-center gap-3">
                         <Link
                           className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]"
@@ -197,14 +381,14 @@ function WishlistSection({
                             <ImageOff className="h-5 w-5" />
                           )}
                         </Link>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           {product ? (
                             <Link
-                              className="block max-w-[220px] truncate font-bold transition hover:text-[#7a3f1d] sm:max-w-[320px]"
+                              className="block min-w-0 truncate font-bold transition hover:text-[#7a3f1d]"
                               title={product.name}
                               to={getProductUrl(product)}
                             >
-                              {truncateProductName(product.name)}
+                              {product.name}
                             </Link>
                           ) : (
                             <p className="font-bold">Product unavailable</p>
@@ -215,12 +399,12 @@ function WishlistSection({
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-4">
-                      <span className="bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
+                    <td className="px-3 py-4 lg:px-4">
+                      <span className="block truncate bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
                         {product?.stock ?? 0} in stock
                       </span>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-3 py-4 lg:px-4">
                       <div className="mx-auto inline-grid grid-cols-[32px_40px_32px] overflow-hidden border border-black/10 bg-white">
                         <button
                           aria-label={`Decrease ${product?.name ?? 'product'} quantity`}
@@ -259,22 +443,22 @@ function WishlistSection({
                         </button>
                       </div>
                     </td>
-                    <td className="px-5 py-4 font-bold">
+                    <td className="truncate px-3 py-4 font-bold lg:px-4">
                       {formatPrice(product?.price ?? 0)}
                     </td>
-                    <td className="px-5 py-4 text-center">
+                    <td className="px-3 py-4 text-center lg:px-4">
                       <button
                         aria-label={`Add ${product?.name ?? 'product'} to cart`}
-                        className="btn-primary !py-1.5 !px-3"
+                        className="btn-primary !py-1.5 !px-2 xl:!px-3"
                         disabled={!canAddToCart}
                         onClick={() => onAddProductToCart(product, quantity)}
                         type="button"
                       >
                         <ShoppingBag className="h-3.5 w-3.5" />
-                        Cart
+                        <span className="hidden xl:inline">Cart</span>
                       </button>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-3 py-4 lg:px-4">
                       <button
                         aria-label={`Remove ${product?.name ?? 'product'} from wishlist`}
                         className="btn-danger ml-auto grid h-8 w-8 !p-0"

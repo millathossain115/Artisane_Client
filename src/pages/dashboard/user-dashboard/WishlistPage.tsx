@@ -13,9 +13,7 @@ import {
 import { useAppDispatch } from '../../../redux/hooks'
 import { userNavItems } from './userNavItems'
 import WishlistSection from './components/WishlistSection'
-import {
-  getApiErrorMessage,
-} from './wishlistUtils'
+import { getApiErrorMessage } from './wishlistUtils'
 
 function WishlistPage() {
   const dispatch = useAppDispatch()
@@ -65,20 +63,20 @@ function WishlistPage() {
   function getSelectedCartProducts() {
     return wishlistItems.reduce<{ product: Product; quantity: number }[]>(
       (products, item) => {
-      const product = getWishlistProduct(item)
+        const product = getWishlistProduct(item)
 
-      if (
-        product &&
-        product.stock > 0 &&
-        visibleSelectedWishlistIds.includes(item._id)
-      ) {
-        products.push({
-          product,
-          quantity: getWishlistQuantity(item._id, product),
-        })
-      }
+        if (
+          product &&
+          product.stock > 0 &&
+          visibleSelectedWishlistIds.includes(item._id)
+        ) {
+          products.push({
+            product,
+            quantity: getWishlistQuantity(item._id, product),
+          })
+        }
 
-      return products
+        return products
       },
       [],
     )
@@ -188,7 +186,6 @@ function WishlistPage() {
       title="Wishlist"
       workspaceLabel="Collector account"
     >
-
       <WishlistSection
         areAllWishlistItemsSelected={areAllWishlistItemsSelected}
         isClearing={isClearing}

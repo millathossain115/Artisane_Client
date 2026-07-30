@@ -447,19 +447,25 @@ function MyOrdersCardSection({
           </p>
         </div>
 
-        <div className="mt-5 flex gap-2 overflow-x-auto border-t border-black/10 pt-3">
+        <div
+          aria-label="Order status filters"
+          className="category-craft-scroll -mx-5 mt-5 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain border-t border-black/10 px-5 pt-3 pb-1 touch-pan-x sm:mx-0 sm:px-0"
+          role="tablist"
+        >
           {tabs.map((tab) => {
             const isActive = tab.key === selectedTabKey
 
             return (
               <button
-                className={`relative min-h-11 shrink-0 px-4 text-sm font-bold transition ${
+                aria-selected={isActive}
+                className={`relative min-h-11 shrink-0 snap-start px-4 text-sm font-bold transition ${
                   isActive
                     ? 'bg-[#f8f3ea] text-[#7a3f1d]'
                     : 'text-[#6b5f53] hover:bg-[#f8f3ea] hover:text-[#181512]'
                 }`}
                 key={tab.key}
                 onClick={() => onTabChange(tab.key)}
+                role="tab"
                 type="button"
               >
                 {tab.label}

@@ -155,18 +155,18 @@ function UserRowsTable({
         )}
       </div>
 
-      <div className="hidden overflow-x-auto lg:block">
-        <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
+      <div className="hidden overflow-hidden lg:block">
+        <table className="w-full table-fixed border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
-              <th className="px-5 py-3">User</th>
-              <th className="px-5 py-3">Role</th>
-              <th className="px-5 py-3">Status</th>
-              <th className="px-5 py-3">Phone</th>
-              <th className="px-5 py-3">City</th>
-              <th className="px-5 py-3">Address</th>
-              <th className="px-5 py-3">Joined</th>
-              <th className="px-5 py-3">Actions</th>
+              <th className="w-[26%] px-3 py-3 2xl:px-5">User</th>
+              <th className="w-[10%] px-3 py-3 2xl:px-5">Role</th>
+              <th className="w-[10%] px-3 py-3 2xl:px-5">Status</th>
+              <th className="w-[12%] px-3 py-3 2xl:px-5">Phone</th>
+              <th className="w-[12%] px-3 py-3 2xl:px-5">City</th>
+              <th className="w-[18%] px-3 py-3 2xl:px-5">Address</th>
+              <th className="w-[8%] px-3 py-3 2xl:px-5">Joined</th>
+              <th className="w-[4%] px-3 py-3 2xl:px-5">Actions</th>
             </tr>
           </thead>
           <tbody>

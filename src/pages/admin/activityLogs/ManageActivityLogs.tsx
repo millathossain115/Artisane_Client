@@ -177,10 +177,6 @@ function formatValue(value: unknown) {
   }
 }
 
-function formatCompactValue(value: unknown) {
-  return truncateText(formatValue(value).replace(/\s+/g, ' '), 56)
-}
-
 function getFieldLabel(field: string) {
   const fieldLabels: Record<string, string> = {
     actorEmail: 'Actor email',
@@ -415,40 +411,34 @@ function ActivityLogDetailModal({
                 No changed fields were captured for this event.
               </p>
             ) : (
-              <div className="mt-3 overflow-x-auto border border-black/10">
-                <table className="w-full min-w-[560px] text-left text-sm">
-                  <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
-                    <tr>
-                      <th className="px-4 py-3">Field</th>
-                      <th className="px-4 py-3">Before</th>
-                      <th className="px-4 py-3">After</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visibleChanges.map((change) => (
-                      <tr
-                        className="border-t border-black/10"
-                        key={change.field}
-                      >
-                        <td className="px-4 py-3 font-bold">
-                          {getFieldLabel(change.field)}
-                        </td>
-                        <td
-                          className="max-w-[16rem] truncate px-4 py-3 text-[#6b5f53]"
-                          title={formatValue(change.before)}
-                        >
-                          {formatCompactValue(change.before)}
-                        </td>
-                        <td
-                          className="max-w-[16rem] truncate px-4 py-3 text-[#181512]"
-                          title={formatValue(change.after)}
-                        >
-                          {formatCompactValue(change.after)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="mt-3 divide-y divide-black/10 border border-black/10">
+                {visibleChanges.map((change) => (
+                  <article
+                    className="grid gap-3 p-4 sm:grid-cols-[9rem_minmax(0,1fr)]"
+                    key={change.field}
+                  >
+                    <h4 className="text-sm font-bold">
+                      {getFieldLabel(change.field)}
+                    </h4>
+                    <div className="grid gap-3 lg:grid-cols-2">
+                      {[
+                        ['Before', change.before, 'text-[#6b5f53]'],
+                        ['After', change.after, 'text-[#181512]'],
+                      ].map(([label, value, colorClass]) => (
+                        <div className="min-w-0" key={label as string}>
+                          <p className="text-xs font-bold uppercase tracking-wider text-[#7a3f1d]">
+                            {label as string}
+                          </p>
+                          <pre
+                            className={`mt-2 max-h-36 overflow-auto whitespace-pre-wrap break-words bg-[#f8f3ea] p-3 text-xs leading-5 ${colorClass as string}`}
+                          >
+                            {formatValue(value)}
+                          </pre>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                ))}
               </div>
             )}
           </section>
@@ -532,7 +522,7 @@ function ManageActivityLogs() {
       workspaceLabel="Marketplace studio"
     >
       <div className="space-y-5">
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
           {[
             {
               icon: Activity,
@@ -573,7 +563,12 @@ function ManageActivityLogs() {
                 {isStatsLoading ? (
                   <div className="mt-4 h-8 w-20 animate-pulse bg-[#f1dfc8]" />
                 ) : (
-                  <p className="mt-4 text-3xl font-bold">{kpi.value}</p>
+                  <p
+                    className="mt-4 truncate text-3xl font-bold"
+                    title={String(kpi.value)}
+                  >
+                    {kpi.value}
+                  </p>
                 )}
               </div>
             )
@@ -607,7 +602,7 @@ function ManageActivityLogs() {
             </button>
           </div>
 
-          <div className="grid gap-3 border-b border-black/10 p-5 xl:grid-cols-[minmax(0,1fr)_repeat(4,auto)_auto] xl:items-end">
+          <div className="grid gap-3 border-b border-black/10 p-5 2xl:grid-cols-[minmax(0,1fr)_repeat(4,auto)_auto] 2xl:items-end">
             <label className="grid gap-2">
               <span className="text-sm font-bold">Search activity</span>
               <span className="relative">
@@ -711,188 +706,121 @@ function ManageActivityLogs() {
               title="No activity logs found"
             />
           ) : (
-            <>
-            <div className="grid gap-3 p-4 lg:hidden">
-              {logs.map((log) => (
-                <article
-                  className="border border-black/10 bg-white p-4"
-                  key={log._id}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
+            <div className="divide-y divide-black/10">
+              {logs.map((log) => {
+                const actorName = getActorName(log)
+                const actorEmail = log.actorEmail || 'No email'
+                const actionLabel = getActionLabel(log.action)
+                const targetLabel = getTargetLabel(log)
+                const deviceLabel = getDeviceLabel(log)
+                const ipAddress = normalizeIpAddress(log.ipAddress)
+
+                return (
+                  <article
+                    className="grid gap-4 px-4 py-4 transition hover:bg-[#f8f3ea] md:grid-cols-[9rem_minmax(0,1fr)] md:px-5 lg:grid-cols-[9rem_minmax(0,1fr)_13rem_2.75rem] lg:items-center 2xl:grid-cols-[10rem_minmax(0,1fr)_15rem_2.75rem]"
+                    key={log._id}
+                  >
+                    <div className="flex min-w-0 items-center justify-between gap-3 md:block">
                       <p className="text-xs font-bold text-[#6b5f53]">
                         {formatOrderDate(log.createdAt)}
                       </p>
-                      <h3 className="mt-1 line-clamp-2 font-bold">
-                        {getActionLabel(log.action)}
-                      </h3>
+                      <span
+                        className={`inline-flex max-w-full shrink-0 items-center gap-1.5 px-2 py-1 text-xs font-bold md:mt-3 ${getStatusClass(
+                          log.status,
+                        )}`}
+                      >
+                        <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">
+                          {getResultLabel(log.status)}
+                        </span>
+                      </span>
                     </div>
+
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0">
+                          <h3
+                            className="truncate text-sm font-bold text-[#181512]"
+                            title={actionLabel}
+                          >
+                            {actionLabel}
+                          </h3>
+                          <p
+                            className="mt-1 line-clamp-2 text-sm text-[#6b5f53] lg:line-clamp-1"
+                            title={log.summary}
+                          >
+                            {log.summary}
+                          </p>
+                        </div>
+
+                        <div className="flex shrink-0 flex-wrap gap-2 lg:max-w-[17rem] lg:justify-end">
+                          <span
+                            className="max-w-full truncate bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]"
+                            title={formatLabel(log.module)}
+                          >
+                            {truncateText(formatLabel(log.module), 18)}
+                          </span>
+                          <span
+                            className="max-w-full truncate bg-white px-2 py-1 text-xs font-bold text-[#181512]"
+                            title={formatLabel(log.actorRole)}
+                          >
+                            {truncateText(formatLabel(log.actorRole), 16)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 grid gap-2 border-t border-black/10 pt-3 text-xs text-[#6b5f53] sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                        <div className="min-w-0">
+                          <p
+                            className="truncate font-bold text-[#181512]"
+                            title={actorName}
+                          >
+                            {actorName}
+                          </p>
+                          <p className="truncate" title={actorEmail}>
+                            {actorEmail}
+                          </p>
+                        </div>
+
+                        <div className="min-w-0 sm:text-right lg:text-left">
+                          <p
+                            className="truncate font-bold text-[#181512]"
+                            title={targetLabel}
+                          >
+                            {targetLabel}
+                          </p>
+                          <p className="truncate">
+                            {formatLabel(log.targetType)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid min-w-0 gap-1 text-xs font-semibold text-[#6b5f53] md:col-start-2 lg:col-start-auto">
+                      <span
+                        className="inline-flex min-w-0 items-center gap-1.5"
+                        title={deviceLabel}
+                      >
+                        <Laptop className="h-3.5 w-3.5 shrink-0 text-[#7a3f1d]" />
+                        <span className="truncate">{deviceLabel}</span>
+                      </span>
+                      <span className="truncate font-mono" title={ipAddress}>
+                        {ipAddress}
+                      </span>
+                    </div>
+
                     <button
                       aria-label={`View activity ${log.action}`}
-                      className="grid h-9 w-9 shrink-0 place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-white"
+                      className="inline-grid h-10 w-full place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-white md:col-start-2 md:w-10 lg:col-start-auto"
                       onClick={() => setSelectedLog(log)}
                       type="button"
                     >
                       <Eye className="h-4 w-4" />
                     </button>
-                  </div>
-
-                  <p className="mt-2 line-clamp-2 text-sm text-[#6b5f53]">
-                    {log.summary}
-                  </p>
-
-                  <div className="mt-3 grid gap-1 border-t border-black/10 pt-3">
-                    <p
-                      className="truncate text-sm font-bold"
-                      title={getActorName(log)}
-                    >
-                      {getActorName(log)}
-                    </p>
-                    <p
-                      className="truncate text-xs text-[#6b5f53]"
-                      title={log.actorEmail || 'No email'}
-                    >
-                      {log.actorEmail || 'No email'}
-                    </p>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
-                      {formatLabel(log.module)}
-                    </span>
-                    <span className="bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#181512]">
-                      {formatLabel(log.actorRole)}
-                    </span>
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-bold ${getStatusClass(
-                        log.status,
-                      )}`}
-                    >
-                      <ShieldCheck className="h-3.5 w-3.5" />
-                      {getResultLabel(log.status)}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 grid gap-1 text-xs font-semibold text-[#6b5f53]">
-                    <p className="truncate">Target: {getTargetLabel(log)}</p>
-                    <p className="flex min-w-0 items-center gap-1">
-                      <Laptop className="h-3.5 w-3.5 shrink-0 text-[#7a3f1d]" />
-                      <span className="truncate">{getDeviceLabel(log)}</span>
-                    </p>
-                    <p className="truncate font-mono">
-                      {normalizeIpAddress(log.ipAddress)}
-                    </p>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                )
+              })}
             </div>
-
-            <div className="hidden overflow-x-auto lg:block">
-              <table className="w-full min-w-[1040px] border-collapse text-left text-sm">
-                <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
-                  <tr>
-                    <th className="px-5 py-3">Time</th>
-                    <th className="px-5 py-3">Person</th>
-                    <th className="px-5 py-3">Area</th>
-                    <th className="px-5 py-3">Activity</th>
-                    <th className="px-5 py-3">Target</th>
-                    <th className="px-5 py-3">Device / IP</th>
-                    <th className="px-5 py-3">Result</th>
-                    <th className="px-5 py-3">View</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {logs.map((log) => (
-                    <tr
-                      className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
-                      key={log._id}
-                    >
-                      <td className="px-5 py-4 text-xs font-bold text-[#6b5f53]">
-                        {formatOrderDate(log.createdAt)}
-                      </td>
-                      <td className="px-5 py-4">
-                        <p
-                          className="max-w-[12rem] truncate font-bold"
-                          title={getActorName(log)}
-                        >
-                          {truncateText(getActorName(log), 28)}
-                        </p>
-                        <p
-                          className="mt-1 max-w-[12rem] truncate text-xs text-[#6b5f53]"
-                          title={log.actorEmail || 'No email'}
-                        >
-                          {truncateText(log.actorEmail || 'No email', 30)}
-                        </p>
-                        <span className="mt-2 inline-block bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
-                          {formatLabel(log.actorRole)}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 font-bold">
-                        {formatLabel(log.module)}
-                      </td>
-                      <td className="px-5 py-4">
-                        <p className="font-bold">
-                          {getActionLabel(log.action)}
-                        </p>
-                        <p
-                          className="mt-1 max-w-[14rem] truncate text-xs text-[#6b5f53]"
-                          title={log.summary}
-                        >
-                          {truncateText(log.summary, 44)}
-                        </p>
-                      </td>
-                      <td className="px-5 py-4">
-                        <p
-                          className="max-w-[12rem] truncate font-bold"
-                          title={getTargetLabel(log)}
-                        >
-                          {truncateText(getTargetLabel(log))}
-                        </p>
-                        <p className="mt-1 text-xs text-[#6b5f53]">
-                          {formatLabel(log.targetType)}
-                        </p>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span
-                          className="inline-flex max-w-[11rem] items-center gap-1.5 truncate text-xs font-bold"
-                          title={getDeviceLabel(log)}
-                        >
-                          <Laptop className="h-3.5 w-3.5 text-[#7a3f1d]" />
-                          {truncateText(getDeviceLabel(log), 24)}
-                        </span>
-                        <p
-                          className="mt-1 max-w-[11rem] truncate font-mono text-xs text-[#6b5f53]"
-                          title={normalizeIpAddress(log.ipAddress)}
-                        >
-                          {truncateText(normalizeIpAddress(log.ipAddress), 24)}
-                        </p>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-bold ${getStatusClass(
-                            log.status,
-                          )}`}
-                        >
-                          <ShieldCheck className="h-3.5 w-3.5" />
-                          {getResultLabel(log.status)}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">
-                        <button
-                          aria-label={`View activity ${log.action}`}
-                          className="grid h-9 w-9 place-items-center border border-black/10 transition hover:border-[#181512] hover:bg-white"
-                          onClick={() => setSelectedLog(log)}
-                          type="button"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            </>
           )}
 
           <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">

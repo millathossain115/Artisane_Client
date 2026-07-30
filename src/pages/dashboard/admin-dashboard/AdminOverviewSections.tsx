@@ -185,7 +185,7 @@ function AdminOverviewSections({
   const activityItems = getActivityItems(orders, stats?.recentReviews ?? [])
 
   return (
-    <section className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+    <section className="mt-6 grid gap-6 2xl:grid-cols-[1.15fr_0.85fr]">
       <div className="space-y-6">
         <section className="border border-black/10 bg-white p-5">
           <div className="flex items-start justify-between gap-4">
@@ -214,9 +214,11 @@ function AdminOverviewSections({
                 >
                   {item.value}
                 </span>
-                <span>
-                  <span className="block text-sm font-bold">{item.label}</span>
-                  <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-bold">
+                    {item.label}
+                  </span>
+                  <span className="mt-1 block truncate text-xs font-semibold text-[#6b5f53]">
                     {item.detail}
                   </span>
                 </span>
@@ -251,7 +253,9 @@ function AdminOverviewSections({
                   : 'bg-[#f8f3ea] text-[#6b5f53]'
               }`}
             >
-              {hasOrdersError ? 'Recent activity unavailable.' : 'Loading activity...'}
+              {hasOrdersError
+                ? 'Recent activity unavailable.'
+                : 'Loading activity...'}
             </div>
           )}
 
@@ -269,9 +273,11 @@ function AdminOverviewSections({
                     <span className="grid h-10 w-10 shrink-0 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
                       <Icon className="h-5 w-5" />
                     </span>
-                    <span>
-                      <span className="block font-bold">{item.label}</span>
-                      <span className="mt-1 block text-sm text-[#6b5f53]">
+                    <span className="min-w-0">
+                      <span className="block truncate font-bold">
+                        {item.label}
+                      </span>
+                      <span className="mt-1 block truncate text-sm text-[#6b5f53]">
                         {item.detail}
                       </span>
                     </span>
@@ -287,7 +293,7 @@ function AdminOverviewSections({
         </section>
       </div>
 
-      <aside className="flex h-full flex-col border border-black/10 bg-[#181512] p-5 text-white">
+      <aside className="flex h-fit flex-col border border-black/10 bg-[#181512] p-5 text-white 2xl:sticky 2xl:top-[132px] 2xl:max-h-[calc(100dvh-132px)] 2xl:self-start 2xl:overflow-y-auto">
         <div>
           <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center bg-white text-[#181512]">
@@ -311,9 +317,9 @@ function AdminOverviewSections({
                   key={action.href}
                   to={action.href}
                 >
-                  <span className="inline-flex items-center gap-2">
+                  <span className="inline-flex min-w-0 items-center gap-2">
                     <Icon className="h-4 w-4 text-[#f1c9a6]" />
-                    {action.label}
+                    <span className="truncate">{action.label}</span>
                   </span>
                   <ArrowUpRight className="h-4 w-4 text-[#f1c9a6]" />
                 </Link>
@@ -336,7 +342,7 @@ function AdminOverviewSections({
                     to={action.href}
                   >
                     <Icon className="h-4 w-4 text-[#f1c9a6]" />
-                    <span>{action.label}</span>
+                    <span className="truncate">{action.label}</span>
                   </Link>
                 )
               })}

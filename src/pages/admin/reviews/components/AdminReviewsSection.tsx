@@ -190,7 +190,9 @@ function AdminReviewsSection({
                       aria-label="Delete review"
                       className="grid h-9 w-9 place-items-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef] disabled:cursor-not-allowed disabled:opacity-45"
                       disabled={isDeleting}
-                      onClick={() => setConfirmTarget({ review, type: 'delete' })}
+                      onClick={() =>
+                        setConfirmTarget({ review, type: 'delete' })
+                      }
                       type="button"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -207,17 +209,17 @@ function AdminReviewsSection({
         )}
       </div>
 
-      <div className="hidden overflow-x-auto lg:block">
-        <table className="w-full min-w-[1200px] border-collapse text-left text-sm">
+      <div className="hidden overflow-hidden lg:block">
+        <table className="w-full table-fixed border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
-              <th className="px-5 py-3">Review</th>
-              <th className="px-5 py-3">Product</th>
-              <th className="px-5 py-3">User</th>
-              <th className="px-5 py-3">Rating</th>
-              <th className="px-5 py-3">Visibility</th>
-              <th className="px-5 py-3">Created</th>
-              <th className="px-5 py-3 text-right">Action</th>
+              <th className="w-[22%] px-3 py-3 2xl:px-5">Review</th>
+              <th className="w-[20%] px-3 py-3 2xl:px-5">Product</th>
+              <th className="w-[16%] px-3 py-3 2xl:px-5">User</th>
+              <th className="w-[9%] px-3 py-3 2xl:px-5">Rating</th>
+              <th className="w-[10%] px-3 py-3 2xl:px-5">Visibility</th>
+              <th className="w-[9%] px-3 py-3 2xl:px-5">Created</th>
+              <th className="w-[14%] px-3 py-3 text-right 2xl:px-5">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -235,14 +237,15 @@ function AdminReviewsSection({
                   className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
                   key={review._id}
                 >
-                  <td className="px-5 py-4">
+                  <td className="min-w-0 px-3 py-4 2xl:px-5">
                     <p className="line-clamp-2 font-semibold text-[#4f463d]">
                       {review.comment || 'No comment.'}
                     </p>
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="min-w-0 px-3 py-4 2xl:px-5">
                     <Link
-                      className="font-bold transition hover:text-[#7a3f1d]"
+                      className="block truncate font-bold transition hover:text-[#7a3f1d]"
+                      title={getReviewProductName(review)}
                       to={`/products/${
                         review.product && typeof review.product !== 'string'
                           ? review.product._id
@@ -251,22 +254,32 @@ function AdminReviewsSection({
                     >
                       {getReviewProductName(review)}
                     </Link>
-                    <p className="mt-1 text-xs text-[#6b5f53]">
+                    <p className="mt-1 truncate text-xs text-[#6b5f53]">
                       {review.product && typeof review.product !== 'string'
                         ? review.product.slug
                         : ''}
                     </p>
                   </td>
-                  <td className="px-5 py-4">
-                    <p className="font-bold">{getReviewUserName(review)}</p>
-                    <p className="mt-1 text-xs text-[#6b5f53]">
+                  <td className="min-w-0 px-3 py-4 2xl:px-5">
+                    <p
+                      className="truncate font-bold"
+                      title={getReviewUserName(review)}
+                    >
+                      {getReviewUserName(review)}
+                    </p>
+                    <p
+                      className="mt-1 truncate text-xs text-[#6b5f53]"
+                      title={getReviewUserEmail(review)}
+                    >
                       {getReviewUserEmail(review)}
                     </p>
                   </td>
-                  <td className="px-5 py-4">
-                    <div className="flex gap-1">{renderStars(review.rating)}</div>
+                  <td className="px-3 py-4 2xl:px-5">
+                    <div className="flex gap-1">
+                      {renderStars(review.rating)}
+                    </div>
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="px-3 py-4 2xl:px-5">
                     <span
                       className={`px-2 py-1 text-xs font-bold ${
                         review.isHidden
@@ -277,13 +290,16 @@ function AdminReviewsSection({
                       {review.isHidden ? 'Hidden' : 'Visible'}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-[#6b5f53]">
+                  <td className="truncate px-3 py-4 text-[#6b5f53] 2xl:px-5">
                     {formatDate(review.createdAt)}
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="px-3 py-4 2xl:px-5">
                     <div className="flex justify-end gap-2">
                       <button
-                        className="inline-flex min-h-9 items-center justify-center gap-2 border border-black/10 px-3 text-xs font-bold transition hover:border-[#181512] hover:bg-white disabled:cursor-not-allowed disabled:opacity-45"
+                        aria-label={
+                          review.isHidden ? 'Show review' : 'Hide review'
+                        }
+                        className="inline-flex h-9 w-9 items-center justify-center border border-black/10 text-xs font-bold transition hover:border-[#181512] hover:bg-white disabled:cursor-not-allowed disabled:opacity-45 2xl:w-auto 2xl:gap-2 2xl:px-3"
                         disabled={isTogglingVisibility}
                         onClick={() =>
                           setConfirmTarget({ review, type: 'visibility' })
@@ -295,12 +311,16 @@ function AdminReviewsSection({
                         ) : (
                           <EyeOff className="h-4 w-4" />
                         )}
-                        {review.isHidden ? 'Show' : 'Hide'}
+                        <span className="hidden 2xl:inline">
+                          {review.isHidden ? 'Show' : 'Hide'}
+                        </span>
                       </button>
                       <button
                         className="grid h-9 w-9 place-items-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef] disabled:cursor-not-allowed disabled:opacity-45"
                         disabled={isDeleting}
-                        onClick={() => setConfirmTarget({ review, type: 'delete' })}
+                        onClick={() =>
+                          setConfirmTarget({ review, type: 'delete' })
+                        }
                         type="button"
                       >
                         <Trash2 className="h-4 w-4" />

@@ -35,7 +35,7 @@ function UserFilters({
     statusFilter !== '' ||
     pageSize !== PAGE_SIZE_OPTIONS[1]
   return (
-    <div className="grid gap-3 border-b border-black/10 p-5 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:items-end">
+    <div className="grid gap-3 border-b border-black/10 p-5 2xl:grid-cols-[minmax(0,1fr)_auto_auto] 2xl:items-end">
       <label className="grid gap-2 text-sm font-bold">
         Search users
         <span className="relative">

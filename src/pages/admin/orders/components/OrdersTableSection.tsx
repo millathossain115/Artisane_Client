@@ -1,5 +1,9 @@
 import { Link } from 'react-router-dom'
-import { EmptyState, ErrorState, SkeletonTable } from '../../../../components/loaders'
+import {
+  EmptyState,
+  ErrorState,
+  SkeletonTable,
+} from '../../../../components/loaders'
 import {
   ChevronLeft,
   ChevronRight,
@@ -203,7 +207,7 @@ function OrdersTableSection({
         </div>
       ) : null}
 
-      <div className="grid gap-3 border-b border-black/10 p-5 xl:grid-cols-[minmax(0,1fr)_auto_auto_auto] xl:items-end">
+      <div className="grid gap-3 border-b border-black/10 p-5 2xl:grid-cols-[minmax(0,1fr)_auto_auto_auto] 2xl:items-end">
         <label className="grid gap-2">
           <span className="text-sm font-bold">Search current page</span>
           <span className="relative">
@@ -240,7 +244,9 @@ function OrdersTableSection({
           <select
             className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
             onChange={(event) =>
-              setPaymentStatusFilter(event.target.value as 'all' | PaymentStatus)
+              setPaymentStatusFilter(
+                event.target.value as 'all' | PaymentStatus,
+              )
             }
             value={paymentStatusFilter}
           >
@@ -293,117 +299,16 @@ function OrdersTableSection({
         />
       ) : (
         <>
-        <div className="grid gap-3 p-4 lg:hidden">
-          {visibleOrders.map((order) => (
-            <article
-              className="border border-black/10 bg-white p-4"
-              key={order._id}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <Link
-                    className="font-bold text-[#7a3f1d] hover:underline"
-                    to={getAdminOrderDetailUrl(order)}
-                  >
-                    {formatOrderId(order._id)}
-                  </Link>
-                  <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
-                    {formatOrderDate(order.createdAt)}
-                  </p>
-                </div>
-                <OrderActionMenu
-                  detailUrl={getAdminOrderDetailUrl(order)}
-                  order={order}
-                  setConfirmTarget={setConfirmTarget}
-                />
-              </div>
-
-              <div className="mt-3 grid gap-2">
-                <div className="min-w-0">
-                  <p className="text-xs font-bold uppercase tracking-wider text-[#8a7d71]">
-                    Customer
-                  </p>
-                  <p className="mt-1 truncate text-sm font-bold">
-                    {getOrderCustomer(order)}
-                  </p>
-                  <p className="mt-0.5 truncate text-xs text-[#6b5f53]">
-                    {getOrderCustomerEmail(order) || order.contactPhone}
-                  </p>
-                </div>
-
-                <Link
-                  className="line-clamp-2 text-sm font-semibold text-[#4f463d] hover:text-[#181512] hover:underline"
-                  to={getAdminOrderDetailUrl(order)}
-                >
-                  {getOrderPrimaryItem(order)}
-                </Link>
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
-                  Order: {formatOrderStatus(order.orderStatus)}
-                </span>
-                <span className="bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
-                  Payment: {formatOrderStatus(order.paymentStatus)}
-                </span>
-                <span className="bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#181512]">
-                  {formatPrice(order.totalPrice ?? 0)}
-                </span>
-              </div>
-
-              <div className="mt-3 flex items-center justify-between gap-3 border-t border-black/10 pt-3">
-                <div className="min-w-0">
-                  {order.courierProvider || order.trackingCode ? (
-                    <>
-                      <p className="truncate text-xs font-bold text-[#27408b]">
-                        {formatCourierProvider(order.courierProvider)}
-                      </p>
-                      <p className="mt-0.5 truncate text-xs text-[#6b5f53]">
-                        {order.trackingCode || 'Tracking pending'}
-                      </p>
-                    </>
-                  ) : (
-                    <p className="text-xs font-bold text-[#6b5f53]">
-                      Shipment not created
-                    </p>
-                  )}
-                </div>
-                <button
-                  aria-label={`Download invoice for ${formatOrderId(order._id)}`}
-                  className="grid h-9 w-9 shrink-0 place-items-center border border-black/10 bg-white text-[#181512] transition hover:border-[#181512] hover:bg-[#f8f3ea]"
-                  onClick={() => downloadOrderInvoice(order)}
-                  type="button"
-                >
-                  <Download className="h-4 w-4" />
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        <div className="hidden overflow-x-auto lg:block">
-          <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
-            <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
-              <tr>
-                <th className="px-5 py-3">Order</th>
-                <th className="px-5 py-3">Customer</th>
-                <th className="px-5 py-3">Items</th>
-                <th className="px-5 py-3">Status</th>
-                <th className="px-5 py-3">Total</th>
-                <th className="px-5 py-3">Shipment</th>
-                <th className="px-5 py-3 text-center">Invoice</th>
-                <th className="px-5 py-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visibleOrders.map((order) => (
-                <tr
-                  className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
-                  key={order._id}
-                >
-                  <td className="px-5 py-4 font-bold">
+          <div className="grid gap-3 p-4 lg:hidden">
+            {visibleOrders.map((order) => (
+              <article
+                className="border border-black/10 bg-white p-4"
+                key={order._id}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
                     <Link
-                      className="text-[#7a3f1d] hover:underline"
+                      className="font-bold text-[#7a3f1d] hover:underline"
                       to={getAdminOrderDetailUrl(order)}
                     >
                       {formatOrderId(order._id)}
@@ -411,81 +316,206 @@ function OrdersTableSection({
                     <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
                       {formatOrderDate(order.createdAt)}
                     </p>
-                  </td>
-                  <td className="px-5 py-4">
-                    <p className="font-bold">{getOrderCustomer(order)}</p>
-                    <p className="mt-1 text-xs text-[#6b5f53]">
+                  </div>
+                  <OrderActionMenu
+                    detailUrl={getAdminOrderDetailUrl(order)}
+                    order={order}
+                    setConfirmTarget={setConfirmTarget}
+                  />
+                </div>
+
+                <div className="mt-3 grid gap-2">
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#8a7d71]">
+                      Customer
+                    </p>
+                    <p className="mt-1 truncate text-sm font-bold">
+                      {getOrderCustomer(order)}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-[#6b5f53]">
                       {getOrderCustomerEmail(order) || order.contactPhone}
                     </p>
-                  </td>
-                  <td className="max-w-[200px] px-5 py-4 text-[#6b5f53]">
-                    <Link
-                      className="block truncate hover:text-[#181512] hover:underline"
-                      title={getOrderPrimaryItem(order)}
-                      to={getAdminOrderDetailUrl(order)}
-                    >
-                      {getOrderPrimaryItem(order)}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-4">
-                    <div className="grid gap-1.5">
-                      <span className="w-fit bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
-                        Order: {formatOrderStatus(order.orderStatus)}
-                      </span>
-                      <span className="w-fit bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
-                        Payment: {formatOrderStatus(order.paymentStatus)}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4 font-bold">
+                  </div>
+
+                  <Link
+                    className="line-clamp-2 text-sm font-semibold text-[#4f463d] hover:text-[#181512] hover:underline"
+                    to={getAdminOrderDetailUrl(order)}
+                  >
+                    {getOrderPrimaryItem(order)}
+                  </Link>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
+                    Order: {formatOrderStatus(order.orderStatus)}
+                  </span>
+                  <span className="bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
+                    Payment: {formatOrderStatus(order.paymentStatus)}
+                  </span>
+                  <span className="bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#181512]">
                     {formatPrice(order.totalPrice ?? 0)}
-                  </td>
-                  <td className="max-w-[180px] px-5 py-4">
+                  </span>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between gap-3 border-t border-black/10 pt-3">
+                  <div className="min-w-0">
                     {order.courierProvider || order.trackingCode ? (
-                      <div className="grid gap-1">
-                        <span className="bg-[#eef3ff] px-2 py-1 text-xs font-bold text-[#27408b]">
-                          {formatOrderStatus(
-                            order.courierStatus ?? 'shipment_created',
-                          )}
+                      <>
+                        <p className="truncate text-xs font-bold text-[#27408b]">
+                          {formatCourierProvider(order.courierProvider)}
+                        </p>
+                        <p className="mt-0.5 truncate text-xs text-[#6b5f53]">
+                          {order.trackingCode || 'Tracking pending'}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-xs font-bold text-[#6b5f53]">
+                        Shipment not created
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    aria-label={`Download invoice for ${formatOrderId(order._id)}`}
+                    className="grid h-9 w-9 shrink-0 place-items-center border border-black/10 bg-white text-[#181512] transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+                    onClick={() => downloadOrderInvoice(order)}
+                    type="button"
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="hidden overflow-hidden lg:block">
+            <table className="w-full table-fixed border-collapse text-left text-sm">
+              <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
+                <tr>
+                  <th className="w-[12%] px-3 py-3 2xl:px-5">Order</th>
+                  <th className="w-[17%] px-3 py-3 2xl:px-5">Customer</th>
+                  <th className="w-[17%] px-3 py-3 2xl:px-5">Items</th>
+                  <th className="w-[15%] px-3 py-3 2xl:px-5">Status</th>
+                  <th className="w-[9%] px-2 py-3 2xl:px-4">Total</th>
+                  <th className="w-[13%] px-2 py-3 2xl:px-4">Shipment</th>
+                  <th className="w-[8%] px-2 py-3 text-center 2xl:px-4">
+                    Invoice
+                  </th>
+                  <th className="w-[9%] px-2 py-3 text-right 2xl:px-4">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleOrders.map((order) => (
+                  <tr
+                    className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
+                    key={order._id}
+                  >
+                    <td className="min-w-0 px-3 py-4 font-bold 2xl:px-5">
+                      <Link
+                        className="block truncate text-[#7a3f1d] hover:underline"
+                        to={getAdminOrderDetailUrl(order)}
+                      >
+                        {formatOrderId(order._id)}
+                      </Link>
+                      <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
+                        {formatOrderDate(order.createdAt)}
+                      </p>
+                    </td>
+                    <td className="min-w-0 px-3 py-4 2xl:px-5">
+                      <p
+                        className="truncate font-bold"
+                        title={getOrderCustomer(order)}
+                      >
+                        {getOrderCustomer(order)}
+                      </p>
+                      <p
+                        className="mt-1 truncate text-xs text-[#6b5f53]"
+                        title={
+                          getOrderCustomerEmail(order) || order.contactPhone
+                        }
+                      >
+                        {getOrderCustomerEmail(order) || order.contactPhone}
+                      </p>
+                    </td>
+                    <td className="min-w-0 px-3 py-4 text-[#6b5f53] 2xl:px-5">
+                      <Link
+                        className="block truncate hover:text-[#181512] hover:underline"
+                        title={getOrderPrimaryItem(order)}
+                        to={getAdminOrderDetailUrl(order)}
+                      >
+                        {getOrderPrimaryItem(order)}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-4 2xl:px-5">
+                      <div className="grid gap-1.5">
+                        <span
+                          className="block truncate bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]"
+                          title={`Order: ${formatOrderStatus(order.orderStatus)}`}
+                        >
+                          <span className="hidden 2xl:inline">Order: </span>
+                          {formatOrderStatus(order.orderStatus)}
                         </span>
                         <span
-                          className="block truncate text-xs font-semibold text-[#6b5f53]"
-                          title={`${formatCourierProvider(order.courierProvider)}${order.trackingCode ? ` - ${order.trackingCode}` : ''}`}
+                          className="block truncate bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]"
+                          title={`Payment: ${formatOrderStatus(order.paymentStatus)}`}
                         >
-                          {formatCourierProvider(order.courierProvider)}
-                          {order.trackingCode ? ` - ${order.trackingCode}` : ''}
+                          <span className="hidden 2xl:inline">Payment: </span>
+                          {formatOrderStatus(order.paymentStatus)}
                         </span>
                       </div>
-                    ) : (
-                      <span className="bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#6b5f53]">
-                        Not created
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-5 py-4">
-                    <div className="flex justify-center">
-                      <button
-                        aria-label={`Download invoice for ${formatOrderId(order._id)}`}
-                        className="grid h-9 w-9 place-items-center border border-black/10 bg-white text-[#181512] transition hover:border-[#181512] hover:bg-[#f8f3ea]"
-                        onClick={() => downloadOrderInvoice(order)}
-                        type="button"
-                      >
-                        <Download className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4">
-                    <OrderActionMenu
-                      detailUrl={getAdminOrderDetailUrl(order)}
-                      order={order}
-                      setConfirmTarget={setConfirmTarget}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    </td>
+                    <td className="truncate px-2 py-4 font-bold 2xl:px-4">
+                      {formatPrice(order.totalPrice ?? 0)}
+                    </td>
+                    <td className="min-w-0 px-2 py-4 2xl:px-4">
+                      {order.courierProvider || order.trackingCode ? (
+                        <div className="grid gap-1">
+                          <span className="block truncate bg-[#eef3ff] px-2 py-1 text-xs font-bold text-[#27408b]">
+                            {formatOrderStatus(
+                              order.courierStatus ?? 'shipment_created',
+                            )}
+                          </span>
+                          <span
+                            className="block truncate text-xs font-semibold text-[#6b5f53]"
+                            title={`${formatCourierProvider(order.courierProvider)}${order.trackingCode ? ` - ${order.trackingCode}` : ''}`}
+                          >
+                            {formatCourierProvider(order.courierProvider)}
+                            {order.trackingCode
+                              ? ` - ${order.trackingCode}`
+                              : ''}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#6b5f53]">
+                          Not created
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-2 py-4 2xl:px-4">
+                      <div className="flex justify-center">
+                        <button
+                          aria-label={`Download invoice for ${formatOrderId(order._id)}`}
+                          className="grid h-9 w-9 place-items-center border border-black/10 bg-white text-[#181512] transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+                          onClick={() => downloadOrderInvoice(order)}
+                          type="button"
+                        >
+                          <Download className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-2 py-4 2xl:px-4">
+                      <OrderActionMenu
+                        detailUrl={getAdminOrderDetailUrl(order)}
+                        order={order}
+                        setConfirmTarget={setConfirmTarget}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
 

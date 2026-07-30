@@ -390,7 +390,7 @@ function DashboardLayout({
 
   if (isCustomerLayout) {
     return (
-      <div className="min-h-screen overflow-x-hidden bg-[#f8f3ea] text-[#181512]">
+      <div className="min-h-screen overflow-x-clip bg-[#f8f3ea] text-[#181512]">
         <Navbar />
 
         <div
@@ -416,8 +416,8 @@ function DashboardLayout({
           </aside>
         </div>
 
-        <div className="mx-auto grid max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start lg:px-8">
-          <aside className="hidden border border-black/10 bg-white shadow-sm lg:sticky lg:top-[132px] lg:flex lg:h-[calc(100dvh-132px)] lg:flex-col">
+        <div className="mx-auto grid max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:min-h-[calc(100dvh-132px)] lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start lg:px-8">
+          <aside className="hidden border border-black/10 bg-white shadow-sm lg:sticky lg:top-[132px] lg:flex lg:h-[calc(100dvh-132px)] lg:max-h-[calc(100dvh-132px)] lg:flex-col">
             {renderSidebarContent()}
           </aside>
 

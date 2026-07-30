@@ -203,7 +203,7 @@ function CreateCategory() {
       title="Create category"
       workspaceLabel="Marketplace studio"
     >
-      <div className="grid gap-6 xl:grid-cols-[1fr_0.42fr]">
+      <div className="grid gap-6 2xl:grid-cols-[1fr_0.42fr]">
         <form
           className="border border-black/10 bg-white p-5"
           onSubmit={handleSubmit}
@@ -229,7 +229,9 @@ function CreateCategory() {
             <span>
               <span className="block">Category status</span>
               <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
-                {isActive ? 'Visible in marketplace' : 'Hidden from marketplace'}
+                {isActive
+                  ? 'Visible in marketplace'
+                  : 'Hidden from marketplace'}
               </span>
             </span>
             <input
@@ -361,7 +363,7 @@ function CreateCategory() {
           </div>
         </form>
 
-        <aside className="border border-black/10 bg-[#181512] p-5 text-white">
+        <aside className="border border-black/10 bg-[#181512] p-5 text-white 2xl:sticky 2xl:top-[132px] 2xl:max-h-[calc(100dvh-132px)] 2xl:self-start 2xl:overflow-y-auto">
           <h2 className="text-2xl font-bold">Category preview</h2>
           <p className="mt-2 text-sm leading-6 text-white/65">
             {isActive ? 'Visible in marketplace' : 'Hidden from marketplace'}
@@ -394,7 +396,9 @@ function CreateCategory() {
           </p>
 
           <p className="mt-5 text-xs font-bold uppercase text-[#f1c9a6]">
-            {imageFile ? truncateFileName(imageFile.name, 22) : 'Default global icon'}
+            {imageFile
+              ? truncateFileName(imageFile.name, 22)
+              : 'Default global icon'}
           </p>
         </aside>
       </div>
@@ -444,7 +448,6 @@ function CreateCategory() {
           </div>
         </div>
       )}
-
     </DashboardLayout>
   )
 }

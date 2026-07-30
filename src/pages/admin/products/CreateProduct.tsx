@@ -112,11 +112,11 @@ function CreateProduct() {
   )
   const isFormFilled = Boolean(
     name.trim() ||
-      description.trim() ||
-      price.trim() ||
-      stock.trim() ||
-      categoryId ||
-      imageFiles.length > 0,
+    description.trim() ||
+    price.trim() ||
+    stock.trim() ||
+    categoryId ||
+    imageFiles.length > 0,
   )
 
   useEffect(() => {
@@ -295,7 +295,7 @@ function CreateProduct() {
       title="Create product"
       workspaceLabel="Marketplace studio"
     >
-      <div className="grid gap-6 xl:grid-cols-[1fr_0.42fr]">
+      <div className="grid gap-6 2xl:grid-cols-[1fr_0.42fr]">
         <form
           className="border border-black/10 bg-white p-5"
           onSubmit={handleSubmit}
@@ -326,7 +326,9 @@ function CreateProduct() {
                 value={categoryId}
               >
                 <option value="">
-                  {isCategoriesLoading ? 'Loading categories...' : 'Select category'}
+                  {isCategoriesLoading
+                    ? 'Loading categories...'
+                    : 'Select category'}
                 </option>
                 {categories.map((category) => (
                   <option key={category._id} value={category._id}>
@@ -407,7 +409,8 @@ function CreateProduct() {
                         : 'Upload product photos'}
                     </span>
                     <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
-                      Up to {MAX_PRODUCT_IMAGES} images. Max per image: {formatFileSize(MAX_IMAGE_SIZE)}.
+                      Up to {MAX_PRODUCT_IMAGES} images. Max per image:{' '}
+                      {formatFileSize(MAX_IMAGE_SIZE)}.
                     </span>
                   </span>
                 </div>
@@ -447,7 +450,10 @@ function CreateProduct() {
                         <Trash2 className="h-4 w-4" />
                       </button>
                       <div className="p-3">
-                        <p className="truncate font-bold" title={imageFiles[index]?.name}>
+                        <p
+                          className="truncate font-bold"
+                          title={imageFiles[index]?.name}
+                        >
                           {imageFiles[index]?.name
                             ? truncateFileName(imageFiles[index].name, 22)
                             : ''}
@@ -529,7 +535,7 @@ function CreateProduct() {
           </div>
         </form>
 
-        <aside className="border border-black/10 bg-[#181512] p-5 text-white">
+        <aside className="border border-black/10 bg-[#181512] p-5 text-white 2xl:sticky 2xl:top-[132px] 2xl:max-h-[calc(100dvh-132px)] 2xl:self-start 2xl:overflow-y-auto">
           <h2 className="text-2xl font-bold">Product preview</h2>
           <p className="mt-2 text-sm leading-6 text-white/65">
             {selectedCategory
@@ -611,8 +617,8 @@ function CreateProduct() {
             </div>
 
             <p className="mt-4 text-sm leading-6 text-[#6b5f53]">
-              This will publish a new product record with the selected
-              category, price, stock, and uploaded photos.
+              This will publish a new product record with the selected category,
+              price, stock, and uploaded photos.
             </p>
 
             <div className="mt-5 border-y border-black/10 py-4 text-sm">
