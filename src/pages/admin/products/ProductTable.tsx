@@ -326,13 +326,13 @@ function ProductTable() {
 
   return (
     <section className="mt-6 border border-black/10 bg-white" id="products">
-      <div className="flex items-center gap-3 border-b border-black/10 p-5">
-        <span className="grid h-10 w-10 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
-          <Package className="h-5 w-5" />
+      <div className="flex items-center gap-3 border-b border-black/10 px-4 py-3.5 sm:px-5">
+        <span className="grid h-9 w-9 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
+          <Package className="h-4 w-4" />
         </span>
         <div>
-          <h2 className="text-2xl font-bold">Current products</h2>
-          <p className="mt-1 text-sm text-[#6b5f53]">
+          <h2 className="text-xl font-bold">Current products</h2>
+          <p className="mt-0.5 text-xs font-semibold text-[#6b5f53]">
             Products currently stored in the marketplace database.
           </p>
         </div>

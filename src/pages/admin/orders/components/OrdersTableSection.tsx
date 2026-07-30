@@ -189,13 +189,13 @@ function OrdersTableSection({
 
   return (
     <section className="border border-black/10 bg-white">
-      <div className="flex items-center gap-3 border-b border-black/10 p-5">
-        <span className="grid h-10 w-10 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
-          <Package className="h-5 w-5" />
+      <div className="flex items-center gap-3 border-b border-black/10 px-4 py-3.5 sm:px-5">
+        <span className="grid h-9 w-9 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">
+          <Package className="h-4 w-4" />
         </span>
         <div>
-          <h2 className="text-2xl font-bold">Orders</h2>
-          <p className="mt-1 text-sm text-[#6b5f53]">
+          <h2 className="text-xl font-bold">Orders</h2>
+          <p className="mt-0.5 text-xs font-semibold text-[#6b5f53]">
             {meta?.total ?? orders.length} orders in database.
           </p>
         </div>
@@ -207,13 +207,13 @@ function OrdersTableSection({
         </div>
       ) : null}
 
-      <div className="grid gap-3 border-b border-black/10 p-5 2xl:grid-cols-[minmax(0,1fr)_auto_auto_auto] 2xl:items-end">
-        <label className="grid gap-2">
-          <span className="text-sm font-bold">Search current page</span>
+      <div className="grid gap-2 border-b border-black/10 p-3 sm:grid-cols-2 sm:p-4 xl:grid-cols-[minmax(18rem,1fr)_minmax(10rem,0.45fr)_minmax(10rem,0.45fr)_auto] xl:items-end">
+        <label className="grid gap-1.5 sm:col-span-2 xl:col-span-1">
+          <span className="text-xs font-bold">Search current page</span>
           <span className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7a3f1d]" />
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#7a3f1d]" />
             <input
-              className="min-h-12 w-full border border-black/10 pl-10 pr-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+              className="min-h-9 w-full border border-black/10 pl-8 pr-2 text-xs font-semibold outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Order id, customer, phone"
               value={searchTerm}
@@ -221,10 +221,10 @@ function OrdersTableSection({
           </span>
         </label>
 
-        <label className="grid gap-2">
-          <span className="text-sm font-bold">Order status</span>
+        <label className="grid gap-1.5">
+          <span className="text-xs font-bold">Order status</span>
           <select
-            className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+            className="min-h-9 border border-black/10 bg-white px-2 text-xs font-bold outline-none transition focus:border-[#181512]"
             onChange={(event) =>
               setOrderStatusFilter(event.target.value as 'all' | OrderStatus)
             }
@@ -239,10 +239,10 @@ function OrdersTableSection({
           </select>
         </label>
 
-        <label className="grid gap-2">
-          <span className="text-sm font-bold">Payment status</span>
+        <label className="grid gap-1.5">
+          <span className="text-xs font-bold">Payment status</span>
           <select
-            className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+            className="min-h-9 border border-black/10 bg-white px-2 text-xs font-bold outline-none transition focus:border-[#181512]"
             onChange={(event) =>
               setPaymentStatusFilter(
                 event.target.value as 'all' | PaymentStatus,
@@ -259,14 +259,17 @@ function OrdersTableSection({
           </select>
         </label>
 
-        <button
-          className="inline-flex min-h-12 items-center justify-center gap-2 border border-black/10 px-4 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
-          onClick={onResetFilters}
-          type="button"
-        >
-          <RotateCcw className="h-4 w-4" />
-          Reset filters
-        </button>
+        <div className="grid gap-1.5">
+          <span className="hidden text-xs font-bold xl:block">&nbsp;</span>
+          <button
+            className="inline-flex min-h-9 items-center justify-center gap-1.5 border border-black/10 px-3 text-xs font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
+            onClick={onResetFilters}
+            type="button"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reset
+          </button>
+        </div>
       </div>
 
       {isError ? (
@@ -519,13 +522,13 @@ function OrdersTableSection({
         </>
       )}
 
-      <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
-        <p className="text-sm font-semibold text-[#6b5f53]">
+      <div className="flex flex-col gap-2 border-t border-black/10 px-4 py-3 md:flex-row md:items-center md:justify-between">
+        <p className="text-xs font-semibold text-[#6b5f53]">
           Page {meta?.page ?? page} of {meta?.totalPage ?? 1}
         </p>
         <div className="flex gap-2">
           <button
-            className="inline-flex h-10 w-10 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-8 w-8 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
             disabled={page <= 1}
             onClick={() => setPage((current) => Math.max(1, current - 1))}
             type="button"
@@ -533,7 +536,7 @@ function OrdersTableSection({
             <ChevronLeft className="h-4 w-4" />
           </button>
           <button
-            className="inline-flex h-10 w-10 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-8 w-8 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
             disabled={page >= (meta?.totalPage ?? 1)}
             onClick={() => setPage((current) => current + 1)}
             type="button"

@@ -257,8 +257,8 @@ function ProductRowsTable({
       </div>
 
       {totalProducts > 0 && (
-        <div className="flex flex-col gap-3 border-t border-black/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-semibold text-[#6b5f53]">
+        <div className="flex flex-col gap-2 border-t border-black/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-semibold text-[#6b5f53]">
             Showing{' '}
             <strong className="font-bold text-[#181512]">{resultStart}</strong>{' '}
             to <strong className="font-bold text-[#181512]">{resultEnd}</strong>{' '}
@@ -270,7 +270,7 @@ function ProductRowsTable({
           </p>
           <div className="flex gap-2">
             <button
-              className="inline-flex h-10 w-10 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-8 w-8 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
               disabled={safeCurrentPage <= 1}
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               type="button"
@@ -278,7 +278,7 @@ function ProductRowsTable({
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
-              className="inline-flex h-10 w-10 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-8 w-8 items-center justify-center border border-black/10 transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
               disabled={safeCurrentPage >= totalPages}
               onClick={() =>
                 setCurrentPage((prev) => Math.min(totalPages, prev + 1))

@@ -40,14 +40,14 @@ function ProductFilters({
     pageSize !== PAGE_SIZE_OPTIONS[0]
 
   return (
-    <div className="border-b border-black/10 p-5">
-      <div className="grid gap-3 2xl:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] 2xl:items-end">
-        <label className="grid gap-2">
-          <span className="text-sm font-bold">Search products</span>
+    <div className="border-b border-black/10 p-3 sm:p-4">
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(18rem,1fr)_minmax(10rem,0.45fr)_minmax(9rem,0.34fr)_minmax(7rem,0.24fr)_auto] xl:items-end">
+        <label className="grid gap-1.5 sm:col-span-2 xl:col-span-1">
+          <span className="text-xs font-bold">Search products</span>
           <span className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7a3f1d]" />
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#7a3f1d]" />
             <input
-              className="min-h-12 w-full border border-black/10 bg-white pl-10 pr-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+              className="min-h-9 w-full border border-black/10 bg-white pl-8 pr-2 text-xs font-semibold outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
               onChange={(event) => {
                 setSearchTerm(event.target.value)
                 setCurrentPage(1)
@@ -59,10 +59,10 @@ function ProductFilters({
           </span>
         </label>
 
-        <label className="grid gap-2">
-          <span className="text-sm font-bold">Category</span>
+        <label className="grid gap-1.5">
+          <span className="text-xs font-bold">Category</span>
           <select
-            className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+            className="min-h-9 border border-black/10 bg-white px-2 text-xs font-bold outline-none transition focus:border-[#181512]"
             disabled={isCategoriesLoading}
             onChange={(event) => {
               setCategoryFilter(event.target.value)
@@ -79,10 +79,10 @@ function ProductFilters({
           </select>
         </label>
 
-        <label className="grid gap-2">
-          <span className="text-sm font-bold">Sort</span>
+        <label className="grid gap-1.5">
+          <span className="text-xs font-bold">Sort</span>
           <select
-            className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+            className="min-h-9 border border-black/10 bg-white px-2 text-xs font-bold outline-none transition focus:border-[#181512]"
             onChange={(event) => {
               setSortFilter(event.target.value as SortFilter)
               setCurrentPage(1)
@@ -96,10 +96,10 @@ function ProductFilters({
           </select>
         </label>
 
-        <label className="grid gap-2">
-          <span className="text-sm font-bold">Rows</span>
+        <label className="grid gap-1.5">
+          <span className="text-xs font-bold">Rows</span>
           <select
-            className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+            className="min-h-9 border border-black/10 bg-white px-2 text-xs font-bold outline-none transition focus:border-[#181512]"
             onChange={(event) => {
               setPageSize(Number(event.target.value))
               setCurrentPage(1)
@@ -114,15 +114,18 @@ function ProductFilters({
           </select>
         </label>
 
-        <button
-          className="inline-flex min-h-12 items-center justify-center gap-2 border border-black/10 px-4 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"
-          disabled={!hasActiveFilters}
-          onClick={onResetFilters}
-          type="button"
-        >
-          <RotateCcw className="h-4 w-4" />
-          Reset filters
-        </button>
+        <div className="grid gap-1.5">
+          <span className="hidden text-xs font-bold xl:block">&nbsp;</span>
+          <button
+            className="inline-flex min-h-9 items-center justify-center gap-1.5 border border-black/10 px-3 text-xs font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"
+            disabled={!hasActiveFilters}
+            onClick={onResetFilters}
+            type="button"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reset
+          </button>
+        </div>
       </div>
     </div>
   )
