@@ -25,7 +25,7 @@ function SecuritySettingsPage() {
         isAdminProfile ? 'Marketplace studio' : 'Collector account'
       }
     >
-      <div className="max-w-3xl">
+      <div className="w-full">
         <ChangePasswordPanel />
       </div>
     </DashboardLayout>

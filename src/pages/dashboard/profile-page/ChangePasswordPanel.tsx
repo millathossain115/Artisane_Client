@@ -61,7 +61,7 @@ function ChangePasswordPanel() {
   }
 
   return (
-    <section className="border border-black/10 bg-white p-5 transition">
+    <section className="w-full border border-black/10 bg-white p-5 transition">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/10 pb-4">
         <div className="flex items-center gap-3">
           <span className="grid h-10 w-10 place-items-center bg-[#f8f3ea] text-[#7a3f1d]">

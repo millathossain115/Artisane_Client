@@ -1,4 +1,12 @@
-import { AlertTriangle, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  ClipboardCheck,
+  PackagePlus,
+  ShieldCheck,
+  ShoppingBag,
+  UserRound,
+  X,
+} from 'lucide-react'
 import { useState, type Dispatch, type SetStateAction } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -47,6 +55,33 @@ type OrderDetailPanelProps = {
   statusForm: StatusFormState
 }
 
+function StatusBadge({
+  kind,
+  value,
+}: {
+  kind: 'order' | 'payment'
+  value?: string
+}) {
+  const isProblem =
+    value === 'cancelled' || value === 'failed' || value === 'refunded'
+  const isComplete = value === 'delivered' || value === 'paid'
+  const className = isProblem
+    ? 'bg-[#fff5ef] text-[#8f3f1d]'
+    : isComplete
+      ? 'bg-[#effaf3] text-[#1f6b43]'
+      : kind === 'order'
+        ? 'bg-[#f1dfc8] text-[#7a3f1d]'
+        : 'bg-[#f8f3ea] text-[#6b5f53]'
+
+  return (
+    <span
+      className={`inline-flex min-h-7 max-w-full items-center px-2.5 text-xs font-bold ${className}`}
+    >
+      <span className="truncate">{formatOrderStatus(value)}</span>
+    </span>
+  )
+}
+
 function OrderDetailPanelContent({
   fraudFlags,
   fraudRisk,
@@ -70,7 +105,13 @@ function OrderDetailPanelContent({
   const [showStatusModal, setShowStatusModal] = useState(false)
 
   return (
-    <div className={isModal ? 'max-h-[90vh] w-full max-w-4xl overflow-y-auto border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]' : 'w-full border border-black/10 bg-white p-6 shadow-sm'}>
+    <div
+      className={
+        isModal
+          ? 'max-h-[90vh] w-full max-w-4xl overflow-y-auto border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]'
+          : 'w-full border border-black/10 bg-white p-5 shadow-sm'
+      }
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7a3f1d]">
@@ -97,82 +138,85 @@ function OrderDetailPanelContent({
         ) : null}
       </div>
 
-      <div className="mt-5 grid gap-4 border-y border-black/10 py-4 md:grid-cols-2">
-        <div>
-          <p className="text-sm font-bold">Order status</p>
-          <p className="mt-2 inline-flex min-h-11 items-center bg-[#f1dfc8] px-3 text-sm font-bold text-[#7a3f1d]">
-            {formatOrderStatus(order.orderStatus)}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm font-bold">Payment status</p>
-          <p className="mt-2 inline-flex min-h-11 items-center bg-[#effaf3] px-3 text-sm font-bold text-[#1f6b43]">
-            {formatOrderStatus(order.paymentStatus)}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-5 border-b border-black/10 pb-5">
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
-          Update status
-        </p>
-
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
-          <label className="grid gap-2">
-            <span className="text-sm font-bold">Order status</span>
-            <select
-              className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
-              onChange={(event) =>
-                setStatusForm((current) => ({
-                  ...current,
-                  orderStatus: event.target.value as OrderStatus | '',
-                }))
-              }
-              value={statusForm.orderStatus}
-            >
-              <option value="">Do not change order status</option>
-              {orderStatusOptions.map((status) => (
-                <option key={status} value={status}>
-                  {formatOrderStatus(status)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="grid gap-2">
-            <span className="text-sm font-bold">Payment status</span>
-            <select
-              className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
-              onChange={(event) =>
-                setStatusForm((current) => ({
-                  ...current,
-                  paymentStatus: event.target.value as PaymentStatus | '',
-                }))
-              }
-              value={statusForm.paymentStatus}
-            >
-              <option value="">Do not change payment status</option>
-              {paymentStatusOptions.map((status) => (
-                <option key={status} value={status}>
-                  {formatOrderStatus(status)}
-                </option>
-              ))}
-            </select>
-          </label>
+      <section className="mt-4 border border-[#181512]/15 bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-[#181512] px-3 py-2 text-white">
+          <div className="flex items-center gap-2">
+            <span className="grid h-7 w-7 place-items-center bg-white/10">
+              <ClipboardCheck className="h-3.5 w-3.5" />
+            </span>
+            <p className="text-xs font-bold uppercase tracking-[0.14em]">
+              Status control
+            </p>
+          </div>
+          <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/65">
+            Current & update
+          </span>
         </div>
 
-        <button
-          className="mt-4 inline-flex min-h-11 items-center justify-center bg-[#181512] px-4 text-xs font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-45"
-          disabled={
-            isUpdatingStatus ||
-            (!statusForm.orderStatus && !statusForm.paymentStatus)
-          }
-          onClick={() => setShowStatusModal(true)}
-          type="button"
-        >
-          {isUpdatingStatus ? 'Saving changes...' : 'Save status changes'}
-        </button>
-      </div>
+        <div className="flex flex-col justify-between gap-3 bg-[#fdfaf5] p-3 lg:flex-row lg:items-end">
+          <div className="grid flex-1 gap-3 md:grid-cols-2">
+            <label className="grid gap-2">
+              <span className="flex min-w-0 flex-wrap items-center justify-between gap-2 text-sm font-bold">
+                Order status
+                <StatusBadge kind="order" value={order.orderStatus} />
+              </span>
+              <select
+                className="min-h-10 w-full border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+                onChange={(event) =>
+                  setStatusForm((current) => ({
+                    ...current,
+                    orderStatus: event.target.value as OrderStatus | '',
+                  }))
+                }
+                value={statusForm.orderStatus}
+              >
+                <option value="">Do not change order status</option>
+                {orderStatusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {formatOrderStatus(status)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-2">
+              <span className="flex min-w-0 flex-wrap items-center justify-between gap-2 text-sm font-bold">
+                Payment status
+                <StatusBadge kind="payment" value={order.paymentStatus} />
+              </span>
+              <select
+                className="min-h-10 w-full border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+                onChange={(event) =>
+                  setStatusForm((current) => ({
+                    ...current,
+                    paymentStatus: event.target.value as PaymentStatus | '',
+                  }))
+                }
+                value={statusForm.paymentStatus}
+              >
+                <option value="">Do not change payment status</option>
+                {paymentStatusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {formatOrderStatus(status)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <button
+            className="inline-flex min-h-10 w-full items-center justify-center bg-[#181512] px-4 text-xs font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto lg:mb-0"
+            disabled={
+              isUpdatingStatus ||
+              (!statusForm.orderStatus && !statusForm.paymentStatus)
+            }
+            onClick={() => setShowStatusModal(true)}
+            type="button"
+          >
+            {isUpdatingStatus ? 'Saving changes...' : 'Save status changes'}
+          </button>
+        </div>
+      </section>
 
       {showStatusModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -196,7 +240,8 @@ function OrderDetailPanelContent({
               <div>
                 <h3 className="text-lg font-bold">Update Order Status?</h3>
                 <p className="text-xs text-[#6b5f53]">
-                  Changes will update order records for {formatOrderId(order._id)}.
+                  Changes will update order records for{' '}
+                  {formatOrderId(order._id)}.
                 </p>
               </div>
             </div>
@@ -206,7 +251,8 @@ function OrderDetailPanelContent({
                 <div className="flex justify-between border-b border-black/5 pb-2">
                   <span className="font-bold">Order status:</span>
                   <span className="font-semibold text-[#8f3f1d]">
-                    {formatOrderStatus(order.orderStatus)} &rarr; {formatOrderStatus(statusForm.orderStatus)}
+                    {formatOrderStatus(order.orderStatus)} &rarr;{' '}
+                    {formatOrderStatus(statusForm.orderStatus)}
                   </span>
                 </div>
               ) : null}
@@ -214,7 +260,8 @@ function OrderDetailPanelContent({
                 <div className="flex justify-between pb-1">
                   <span className="font-bold">Payment status:</span>
                   <span className="font-semibold text-[#8f3f1d]">
-                    {formatOrderStatus(order.paymentStatus)} &rarr; {formatOrderStatus(statusForm.paymentStatus)}
+                    {formatOrderStatus(order.paymentStatus)} &rarr;{' '}
+                    {formatOrderStatus(statusForm.paymentStatus)}
                   </span>
                 </div>
               ) : null}
@@ -252,26 +299,30 @@ function OrderDetailPanelContent({
         />
       </div>
 
-      <div className="mt-5 border-b border-black/10 pb-5">
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
-              Fulfillment & Courier Integration
-            </p>
-            <p className="mt-1 text-sm text-[#6b5f53]">
-              Automated Steadfast/Pathao courier shipment creation.
-            </p>
+      <section className="mt-5 border border-[#7a3f1d]/20 bg-[#fbf7ef] shadow-[inset_4px_0_0_#7a3f1d]">
+        <div className="flex flex-col justify-between gap-3 px-3 py-3 sm:flex-row sm:items-center">
+          <div className="flex items-start gap-2">
+            <span className="grid h-8 w-8 shrink-0 place-items-center bg-[#7a3f1d] text-white">
+              <PackagePlus className="h-4 w-4" />
+            </span>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
+                Fulfillment & Courier Integration
+              </p>
+              <p className="mt-1 text-sm text-[#6b5f53]">
+                Automated Steadfast/Pathao courier shipment creation.
+              </p>
+            </div>
           </div>
-
         </div>
 
         {shipmentExists ? (
-          <p className="mt-4 border border-black/10 bg-[#f8f3ea] p-4 text-sm font-semibold text-[#6b5f53]">
+          <p className="border-t border-[#7a3f1d]/15 bg-white px-3 py-3 text-sm font-semibold text-[#6b5f53]">
             Shipment exists. Use the delivery tracker above for courier facts
             and live sync.
           </p>
         ) : (
-          <div className="mt-4 border border-black/10 p-4">
+          <div className="border-t border-[#7a3f1d]/15 bg-white p-3">
             <p className="text-sm font-bold text-[#181512]">
               No courier shipment created yet.
             </p>
@@ -398,15 +449,35 @@ function OrderDetailPanelContent({
             </div>
           </div>
         )}
-      </div>
+      </section>
 
-      <div className="mt-5 border-b border-black/10 pb-5">
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
-          Fraud Risk & Security Verification
-        </p>
+      <section
+        className={`mt-5 border p-3 ${
+          fraudRisk === 'high'
+            ? 'border-[#c85f2f]/30 bg-[#fff5ef]'
+            : fraudRisk === 'medium'
+              ? 'border-[#8a6d00]/25 bg-[#fff9e6]'
+              : 'border-[#1f7a4d]/20 bg-[#effaf3]'
+        }`}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span
+              className={`grid h-8 w-8 place-items-center text-white ${
+                fraudRisk === 'high'
+                  ? 'bg-[#8f3f1d]'
+                  : fraudRisk === 'medium'
+                    ? 'bg-[#8a6d00]'
+                    : 'bg-[#1f6b43]'
+              }`}
+            >
+              <ShieldCheck className="h-4 w-4" />
+            </span>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#181512]">
+              Fraud Risk & Security Verification
+            </p>
+          </div>
 
-        <div className="mt-3 flex items-center gap-3">
-          <span className="text-sm font-bold">Fraud risk level:</span>
           <span
             className={`px-3 py-1 text-xs font-bold uppercase tracking-wider ${
               fraudRisk === 'high'
@@ -434,95 +505,120 @@ function OrderDetailPanelContent({
             </ul>
           </div>
         ) : (
-          <p className="mt-2 text-xs font-semibold text-[#1f6b43]">
+          <p className="mt-3 text-xs font-semibold text-[#1f6b43]">
             No fraud warnings or anomalies flagged for this order.
           </p>
         )}
-      </div>
+      </section>
 
-      <div className="mt-5 grid gap-3 border-b border-black/10 pb-5 text-sm md:grid-cols-2">
-        <p>
-          <span className="font-bold">Customer:</span>{' '}
-          {getOrderCustomer(order)}
-        </p>
-        <p>
-          <span className="font-bold">Contact phone:</span>{' '}
-          {order.contactPhone ?? 'Not set'}
-        </p>
-        <p>
-          <span className="font-bold">Shipping address:</span>{' '}
-          {order.shippingAddress ?? 'Not set'}
-        </p>
-        <p>
-          <span className="font-bold">Payment method:</span>{' '}
-          {order.paymentMethod ? order.paymentMethod.toUpperCase() : 'Not set'}
-        </p>
-        <p>
-          <span className="font-bold">Placed on:</span>{' '}
-          {formatOrderDate(order.createdAt)}
-        </p>
-        {order.notes ? (
-          <p className="md:col-span-2">
-            <span className="font-bold">Customer notes:</span> {order.notes}
+      <section className="mt-5 border border-black/10 bg-white">
+        <div className="flex items-center gap-2 border-b border-black/10 bg-[#f8f3ea] px-3 py-2">
+          <span className="grid h-7 w-7 place-items-center bg-white text-[#7a3f1d]">
+            <UserRound className="h-3.5 w-3.5" />
+          </span>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
+            Customer receipt
           </p>
-        ) : null}
-      </div>
+        </div>
 
-      <div className="mt-5 grid gap-3">
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
-          Order items
-        </p>
+        <div className="grid gap-x-4 gap-y-2 px-3 pb-3 pt-1 text-sm md:grid-cols-2">
+          <p className="border-t border-black/10 pt-2">
+            <span className="font-bold">Customer:</span>{' '}
+            {getOrderCustomer(order)}
+          </p>
+          <p className="border-t border-black/10 pt-2">
+            <span className="font-bold">Contact phone:</span>{' '}
+            {order.contactPhone ?? 'Not set'}
+          </p>
+          <p className="border-t border-black/10 pt-2">
+            <span className="font-bold">Shipping address:</span>{' '}
+            {order.shippingAddress ?? 'Not set'}
+          </p>
+          <p className="border-t border-black/10 pt-2">
+            <span className="font-bold">Payment method:</span>{' '}
+            {order.paymentMethod
+              ? order.paymentMethod.toUpperCase()
+              : 'Not set'}
+          </p>
+          <p className="border-t border-black/10 pt-2">
+            <span className="font-bold">Placed on:</span>{' '}
+            {formatOrderDate(order.createdAt)}
+          </p>
+          {order.notes ? (
+            <p className="border-t border-black/10 pt-2 md:col-span-2">
+              <span className="font-bold">Customer notes:</span> {order.notes}
+            </p>
+          ) : null}
+        </div>
+      </section>
 
-        {(order.items ?? []).map((item, index) => {
-          const imageUrl = getAssetUrl(getOrderItemImage(item))
-          const productUrl = getOrderItemUrl(item)
+      <section className="mt-5 border border-black/10 bg-[#fdfaf5]">
+        <div className="flex items-center justify-between gap-3 border-b border-black/10 bg-white px-3 py-2">
+          <div className="flex items-center gap-2">
+            <span className="grid h-7 w-7 place-items-center bg-[#181512] text-white">
+              <ShoppingBag className="h-3.5 w-3.5" />
+            </span>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#7a3f1d]">
+              Order items
+            </p>
+          </div>
+          <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#6b5f53]">
+            Manifest
+          </span>
+        </div>
 
-          return (
-            <article
-              className="grid grid-cols-[64px_1fr_auto] gap-3 border border-black/10 p-3 text-sm"
-              key={item._id ?? index}
-            >
-              {productUrl ? (
-                <Link
-                  className="h-16 overflow-hidden bg-[#f8f3ea] transition hover:opacity-80"
-                  to={productUrl}
-                >
-                  {imageUrl ? (
-                    <img
-                      alt={getOrderItemName(item)}
-                      className="h-full w-full object-cover"
-                      src={imageUrl}
-                    />
-                  ) : null}
-                </Link>
-              ) : (
-                <div className="h-16 overflow-hidden bg-[#f8f3ea]">
-                  {imageUrl ? (
-                    <img
-                      alt={getOrderItemName(item)}
-                      className="h-full w-full object-cover"
-                      src={imageUrl}
-                    />
-                  ) : null}
-                </div>
-              )}
-              <div>
+        <div className="grid gap-2 p-3">
+          {(order.items ?? []).map((item, index) => {
+            const imageUrl = getAssetUrl(getOrderItemImage(item))
+            const productUrl = getOrderItemUrl(item)
+
+            return (
+              <article
+                className="grid grid-cols-[56px_1fr_auto] gap-3 border border-black/10 bg-white p-2.5 text-sm"
+                key={item._id ?? index}
+              >
                 {productUrl ? (
-                  <Link className="font-bold hover:underline" to={productUrl}>
-                    {getOrderItemName(item)}
+                  <Link
+                    className="h-14 overflow-hidden bg-[#f8f3ea] transition hover:opacity-80"
+                    to={productUrl}
+                  >
+                    {imageUrl ? (
+                      <img
+                        alt={getOrderItemName(item)}
+                        className="h-full w-full object-cover"
+                        src={imageUrl}
+                      />
+                    ) : null}
                   </Link>
                 ) : (
-                  <p className="font-bold">{getOrderItemName(item)}</p>
+                  <div className="h-14 overflow-hidden bg-[#f8f3ea]">
+                    {imageUrl ? (
+                      <img
+                        alt={getOrderItemName(item)}
+                        className="h-full w-full object-cover"
+                        src={imageUrl}
+                      />
+                    ) : null}
+                  </div>
                 )}
-                <p className="mt-1 text-[#6b5f53]">
-                  Qty {item.quantity ?? 1}
-                </p>
-              </div>
-              <p className="font-bold">{formatPrice(item.subtotal ?? 0)}</p>
-            </article>
-          )
-        })}
-      </div>
+                <div>
+                  {productUrl ? (
+                    <Link className="font-bold hover:underline" to={productUrl}>
+                      {getOrderItemName(item)}
+                    </Link>
+                  ) : (
+                    <p className="font-bold">{getOrderItemName(item)}</p>
+                  )}
+                  <p className="mt-1 text-[#6b5f53]">
+                    Qty {item.quantity ?? 1}
+                  </p>
+                </div>
+                <p className="font-bold">{formatPrice(item.subtotal ?? 0)}</p>
+              </article>
+            )
+          })}
+        </div>
+      </section>
 
       <div className="mt-5 flex flex-col justify-between gap-3 border-t border-black/10 pt-5 sm:flex-row sm:items-center">
         <p className="text-xl font-bold">
