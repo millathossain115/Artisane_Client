@@ -217,8 +217,8 @@ function WishlistSection({
                     <p className="mt-1 truncate text-sm text-[#6b5f53]">
                       {product?.brand ?? 'Artisane Studio'}
                     </p>
-                    <span className="mt-2 inline-flex bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
-                      {product?.stock ?? 0} in stock
+                    <span className="mt-2 inline-flex border border-[#7a3f1d]/15 bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
+                      {product?.stock ?? 0}
                     </span>
                   </div>
                 </div>
@@ -326,7 +326,7 @@ function WishlistSection({
               <th className="w-16 px-3 py-3 text-center lg:px-4 xl:w-20">
                 Buy
               </th>
-              <th className="w-16 px-3 py-3 text-right lg:px-4 xl:w-20">
+              <th className="w-16 px-3 py-3 text-center lg:px-4 xl:w-20">
                 Remove
               </th>
             </tr>
@@ -400,8 +400,8 @@ function WishlistSection({
                       </div>
                     </td>
                     <td className="px-3 py-4 lg:px-4">
-                      <span className="block truncate bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
-                        {product?.stock ?? 0} in stock
+                      <span className="inline-flex min-w-8 justify-center border border-[#7a3f1d]/15 bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
+                        {product?.stock ?? 0}
                       </span>
                     </td>
                     <td className="px-3 py-4 lg:px-4">
@@ -458,10 +458,10 @@ function WishlistSection({
                         <span className="hidden xl:inline">Cart</span>
                       </button>
                     </td>
-                    <td className="px-3 py-4 lg:px-4">
+                    <td className="px-3 py-4 text-center lg:px-4">
                       <button
                         aria-label={`Remove ${product?.name ?? 'product'} from wishlist`}
-                        className="btn-danger ml-auto grid h-8 w-8 !p-0"
+                        className="btn-danger mx-auto grid h-8 w-8 !p-0"
                         disabled={removingId === item._id}
                         onClick={() =>
                           onRemoveWishlistItem(item._id, product?.name)
