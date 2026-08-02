@@ -1,197 +1,28 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
-import { ErrorState, SkeletonTable } from '../../../components/loaders'
-import {
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  EyeOff,
-  FolderTree,
-  Globe2,
-  LoaderCircle,
-  Pencil,
-  Save,
-  Search,
-  Trash2,
-  Upload,
-  X,
-  RotateCcw,
-  AlertTriangle,
-} from 'lucide-react'
+import { ChevronLeft, ChevronRight, FolderTree, X } from 'lucide-react'
 
-import { API_BASE_URL } from '../../../config/api'
+import { ErrorState, SkeletonTable } from '../../../components/loaders'
 import {
   type Category,
   useDeleteCategoryMutation,
   useGetCategoriesQuery,
   useUpdateCategoryMutation,
 } from '../../../features/categories/categoryApi'
-import { useGetProductsQuery } from '../../../features/products/productApi'
-
-type CategoryEditForm = {
-  description: string
-  name: string
-  slug: string
-}
-
-type SortFilter = 'newest' | 'oldest' | 'name-asc' | 'name-desc'
-
-const PAGE_SIZE_OPTIONS = [5, 10, 20]
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024
-
-function truncateWords(text: string, maxWords = 10) {
-  if (!text) {
-    return ''
-  }
-  const words = text.trim().split(/\s+/)
-  if (words.length <= maxWords) {
-    return text
-  }
-  return `${words.slice(0, maxWords).join(' ')}..`
-}
-
-function formatDate(value?: string) {
-  if (!value) {
-    return 'Not set'
-  }
-
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return 'Not set'
-  }
-
-  return date.toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
-
-function getCategoryImageUrl(category: Category) {
-  if (!category.image) {
-    return ''
-  }
-
-  if (category.image.startsWith('http')) {
-    return category.image
-  }
-
-  return `${API_BASE_URL.replace('/api/v1', '')}${category.image}`
-}
-
-function getErrorMessage(error: unknown, fallback: string) {
-  if (!error || typeof error !== 'object') {
-    return fallback
-  }
-
-  const errorRecord = error as Record<string, unknown>
-  const data = errorRecord.data
-
-  if (data && typeof data === 'object') {
-    const dataRecord = data as Record<string, unknown>
-
-    if (typeof dataRecord.message === 'string') {
-      return dataRecord.message
-    }
-  }
-
-  if (typeof errorRecord.message === 'string') {
-    return errorRecord.message
-  }
-
-  return fallback
-}
-
-function formatFileSize(size: number) {
-  if (size < 1024 * 1024) {
-    return `${Math.ceil(size / 1024)} KB`
-  }
-
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`
-}
-
-function truncateFileName(name: string, maxLength = 20) {
-  if (name.length <= maxLength) {
-    return name
-  }
-
-  const dotIndex = name.lastIndexOf('.')
-  if (dotIndex > 0 && name.length - dotIndex <= 6) {
-    const ext = name.slice(dotIndex)
-    const baseName = name.slice(0, dotIndex)
-    const keepChars = Math.max(3, maxLength - ext.length - 3)
-    if (baseName.length > keepChars) {
-      return `${baseName.slice(0, keepChars)}...${ext}`
-    }
-  }
-
-  return `${name.slice(0, maxLength - 3)}...`
-}
-
-function isCategoryActive(category: Category) {
-  return category.isActive ?? !category.isDeleted
-}
-
-function getSortParams(sortFilter: SortFilter) {
-  if (sortFilter === 'oldest') {
-    return { sortBy: 'createdAt' as const, sortOrder: 'asc' as const }
-  }
-
-  if (sortFilter === 'name-asc') {
-    return { sortBy: 'name' as const, sortOrder: 'asc' as const }
-  }
-
-  if (sortFilter === 'name-desc') {
-    return { sortBy: 'name' as const, sortOrder: 'desc' as const }
-  }
-
-  return { sortBy: 'createdAt' as const, sortOrder: 'desc' as const }
-}
-
-function CategoryProductCount({ categoryId }: { categoryId: string }) {
-  const {
-    data: productList,
-    isError,
-    isLoading,
-  } = useGetProductsQuery({
-    category: categoryId,
-    limit: 1,
-    page: 1,
-  })
-  const productCount = productList?.meta.total ?? productList?.data.length ?? 0
-
-  if (isLoading) {
-    return (
-      <span
-        className="inline-flex min-h-8 min-w-10 items-center justify-center bg-[#f8f3ea] px-3 text-xs font-bold text-[#6b5f53]"
-        title="Products loading"
-      >
-        ...
-      </span>
-    )
-  }
-
-  if (isError) {
-    return (
-      <span
-        className="inline-flex min-h-8 min-w-10 items-center justify-center bg-[#fff5ef] px-3 text-xs font-bold text-[#8f3f1d]"
-        title="Product count failed"
-      >
-        -
-      </span>
-    )
-  }
-
-  return (
-    <span
-      className="inline-flex min-h-8 min-w-10 items-center justify-center border border-[#7a3f1d]/15 bg-[#f8f3ea] px-3 text-xs font-bold text-[#7a3f1d]"
-      title={`${productCount} ${productCount === 1 ? 'product' : 'products'}`}
-    >
-      {productCount}
-    </span>
-  )
-}
+import CategoryConfirmModals from './components/CategoryConfirmModals'
+import CategoryDesktopTable from './components/CategoryDesktopTable'
+import CategoryEditModal from './components/CategoryEditModal'
+import CategoryMobileList from './components/CategoryMobileList'
+import CategoryTableFilters from './components/CategoryTableFilters'
+import {
+  MAX_IMAGE_SIZE,
+  PAGE_SIZE_OPTIONS,
+  type CategoryEditForm,
+  type SortFilter,
+  formatFileSize,
+  getErrorMessage,
+  getSortParams,
+  isCategoryActive,
+} from './categoryTableUtils'
 
 function CategoryTable() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -253,10 +84,10 @@ function CategoryTable() {
     pageSize !== PAGE_SIZE_OPTIONS[0]
   const isEditFormChanged = Boolean(
     categoryToEdit &&
-    (editForm.name.trim() !== categoryToEdit.name ||
-      editForm.slug.trim() !== categoryToEdit.slug ||
-      editForm.description.trim() !== (categoryToEdit.description ?? '') ||
-      Boolean(editImageFile)),
+      (editForm.name.trim() !== categoryToEdit.name ||
+        editForm.slug.trim() !== categoryToEdit.slug ||
+        editForm.description.trim() !== (categoryToEdit.description ?? '') ||
+        Boolean(editImageFile)),
   )
 
   useEffect(() => {
@@ -435,6 +266,12 @@ function CategoryTable() {
     }
   }
 
+  function handleRequestDelete(category: Category) {
+    setStatus('')
+    setError('')
+    setCategoryToDelete(category)
+  }
+
   function handleResetFilters() {
     setSearchTerm('')
     setSortFilter('newest')
@@ -490,72 +327,25 @@ function CategoryTable() {
         />
       ) : null}
 
-      <div className="grid gap-2 border-b border-black/10 p-3 sm:grid-cols-2 sm:p-4 xl:grid-cols-[minmax(18rem,1fr)_minmax(9rem,0.34fr)_minmax(7rem,0.24fr)_auto] xl:items-end">
-        <label className="grid gap-1.5 text-xs font-bold sm:col-span-2 xl:col-span-1">
-          Search categories
-          <span className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#6b5f53]" />
-            <input
-              className="min-h-9 w-full border border-black/10 pl-8 pr-2 text-xs font-semibold outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
-              onChange={(event) => {
-                setSearchTerm(event.target.value)
-                setCurrentPage(1)
-              }}
-              placeholder="Name, slug, description, or ID"
-              type="search"
-              value={searchTerm}
-            />
-          </span>
-        </label>
-
-        <label className="grid gap-1.5 text-xs font-bold">
-          Sort
-          <select
-            className="min-h-9 w-full border border-black/10 bg-white px-2 text-xs font-bold outline-none transition focus:border-[#181512]"
-            onChange={(event) => {
-              setSortFilter(event.target.value as SortFilter)
-              setCurrentPage(1)
-            }}
-            value={sortFilter}
-          >
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="name-asc">A to Z</option>
-            <option value="name-desc">Z to A</option>
-          </select>
-        </label>
-
-        <label className="grid gap-1.5 text-xs font-bold">
-          Rows
-          <select
-            className="min-h-9 w-full border border-black/10 bg-white px-2 text-xs font-bold outline-none transition focus:border-[#181512]"
-            onChange={(event) => {
-              setPageSize(Number(event.target.value))
-              setCurrentPage(1)
-            }}
-            value={pageSize}
-          >
-            {PAGE_SIZE_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="grid gap-1.5">
-          <span className="hidden text-xs font-bold xl:block">&nbsp;</span>
-          <button
-            className="inline-flex min-h-9 items-center justify-center gap-1.5 border border-black/10 bg-white px-3 text-xs font-bold text-[#181512] transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
-            disabled={!hasActiveFilters}
-            onClick={handleResetFilters}
-            type="button"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            Reset
-          </button>
-        </div>
-      </div>
+      <CategoryTableFilters
+        hasActiveFilters={hasActiveFilters}
+        onPageSizeChange={(nextPageSize) => {
+          setPageSize(nextPageSize)
+          setCurrentPage(1)
+        }}
+        onResetFilters={handleResetFilters}
+        onSearchTermChange={(nextSearchTerm) => {
+          setSearchTerm(nextSearchTerm)
+          setCurrentPage(1)
+        }}
+        onSortFilterChange={(nextSortFilter) => {
+          setSortFilter(nextSortFilter)
+          setCurrentPage(1)
+        }}
+        pageSize={pageSize}
+        searchTerm={searchTerm}
+        sortFilter={sortFilter}
+      />
 
       {isCategoriesLoading ? (
         <div className="p-5">
@@ -563,246 +353,22 @@ function CategoryTable() {
         </div>
       ) : (
         <>
-          <div className="grid gap-3 p-4 lg:hidden">
-            {categories.length ? (
-              categories.map((category) => {
-                const imageUrl = getCategoryImageUrl(category)
-                const categoryIsActive = isCategoryActive(category)
-
-                return (
-                  <article
-                    className="border border-black/10 bg-white p-4"
-                    key={category._id}
-                  >
-                    <div className="flex items-start gap-3">
-                      <Link
-                        className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]"
-                        to={`/products?category=${encodeURIComponent(category._id)}`}
-                      >
-                        {imageUrl ? (
-                          <img
-                            alt=""
-                            className="h-full w-full object-cover"
-                            src={imageUrl}
-                          />
-                        ) : (
-                          <Globe2 className="h-5 w-5" />
-                        )}
-                      </Link>
-                      <div className="min-w-0 flex-1">
-                        <Link
-                          className="line-clamp-2 font-bold hover:underline"
-                          to={`/products?category=${encodeURIComponent(category._id)}`}
-                        >
-                          {category.name}
-                        </Link>
-                        <p className="mt-1 text-xs font-semibold text-[#6b5f53]">
-                          {category._id.slice(-8).toUpperCase()}
-                        </p>
-                        <p className="mt-2 line-clamp-2 text-sm text-[#6b5f53]">
-                          {category.description || 'No description added.'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 flex flex-wrap gap-2 border-t border-black/10 pt-3">
-                      <span className="inline-flex min-h-8 items-center bg-[#f8f3ea] px-2 text-xs font-bold text-[#6b5f53]">
-                        Products
-                      </span>
-                      <CategoryProductCount categoryId={category._id} />
-                      <button
-                        className={`inline-flex min-h-8 items-center gap-2 border px-2 text-xs font-bold transition ${
-                          categoryIsActive
-                            ? 'border-[#7a3f1d]/15 bg-[#f8f3ea] text-[#7a3f1d] hover:border-[#7a3f1d]'
-                            : 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d] hover:border-[#8f3f1d]'
-                        } disabled:cursor-not-allowed disabled:opacity-60`}
-                        disabled={isUpdating}
-                        onClick={() => handleToggleCategoryStatus(category)}
-                        type="button"
-                      >
-                        {categoryIsActive ? (
-                          <Eye className="h-4 w-4" />
-                        ) : (
-                          <EyeOff className="h-4 w-4" />
-                        )}
-                        {categoryIsActive ? 'Active' : 'Inactive'}
-                      </button>
-                      <span className="inline-flex min-h-8 items-center bg-[#f8f3ea] px-2 text-xs font-bold text-[#6b5f53]">
-                        {formatDate(category.createdAt)}
-                      </span>
-                    </div>
-
-                    <div className="mt-3 flex justify-end gap-2">
-                      <button
-                        aria-label={`Update ${category.name}`}
-                        className="grid h-9 w-9 place-items-center border border-black/10 text-[#181512] transition hover:border-[#181512] hover:bg-white"
-                        onClick={() => openEditModal(category)}
-                        type="button"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        aria-label={`Delete ${category.name}`}
-                        className="grid h-9 w-9 place-items-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef]"
-                        onClick={() => {
-                          setStatus('')
-                          setError('')
-                          setCategoryToDelete(category)
-                        }}
-                        type="button"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </article>
-                )
-              })
-            ) : (
-              <p className="border border-black/10 bg-[#f8f3ea] p-5 text-center text-sm font-semibold text-[#6b5f53]">
-                {totalCategories
-                  ? 'No categories match the current filters.'
-                  : 'No categories found.'}
-              </p>
-            )}
-          </div>
-
-          <div className="hidden overflow-hidden lg:block">
-            <table className="w-full table-fixed border-collapse text-left text-sm">
-              <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
-                <tr>
-                  <th className="w-[44%] px-3 py-3 2xl:px-5">Category</th>
-                  <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">
-                    Products
-                  </th>
-                  <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">
-                    Created
-                  </th>
-                  <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">
-                    Status
-                  </th>
-                  <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {categories.length ? (
-                  categories.map((category) => {
-                    const imageUrl = getCategoryImageUrl(category)
-                    const categoryIsActive = isCategoryActive(category)
-
-                    return (
-                      <tr
-                        className="border-t border-black/10 transition hover:bg-[#f8f3ea]"
-                        key={category._id}
-                      >
-                        <td className="min-w-0 px-3 py-4 2xl:px-5">
-                          <div className="flex min-w-0 items-center gap-3">
-                            <Link
-                              className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d] transition hover:opacity-80"
-                              to={`/products?category=${encodeURIComponent(category._id)}`}
-                            >
-                              {imageUrl ? (
-                                <img
-                                  alt=""
-                                  className="h-full w-full object-cover"
-                                  src={imageUrl}
-                                />
-                              ) : (
-                                <Globe2 className="h-5 w-5" />
-                              )}
-                            </Link>
-                            <span className="min-w-0 flex-1">
-                              <Link
-                                className="block truncate font-bold hover:underline"
-                                title={category.name}
-                                to={`/products?category=${encodeURIComponent(category._id)}`}
-                              >
-                                {category.name}
-                              </Link>
-                              <span
-                                className="mt-1 block truncate text-xs font-semibold text-[#6b5f53]"
-                                title={category.description || ''}
-                              >
-                                {category.description
-                                  ? truncateWords(category.description, 12)
-                                  : 'No description added.'}
-                              </span>
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-2 py-4 text-center 2xl:px-4">
-                          <CategoryProductCount categoryId={category._id} />
-                        </td>
-                        <td
-                          className="truncate px-2 py-4 text-center text-[#6b5f53] 2xl:px-4"
-                          title={formatDate(category.createdAt)}
-                        >
-                          {formatDate(category.createdAt)}
-                        </td>
-                        <td className="px-2 py-4 text-center 2xl:px-4">
-                          <button
-                            className={`inline-flex max-w-full min-h-9 items-center justify-center gap-2 border px-2 text-xs font-bold transition 2xl:px-3 ${
-                              categoryIsActive
-                                ? 'border-[#7a3f1d]/15 bg-[#f8f3ea] text-[#7a3f1d] hover:border-[#7a3f1d]'
-                                : 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d] hover:border-[#8f3f1d]'
-                            } disabled:cursor-not-allowed disabled:opacity-60`}
-                            disabled={isUpdating}
-                            onClick={() => handleToggleCategoryStatus(category)}
-                            type="button"
-                          >
-                            {categoryIsActive ? (
-                              <Eye className="h-4 w-4" />
-                            ) : (
-                              <EyeOff className="h-4 w-4" />
-                            )}
-                            <span className="truncate">
-                              {categoryIsActive ? 'Active' : 'Inactive'}
-                            </span>
-                          </button>
-                        </td>
-                        <td className="px-2 py-4 text-center 2xl:px-4">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              className="inline-flex h-9 w-9 items-center justify-center border border-black/10 text-[#181512] transition hover:border-[#181512] hover:bg-white"
-                              aria-label={`Update ${category.name}`}
-                              onClick={() => openEditModal(category)}
-                              type="button"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </button>
-                            <button
-                              className="inline-flex h-9 w-9 items-center justify-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef]"
-                              aria-label={`Delete ${category.name}`}
-                              onClick={() => {
-                                setStatus('')
-                                setError('')
-                                setCategoryToDelete(category)
-                              }}
-                              type="button"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })
-                ) : (
-                  <tr className="border-t border-black/10">
-                    <td
-                      className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
-                      colSpan={5}
-                    >
-                      {totalCategories
-                        ? 'No categories match the current filters.'
-                        : 'No categories found.'}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <CategoryMobileList
+            categories={categories}
+            isUpdating={isUpdating}
+            onDelete={handleRequestDelete}
+            onEdit={openEditModal}
+            onToggleStatus={handleToggleCategoryStatus}
+            totalCategories={totalCategories}
+          />
+          <CategoryDesktopTable
+            categories={categories}
+            isUpdating={isUpdating}
+            onDelete={handleRequestDelete}
+            onEdit={openEditModal}
+            onToggleStatus={handleToggleCategoryStatus}
+            totalCategories={totalCategories}
+          />
         </>
       )}
 
@@ -839,303 +405,36 @@ function CategoryTable() {
       </div>
 
       {categoryToEdit && (
-        <div
-          className="fixed inset-0 z-50 grid place-items-center bg-[#181512]/55 px-4"
-          role="presentation"
-        >
-          <div
-            aria-modal="true"
-            className="w-full max-w-2xl border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
-            role="dialog"
-          >
-            <p className="text-sm font-bold text-[#7a3f1d]">Update category</p>
-            <h2 className="mt-2 text-2xl font-bold">{categoryToEdit.name}</h2>
-
-            <form className="mt-5" onSubmit={handleUpdateSubmit}>
-              <div className="grid gap-5 md:grid-cols-2">
-                <label className="grid gap-2 text-sm font-bold">
-                  Category name
-                  <input
-                    className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
-                    onChange={(event) =>
-                      updateEditField('name', event.target.value)
-                    }
-                    required
-                    type="text"
-                    value={editForm.name}
-                  />
-                </label>
-
-                <label className="grid gap-2 text-sm font-bold">
-                  Slug
-                  <input
-                    className="min-h-12 border border-black/10 px-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
-                    onChange={(event) =>
-                      updateEditField('slug', event.target.value)
-                    }
-                    required
-                    type="text"
-                    value={editForm.slug}
-                  />
-                </label>
-              </div>
-
-              <label className="mt-5 grid gap-2 text-sm font-bold">
-                Description
-                <textarea
-                  className="min-h-28 resize-y border border-black/10 px-3 py-3 text-sm font-medium leading-6 outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
-                  onChange={(event) =>
-                    updateEditField('description', event.target.value)
-                  }
-                  value={editForm.description}
-                />
-              </label>
-
-              <label className="mt-5 grid gap-2 text-sm font-bold">
-                <div className="flex items-center justify-between">
-                  <span>Category image</span>
-                  <span className="text-xs font-semibold text-[#7a3f1d]">
-                    Max size: {formatFileSize(MAX_IMAGE_SIZE)}
-                  </span>
-                </div>
-                <div className="border border-dashed border-black/20 bg-[#f8f3ea] p-4">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden bg-white text-[#7a3f1d]">
-                        {editImagePreviewUrl ||
-                        getCategoryImageUrl(categoryToEdit) ? (
-                          <img
-                            alt=""
-                            className="h-full w-full object-cover"
-                            src={
-                              editImagePreviewUrl ||
-                              getCategoryImageUrl(categoryToEdit)
-                            }
-                          />
-                        ) : (
-                          <Globe2 className="h-5 w-5" />
-                        )}
-                      </span>
-                      <span className="min-w-0 max-w-[180px] sm:max-w-[240px]">
-                        <span
-                          className="block truncate font-bold"
-                          title={editImageFile?.name}
-                        >
-                          {editImageFile
-                            ? truncateFileName(editImageFile.name, 22)
-                            : 'Keep current image'}
-                        </span>
-                        <span className="mt-1 block text-xs font-semibold text-[#6b5f53]">
-                          {editImageFile
-                            ? `${editImageFile.type} - ${formatFileSize(editImageFile.size)}`
-                            : `Upload only when changing category image. Max: ${formatFileSize(MAX_IMAGE_SIZE)}.`}
-                        </span>
-                      </span>
-                    </div>
-
-                    <span className="relative inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d]">
-                      <Upload className="h-4 w-4" />
-                      Choose file
-                      <input
-                        accept="image/*"
-                        className="absolute inset-0 cursor-pointer opacity-0"
-                        key={editImageInputKey}
-                        onChange={(event) =>
-                          handleEditImageChange(event.target.files?.[0])
-                        }
-                        type="file"
-                      />
-                    </span>
-                  </div>
-
-                  {imageWarning && (
-                    <div className="mt-3 flex items-center gap-2 border border-[#c85f2f]/30 bg-[#fff5ef] p-3 text-xs font-semibold text-[#8f3f1d]">
-                      <AlertTriangle className="h-4 w-4 shrink-0" />
-                      <span>{imageWarning}</span>
-                    </div>
-                  )}
-                </div>
-              </label>
-
-              <div className="mt-6 flex flex-wrap justify-end gap-2">
-                <button
-                  className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
-                  disabled={isUpdating}
-                  onClick={closeEditModal}
-                  type="button"
-                >
-                  Cancel
-                </button>
-                <button
-                  className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
-                  disabled={isUpdating || !isEditFormChanged}
-                  type="submit"
-                >
-                  {isUpdating ? (
-                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  {isUpdating ? 'Updating...' : 'Update category'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <CategoryEditModal
+          category={categoryToEdit}
+          editForm={editForm}
+          editImageFile={editImageFile}
+          editImageInputKey={editImageInputKey}
+          editImagePreviewUrl={editImagePreviewUrl}
+          imageWarning={imageWarning}
+          isEditFormChanged={isEditFormChanged}
+          isUpdating={isUpdating}
+          onClose={closeEditModal}
+          onFieldChange={updateEditField}
+          onImageChange={handleEditImageChange}
+          onSubmit={handleUpdateSubmit}
+        />
       )}
 
-      {showUpdateConfirm && categoryToEdit && (
-        <div
-          className="fixed inset-0 z-[60] grid place-items-center bg-[#181512]/55 px-4"
-          role="presentation"
-        >
-          <div
-            aria-modal="true"
-            className="w-full max-w-md border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
-            role="dialog"
-          >
-            <div className="flex items-center gap-2 text-[#7a3f1d]">
-              <AlertTriangle className="h-5 w-5" />
-              <p className="text-sm font-bold">Confirm update</p>
-            </div>
-            <h2 className="mt-2 text-2xl font-bold">
-              Update {categoryToEdit.name}?
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[#6b5f53]">
-              Are you sure you want to save changes to this category?
-            </p>
-
-            <div className="mt-5 flex flex-wrap justify-end gap-2">
-              <button
-                className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
-                disabled={isUpdating}
-                onClick={() => setShowUpdateConfirm(false)}
-                type="button"
-              >
-                Cancel
-              </button>
-              <button
-                className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={isUpdating}
-                onClick={handleConfirmUpdate}
-                type="button"
-              >
-                {isUpdating ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-                {isUpdating ? 'Updating...' : 'Confirm update'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {categoryToToggleStatus && (
-        <div
-          className="fixed inset-0 z-50 grid place-items-center bg-[#181512]/55 px-4"
-          role="presentation"
-        >
-          <div
-            aria-modal="true"
-            className="w-full max-w-md border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
-            role="dialog"
-          >
-            <div className="flex items-center gap-2 text-[#c85f2f]">
-              <AlertTriangle className="h-5 w-5" />
-              <p className="text-sm font-bold">Status change warning</p>
-            </div>
-            <h2 className="mt-2 text-2xl font-bold">
-              {isCategoryActive(categoryToToggleStatus)
-                ? 'Deactivate'
-                : 'Activate'}{' '}
-              {categoryToToggleStatus.name}?
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[#6b5f53]">
-              Are you sure you want to mark this category as{' '}
-              <strong className="text-[#181512]">
-                {isCategoryActive(categoryToToggleStatus)
-                  ? 'Inactive'
-                  : 'Active'}
-              </strong>
-              ?{' '}
-              {isCategoryActive(categoryToToggleStatus)
-                ? 'Deactivating will hide products associated with this category from storefront filters.'
-                : 'Activating will make this category visible across storefront search and navigation.'}
-            </p>
-
-            <div className="mt-5 flex flex-wrap justify-end gap-2">
-              <button
-                className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
-                disabled={isUpdating}
-                onClick={() => setCategoryToToggleStatus(null)}
-                type="button"
-              >
-                Cancel
-              </button>
-              <button
-                className="inline-flex min-h-11 items-center gap-2 bg-[#181512] px-4 text-sm font-bold text-white transition hover:bg-[#7a3f1d] disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={isUpdating}
-                onClick={handleConfirmToggleStatus}
-                type="button"
-              >
-                {isUpdating ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-                {isUpdating ? 'Updating...' : 'Confirm status change'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {categoryToDelete && (
-        <div
-          className="fixed inset-0 z-50 grid place-items-center bg-[#181512]/55 px-4"
-          role="presentation"
-        >
-          <div
-            aria-modal="true"
-            className="w-full max-w-md border border-black/10 bg-white p-5 shadow-[0_28px_60px_rgba(24,21,18,0.28)]"
-            role="dialog"
-          >
-            <p className="text-sm font-bold text-[#8f3f1d]">Delete category</p>
-            <h2 className="mt-2 text-2xl font-bold">
-              Delete {categoryToDelete.name}?
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[#6b5f53]">
-              This will remove the category from the marketplace database.
-            </p>
-
-            <div className="mt-5 flex flex-wrap justify-end gap-2">
-              <button
-                className="min-h-11 border border-black/10 bg-white px-4 text-sm font-bold transition hover:border-[#181512]"
-                disabled={isDeleting}
-                onClick={() => setCategoryToDelete(null)}
-                type="button"
-              >
-                Cancel
-              </button>
-              <button
-                className="inline-flex min-h-11 items-center gap-2 bg-[#8f3f1d] px-4 text-sm font-bold text-white transition hover:bg-[#181512] disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={isDeleting}
-                onClick={handleConfirmDelete}
-                type="button"
-              >
-                {isDeleting ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="h-4 w-4" />
-                )}
-                {isDeleting ? 'Deleting...' : 'Confirm delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CategoryConfirmModals
+        categoryToDelete={categoryToDelete}
+        categoryToEdit={categoryToEdit}
+        categoryToToggleStatus={categoryToToggleStatus}
+        isDeleting={isDeleting}
+        isUpdating={isUpdating}
+        onCancelDelete={() => setCategoryToDelete(null)}
+        onCancelStatus={() => setCategoryToToggleStatus(null)}
+        onCancelUpdate={() => setShowUpdateConfirm(false)}
+        onConfirmDelete={handleConfirmDelete}
+        onConfirmStatus={handleConfirmToggleStatus}
+        onConfirmUpdate={handleConfirmUpdate}
+        showUpdateConfirm={showUpdateConfirm}
+      />
     </section>
   )
 }
