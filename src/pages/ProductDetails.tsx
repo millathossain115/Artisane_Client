@@ -280,7 +280,7 @@ function ProductDetails() {
 
     try {
       if (isWishlisted && wishlistEntryId) {
-        await deleteWishlistProduct(wishlistEntryId).unwrap()
+        await deleteWishlistProduct(product._id).unwrap()
         toast.success(`${product.name} removed from wishlist.`)
       } else {
         await addWishlistProduct(product._id).unwrap()
