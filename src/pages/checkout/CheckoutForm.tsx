@@ -11,6 +11,9 @@ import {
 import type { UserAddress } from '../../features/address/addressApi'
 import type { LocationOption } from '../../features/locations/locationApi'
 import type { PaymentMethod } from '../../features/orders/orderApi'
+import bkashLogo from '../../assets/Payment Partner/Bkash.png'
+import nagadLogo from '../../assets/Payment Partner/Nagad.png'
+import rocketLogo from '../../assets/Payment Partner/Rocket.webp'
 import { paymentOptions } from './checkoutUtils'
 
 type CheckoutFormProps = {
@@ -38,6 +41,12 @@ type CheckoutFormProps = {
   selectedDistrictId: string
   selectedZoneId: string
   zones: LocationOption[]
+}
+
+const paymentLogoByMethod: Partial<Record<PaymentMethod, string>> = {
+  bkash: bkashLogo,
+  nagad: nagadLogo,
+  rocket: rocketLogo,
 }
 
 function CheckoutForm({
@@ -243,9 +252,19 @@ function CheckoutForm({
                 />
                 <span className="flex min-w-0 items-center gap-3">
                   <span
-                    className={`grid h-10 min-w-14 place-items-center px-2 text-xs font-black sm:h-11 sm:min-w-16 sm:px-3 sm:text-sm ${option.accentClass}`}
+                    className={`grid h-10 min-w-14 place-items-center px-2 text-xs font-black sm:h-11 sm:min-w-16 sm:px-3 sm:text-sm ${
+                      option.value === 'cod' ? option.accentClass : 'bg-white'
+                    }`}
                   >
-                    {option.logo}
+                    {paymentLogoByMethod[option.value] ? (
+                      <img
+                        alt={`${option.label} logo`}
+                        className="max-h-7 max-w-14 object-contain sm:max-h-8 sm:max-w-16"
+                        src={paymentLogoByMethod[option.value]}
+                      />
+                    ) : (
+                      option.logo
+                    )}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-bold">
