@@ -39,6 +39,24 @@ export function getReviewProductName(review: Review) {
   return review.product.name ?? 'Product'
 }
 
+export function getReviewProductCategory(review: Review) {
+  if (!review.product || typeof review.product === 'string') {
+    return 'Category unavailable'
+  }
+
+  const { category } = review.product
+
+  if (!category) {
+    return 'Category unavailable'
+  }
+
+  if (typeof category === 'string') {
+    return category
+  }
+
+  return category.name || category.slug || 'Category unavailable'
+}
+
 export function getReviewUserName(review: Review) {
   if (!review.user || typeof review.user === 'string') {
     return 'User'

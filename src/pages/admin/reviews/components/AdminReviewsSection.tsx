@@ -1,5 +1,5 @@
-import { Eye, EyeOff, Search, Trash2 } from 'lucide-react'
-import type { Dispatch, SetStateAction } from 'react'
+import { Eye, EyeOff, MoreVertical, Search, Trash2 } from 'lucide-react'
+import { useState, type Dispatch, type SetStateAction } from 'react'
 import { Link } from 'react-router-dom'
 
 import type {
@@ -9,6 +9,7 @@ import type {
 import { formatDate } from '../../../dashboard/dashboardFormat'
 import {
   getReviewProductName,
+  getReviewProductCategory,
   getReviewUserEmail,
   getReviewUserName,
   renderStars,
@@ -51,6 +52,8 @@ function AdminReviewsSection({
   visibilityFilter,
   visibleReviews,
 }: AdminReviewsSectionProps) {
+  const [openActionId, setOpenActionId] = useState('')
+
   return (
     <section className="border border-black/10 bg-white">
       <div className="flex flex-col gap-3 border-b border-black/10 px-4 py-3.5 sm:px-5 xl:flex-row xl:items-end xl:justify-between">
@@ -212,24 +215,29 @@ function AdminReviewsSection({
         )}
       </div>
 
-      <div className="hidden overflow-hidden lg:block">
+      <div className="hidden overflow-visible lg:block">
         <table className="w-full table-fixed border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
-              <th className="w-[22%] px-3 py-3 2xl:px-5">Review</th>
-              <th className="w-[20%] px-3 py-3 2xl:px-5">Product</th>
-              <th className="w-[16%] px-3 py-3 2xl:px-5">User</th>
-              <th className="w-[9%] px-3 py-3 2xl:px-5">Rating</th>
-              <th className="w-[10%] px-3 py-3 2xl:px-5">Visibility</th>
-              <th className="w-[9%] px-3 py-3 2xl:px-5">Created</th>
-              <th className="w-[14%] px-3 py-3 text-right 2xl:px-5">Action</th>
+              <th className="w-[30%] px-3 py-3 2xl:px-5">Review</th>
+              <th className="w-[22%] px-3 py-3 2xl:px-5">Product</th>
+              <th className="w-[18%] px-3 py-3 2xl:px-5">User</th>
+              <th className="w-[10%] px-3 py-3 text-center 2xl:px-5">
+                Rating
+              </th>
+              <th className="w-[10%] px-3 py-3 text-center 2xl:px-5">
+                Visibility
+              </th>
+              <th className="w-[10%] px-3 py-3 text-center 2xl:px-5">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               Array.from({ length: 6 }).map((_, index) => (
                 <tr className="border-t border-black/10" key={index}>
-                  <td className="px-5 py-5" colSpan={7}>
+                  <td className="px-5 py-5" colSpan={6}>
                     <div className="h-5 animate-pulse bg-[#f8f3ea]" />
                   </td>
                 </tr>
@@ -241,8 +249,14 @@ function AdminReviewsSection({
                   key={review._id}
                 >
                   <td className="min-w-0 px-3 py-4 2xl:px-5">
-                    <p className="line-clamp-2 font-semibold text-[#4f463d]">
+                    <p
+                      className="line-clamp-2 font-semibold text-[#4f463d] 2xl:line-clamp-3"
+                      title={review.comment || 'No comment.'}
+                    >
                       {review.comment || 'No comment.'}
+                    </p>
+                    <p className="mt-1 truncate text-xs font-semibold text-[#6b5f53]">
+                      {formatDate(review.createdAt)}
                     </p>
                   </td>
                   <td className="min-w-0 px-3 py-4 2xl:px-5">
@@ -257,10 +271,11 @@ function AdminReviewsSection({
                     >
                       {getReviewProductName(review)}
                     </Link>
-                    <p className="mt-1 truncate text-xs text-[#6b5f53]">
-                      {review.product && typeof review.product !== 'string'
-                        ? review.product.slug
-                        : ''}
+                    <p
+                      className="mt-1 truncate text-xs text-[#6b5f53]"
+                      title={getReviewProductCategory(review)}
+                    >
+                      {getReviewProductCategory(review)}
                     </p>
                   </td>
                   <td className="min-w-0 px-3 py-4 2xl:px-5">
@@ -277,12 +292,12 @@ function AdminReviewsSection({
                       {getReviewUserEmail(review)}
                     </p>
                   </td>
-                  <td className="px-3 py-4 2xl:px-5">
-                    <div className="flex gap-1">
+                  <td className="px-3 py-4 text-center 2xl:px-5">
+                    <div className="flex justify-center gap-1">
                       {renderStars(review.rating)}
                     </div>
                   </td>
-                  <td className="px-3 py-4 2xl:px-5">
+                  <td className="px-3 py-4 text-center 2xl:px-5">
                     <span
                       className={`px-2 py-1 text-xs font-bold ${
                         review.isHidden
@@ -293,41 +308,53 @@ function AdminReviewsSection({
                       {review.isHidden ? 'Hidden' : 'Visible'}
                     </span>
                   </td>
-                  <td className="truncate px-3 py-4 text-[#6b5f53] 2xl:px-5">
-                    {formatDate(review.createdAt)}
-                  </td>
-                  <td className="px-3 py-4 2xl:px-5">
-                    <div className="flex justify-end gap-2">
+                  <td className="px-3 py-4 text-center 2xl:px-5">
+                    <div className="relative inline-flex justify-center">
                       <button
-                        aria-label={
-                          review.isHidden ? 'Show review' : 'Hide review'
-                        }
-                        className="inline-flex h-9 w-9 items-center justify-center border border-black/10 text-xs font-bold transition hover:border-[#181512] hover:bg-white disabled:cursor-not-allowed disabled:opacity-45 2xl:w-auto 2xl:gap-2 2xl:px-3"
-                        disabled={isTogglingVisibility}
+                        aria-expanded={openActionId === review._id}
+                        aria-label="Open review actions"
+                        className="grid h-9 w-9 place-items-center border border-black/10 bg-white text-[#181512] transition hover:border-[#181512] hover:bg-[#f8f3ea]"
                         onClick={() =>
-                          setConfirmTarget({ review, type: 'visibility' })
+                          setOpenActionId((currentId) =>
+                            currentId === review._id ? '' : review._id,
+                          )
                         }
                         type="button"
                       >
-                        {review.isHidden ? (
-                          <Eye className="h-4 w-4" />
-                        ) : (
-                          <EyeOff className="h-4 w-4" />
-                        )}
-                        <span className="hidden 2xl:inline">
-                          {review.isHidden ? 'Show' : 'Hide'}
-                        </span>
+                        <MoreVertical className="h-4 w-4" />
                       </button>
-                      <button
-                        className="grid h-9 w-9 place-items-center border border-[#c85f2f]/25 text-[#8f3f1d] transition hover:border-[#8f3f1d] hover:bg-[#fff5ef] disabled:cursor-not-allowed disabled:opacity-45"
-                        disabled={isDeleting}
-                        onClick={() =>
-                          setConfirmTarget({ review, type: 'delete' })
-                        }
-                        type="button"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      {openActionId === review._id ? (
+                        <div className="absolute right-0 top-full z-20 mt-2 w-36 border border-black/10 bg-white py-1 text-left shadow-[0_18px_36px_rgba(24,21,18,0.14)]">
+                          <button
+                            className="flex min-h-9 w-full items-center gap-2 px-3 text-xs font-bold text-[#181512] transition hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"
+                            disabled={isTogglingVisibility}
+                            onClick={() => {
+                              setOpenActionId('')
+                              setConfirmTarget({ review, type: 'visibility' })
+                            }}
+                            type="button"
+                          >
+                            {review.isHidden ? (
+                              <Eye className="h-4 w-4" />
+                            ) : (
+                              <EyeOff className="h-4 w-4" />
+                            )}
+                            {review.isHidden ? 'Show' : 'Hide'}
+                          </button>
+                          <button
+                            className="flex min-h-9 w-full items-center gap-2 px-3 text-xs font-bold text-[#8f3f1d] transition hover:bg-[#fff5ef] disabled:cursor-not-allowed disabled:opacity-45"
+                            disabled={isDeleting}
+                            onClick={() => {
+                              setOpenActionId('')
+                              setConfirmTarget({ review, type: 'delete' })
+                            }}
+                            type="button"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Delete
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   </td>
                 </tr>
@@ -336,7 +363,7 @@ function AdminReviewsSection({
               <tr className="border-t border-black/10">
                 <td
                   className="px-5 py-8 text-center font-semibold text-[#6b5f53]"
-                  colSpan={7}
+                  colSpan={6}
                 >
                   No reviews found.
                 </td>
