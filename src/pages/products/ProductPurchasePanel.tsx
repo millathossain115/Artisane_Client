@@ -21,7 +21,7 @@ type ProductPurchasePanelProps = {
   onAddToCart: () => void
   onBuyNow: () => void
   onToggleWishlist?: () => void
-  onUpdateQuantity: (quantity: number) => void
+  onUpdateQuantity: (delta: number) => void
   product: Product
   quantity: number
 }
@@ -137,7 +137,7 @@ function ProductPurchasePanel({
                 aria-label="Decrease quantity"
                 className="grid h-11 place-items-center transition hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"
                 disabled={quantity <= 1 || isOutOfStock}
-                onClick={() => onUpdateQuantity(quantity - 1)}
+                onClick={() => onUpdateQuantity(-1)}
                 type="button"
               >
                 <Minus className="h-4 w-4" />
@@ -149,7 +149,7 @@ function ProductPurchasePanel({
                 aria-label="Increase quantity"
                 className="grid h-11 place-items-center transition hover:bg-[#f8f3ea] disabled:cursor-not-allowed disabled:opacity-45"
                 disabled={quantity >= product.stock || isOutOfStock}
-                onClick={() => onUpdateQuantity(quantity + 1)}
+                onClick={() => onUpdateQuantity(1)}
                 type="button"
               >
                 <Plus className="h-4 w-4" />
