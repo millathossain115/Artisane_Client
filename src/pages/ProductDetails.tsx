@@ -512,7 +512,7 @@ function ProductDetails() {
                   </div>
 
                   {/* Right Rating Breakdown Bars */}
-                  <div className="grid w-full max-w-md gap-1.5">
+                  <div className="grid w-full max-w-md gap-1.5 md:justify-self-end">
                     {[5, 4, 3, 2, 1].map((starLevel) => {
                       const count =
                         ratingCounts[starLevel as keyof typeof ratingCounts] ||
