@@ -93,8 +93,8 @@ function ProductPurchasePanel({
               -{priceInfo.discountPercent}% OFF
             </span>
           )}
-          <span className="inline-flex items-center gap-1 bg-[#effaf3] px-3 py-1 text-xs font-bold text-[#1f6b43]">
-            <PackageCheck className="h-3.5 w-3.5" />
+          <span className="inline-flex items-center gap-1 border border-[#7a3f1d]/15 bg-[#f8f3ea] px-3 py-1 text-xs font-bold text-[#7a3f1d]">
+            <PackageCheck className="h-3.5 w-3.5 text-[#8f3f1d]" />
             {product.stock} in stock
           </span>
           <span className="inline-flex items-center gap-1 bg-[#f8f3ea] px-3 py-1 text-xs font-bold text-[#4f463d]">

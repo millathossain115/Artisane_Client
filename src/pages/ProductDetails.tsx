@@ -103,7 +103,7 @@ function ProductDetailsSkeleton() {
 
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <ProductDetailsSkeletonBlock className="h-9 w-28" />
-            <ProductDetailsSkeletonBlock className="h-7 w-24 bg-[#effaf3]" />
+            <ProductDetailsSkeletonBlock className="h-7 w-24 bg-[#f8f3ea]" />
             <ProductDetailsSkeletonBlock className="h-7 w-16 bg-[#f8f3ea]" />
           </div>
 

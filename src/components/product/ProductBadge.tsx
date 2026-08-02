@@ -8,7 +8,7 @@ function ProductBadge({ children, variant = 'neutral' }: ProductBadgeProps) {
     variant === 'danger'
       ? 'bg-[#8f3f1d] text-white shadow'
       : variant === 'success'
-        ? 'bg-[#effaf3] text-[#1f6b43]'
+        ? 'border border-[#7a3f1d]/15 bg-[#f8f3ea] text-[#7a3f1d]'
         : 'bg-white text-[#7a3f1d] border border-black/10'
 
   return (
