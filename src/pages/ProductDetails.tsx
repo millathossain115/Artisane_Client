@@ -31,6 +31,7 @@ import {
   getProductCategoryId,
   getProductCategoryName,
 } from '../utils/productDisplay'
+import WhyChooseUs from './home/WhyChooseUs'
 import ProductGallery from './products/ProductGallery'
 import ProductPurchasePanel from './products/ProductPurchasePanel'
 import ProductShelfSection from './products/ProductShelfSection'
@@ -668,6 +669,9 @@ function ProductDetails() {
         />
       </main>
 
+      <div className="bg-[#faf7f2] py-8">
+        <WhyChooseUs />
+      </div>
       <Footer />
     </div>
   )
