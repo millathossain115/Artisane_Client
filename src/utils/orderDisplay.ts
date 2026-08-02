@@ -1,19 +1,13 @@
 import type { Order, OrderItem } from '../features/orders/orderApi'
 import type { Product } from '../features/products/productApi'
 import { getDashboardOrderRouteRef } from '../pages/dashboard/orderRouteState'
+import { getProductUrl } from './productDisplay'
 
 export type OrderTimelineStepKey =
-  | 'confirmed'
-  | 'processing'
-  | 'shipped'
-  | 'delivered'
+  'confirmed' | 'processing' | 'shipped' | 'delivered'
 
 export type OrderTimelineStepState =
-  | 'active'
-  | 'cancelled'
-  | 'complete'
-  | 'issue'
-  | 'pending'
+  'active' | 'cancelled' | 'complete' | 'issue' | 'pending'
 
 export type OrderTimelineStep = {
   date?: string
@@ -155,20 +149,13 @@ export function getOrderItemUrl(item?: OrderItem) {
   }
 
   if (item.productSlug) {
-    return `/products/${item.productSlug}`
+    return `/products/${encodeURIComponent(item.productSlug)}`
   }
 
   if (item.product) {
     if (typeof item.product === 'object' && item.product) {
-      return `/products/${item.product.slug || item.product._id}`
+      return item.product.slug ? getProductUrl(item.product) : undefined
     }
-    if (typeof item.product === 'string' && item.product) {
-      return `/products/${item.product}`
-    }
-  }
-
-  if (item._id) {
-    return `/products/${item._id}`
   }
 
   return undefined
@@ -294,7 +281,12 @@ export function getOrderTrackingUrl(order: Order) {
 
 export function getOrderUrl(
   order:
-    | { _id: string; publicRef?: string; transactionId?: string; viewToken?: string }
+    | {
+        _id: string
+        publicRef?: string
+        transactionId?: string
+        viewToken?: string
+      }
     | string
     | undefined,
 ) {

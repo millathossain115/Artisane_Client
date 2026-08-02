@@ -31,6 +31,7 @@ import {
   getProductCategoryId,
   getProductCategoryName,
   getProductCategoryUrl,
+  getProductUrl,
 } from '../utils/productDisplay'
 import WhyChooseUs from './home/WhyChooseUs'
 import ProductGallery from './products/ProductGallery'
@@ -58,6 +59,14 @@ function ProductDetails() {
       document.title = `Artisane | ${product.name}`
     }
   }, [product?.name])
+
+  useEffect(() => {
+    if (!id || !product?.slug || id === product.slug) {
+      return
+    }
+
+    navigate(getProductUrl(product), { replace: true })
+  }, [id, navigate, product])
 
   const { data: activePromo } = useGetActivePromoQuery()
   const productCategoryId = getProductCategoryId(product)
@@ -266,7 +275,7 @@ function ProductDetails() {
     if (!accessToken) {
       navigate('/login', {
         state: {
-          from: `/products/${product.slug || product._id}`,
+          from: getProductUrl(product),
           message: 'Sign in to save items to your wishlist.',
         },
       })

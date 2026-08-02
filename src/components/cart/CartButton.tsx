@@ -103,6 +103,9 @@ function CartButton() {
                 <div className="grid gap-4">
                   {cartItems.map((item) => {
                     const imageUrl = getCartImageUrl(item.image)
+                    const productUrl = item.slug
+                      ? `/products/${encodeURIComponent(item.slug)}`
+                      : '/products'
 
                     return (
                       <article
@@ -112,7 +115,7 @@ function CartButton() {
                         <Link
                           className="block overflow-hidden bg-[#f8f3ea]"
                           onClick={() => setIsCartOpen(false)}
-                          to={`/products/${item.id}`}
+                          to={productUrl}
                         >
                           {imageUrl ? (
                             <img
@@ -131,7 +134,7 @@ function CartButton() {
                           <Link
                             className="line-clamp-2 font-bold leading-snug transition hover:text-[#7a3f1d]"
                             onClick={() => setIsCartOpen(false)}
-                            to={`/products/${item.id}`}
+                            to={productUrl}
                           >
                             {item.name}
                           </Link>

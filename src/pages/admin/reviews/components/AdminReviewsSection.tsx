@@ -6,6 +6,7 @@ import type {
   Review,
   ReviewListMeta,
 } from '../../../../features/reviews/reviewApi'
+import { getProductUrl } from '../../../../utils/productDisplay'
 import { formatDate } from '../../../dashboard/dashboardFormat'
 import {
   getReviewProductName,
@@ -140,11 +141,11 @@ function AdminReviewsSection({
                   <div className="min-w-0">
                     <Link
                       className="line-clamp-2 font-bold transition hover:text-[#7a3f1d]"
-                      to={`/products/${
+                      to={
                         review.product && typeof review.product !== 'string'
-                          ? review.product._id
+                          ? getProductUrl(review.product)
                           : '#'
-                      }`}
+                      }
                     >
                       {getReviewProductName(review)}
                     </Link>
@@ -222,15 +223,11 @@ function AdminReviewsSection({
               <th className="w-[30%] px-3 py-3 2xl:px-5">Review</th>
               <th className="w-[22%] px-3 py-3 2xl:px-5">Product</th>
               <th className="w-[18%] px-3 py-3 2xl:px-5">User</th>
-              <th className="w-[10%] px-3 py-3 text-center 2xl:px-5">
-                Rating
-              </th>
+              <th className="w-[10%] px-3 py-3 text-center 2xl:px-5">Rating</th>
               <th className="w-[10%] px-3 py-3 text-center 2xl:px-5">
                 Visibility
               </th>
-              <th className="w-[10%] px-3 py-3 text-center 2xl:px-5">
-                Action
-              </th>
+              <th className="w-[10%] px-3 py-3 text-center 2xl:px-5">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -263,11 +260,11 @@ function AdminReviewsSection({
                     <Link
                       className="block truncate font-bold transition hover:text-[#7a3f1d]"
                       title={getReviewProductName(review)}
-                      to={`/products/${
+                      to={
                         review.product && typeof review.product !== 'string'
-                          ? review.product._id
+                          ? getProductUrl(review.product)
                           : '#'
-                      }`}
+                      }
                     >
                       {getReviewProductName(review)}
                     </Link>

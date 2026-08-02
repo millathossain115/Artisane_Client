@@ -14,11 +14,14 @@ function RecentShelfCard({ product }: RecentShelfCardProps) {
   const imageUrl = getAssetUrl(product.image)
   const { data: activePromo } = useGetActivePromoQuery()
   const priceInfo = getProductPriceInfo(product.price, activePromo)
+  const productUrl = product.slug
+    ? `/products/${encodeURIComponent(product.slug)}`
+    : '/products'
 
   return (
     <Link
       className="group block overflow-hidden border border-white/10 bg-white text-[#181512] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(0,0,0,0.24)]"
-      to={`/products/${product.id}`}
+      to={productUrl}
     >
       <div className="relative aspect-[4/5] overflow-hidden bg-[#e4d8c8]">
         {imageUrl ? (

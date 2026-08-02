@@ -29,6 +29,7 @@ import {
   formatPrice,
   getAssetUrl,
   getProductImage,
+  getProductUrl,
 } from '../../../utils/productDisplay'
 import { formatCount } from '../dashboardFormat'
 import {
@@ -223,9 +224,7 @@ function UserOverviewSections({
                     className="grid grid-cols-[64px_1fr] gap-3 border border-black/10 p-3 transition hover:border-[#181512] hover:bg-[#f8f3ea]"
                     key={item._id}
                     to={
-                      product
-                        ? `/products/${product._id}`
-                        : '/dashboard/wishlist'
+                      product ? getProductUrl(product) : '/dashboard/wishlist'
                     }
                   >
                     <span className="grid h-16 w-16 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]">

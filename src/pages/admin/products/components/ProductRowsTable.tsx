@@ -9,6 +9,7 @@ import type { Dispatch, SetStateAction } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { Product } from '../../../../features/products/productApi'
+import { getProductUrl } from '../../../../utils/productDisplay'
 import {
   formatCurrency,
   formatDate,
@@ -45,7 +46,7 @@ function ProductRowsTable({
         {products.length ? (
           products.map((product) => {
             const imageUrl = getProductImageUrl(product.images?.[0])
-            const productUrl = `/products/${product._id}`
+            const productUrl = getProductUrl(product)
 
             return (
               <article
@@ -148,7 +149,7 @@ function ProductRowsTable({
             {products.length ? (
               products.map((product) => {
                 const imageUrl = getProductImageUrl(product.images?.[0])
-                const productUrl = `/products/${product._id}`
+                const productUrl = getProductUrl(product)
 
                 return (
                   <tr
