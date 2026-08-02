@@ -30,6 +30,7 @@ import {
   getAssetUrl,
   getProductCategoryId,
   getProductCategoryName,
+  getProductCategoryUrl,
 } from '../utils/productDisplay'
 import WhyChooseUs from './home/WhyChooseUs'
 import ProductGallery from './products/ProductGallery'
@@ -140,9 +141,7 @@ function ProductDetails() {
     () => categoryProductsResult?.data ?? topRatedProductsResult?.data ?? [],
     [categoryProductsResult?.data, topRatedProductsResult?.data],
   )
-  const categoryProductsLink = productCategoryId
-    ? `/products?category=${encodeURIComponent(productCategoryId)}`
-    : '/products'
+  const categoryProductsLink = getProductCategoryUrl(product)
 
   const similarProducts = useMemo(() => {
     if (!product) {

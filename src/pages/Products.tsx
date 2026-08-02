@@ -1,11 +1,14 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { ErrorState, SkeletonCard } from '../components/loaders'
 import Footer from '../components/layout/Footer'
 import Navbar from '../components/layout/Navbar'
 import ProductTile from '../components/product/ProductTile'
-import { useGetCategoryByIdQuery } from '../features/categories/categoryApi'
+import {
+  useGetCategoriesQuery,
+  useGetCategoryByIdQuery,
+} from '../features/categories/categoryApi'
 import { useGetProductsQuery } from '../features/products/productApi'
 import ProductCatalogEmptyState from './products/ProductCatalogEmptyState'
 import ProductCatalogFilters from './products/ProductCatalogFilters'
@@ -42,11 +45,17 @@ function getNumericFilter(value: string) {
   return numberValue
 }
 
+function isMongoObjectId(value: string) {
+  return /^[a-f\d]{24}$/i.test(value)
+}
+
 function Products() {
   const productGridRef = useRef<HTMLDivElement | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
   const searchTerm = searchParams.get('search')?.trim() ?? ''
   const categoryFilter = searchParams.get('category') ?? ''
+  const searchParamString = searchParams.toString()
+  const isCategoryIdFilter = isMongoObjectId(categoryFilter)
   const minPrice = searchParams.get('minPrice') ?? ''
   const maxPrice = searchParams.get('maxPrice') ?? ''
   const stockFilter = getStockFilter(searchParams.get('stock'))
@@ -64,33 +73,70 @@ function Products() {
   }
   const hasActiveFilters = Boolean(
     searchTerm ||
-      categoryFilter ||
-      minPrice ||
-      maxPrice ||
-      stockFilter !== 'all' ||
-      minRating ||
-      brandFilter ||
-      sortOption !== DEFAULT_SORT,
+    categoryFilter ||
+    minPrice ||
+    maxPrice ||
+    stockFilter !== 'all' ||
+    minRating ||
+    brandFilter ||
+    sortOption !== DEFAULT_SORT,
   )
+  const { data: categorySlugList, isFetching: isCategorySlugFetching } =
+    useGetCategoriesQuery(
+      {
+        limit: 1,
+        page: 1,
+        slug: categoryFilter,
+      },
+      { skip: !categoryFilter || isCategoryIdFilter },
+    )
+  const { data: categoryById, isFetching: isCategoryByIdFetching } =
+    useGetCategoryByIdQuery(categoryFilter, {
+      skip: !categoryFilter || !isCategoryIdFilter,
+    })
+  const activeCategory = isCategoryIdFilter
+    ? categoryById
+    : categorySlugList?.data[0]
+  const resolvedCategoryId = categoryFilter ? activeCategory?._id : undefined
+  const isResolvingCategory =
+    Boolean(categoryFilter && !resolvedCategoryId) &&
+    (isCategoryIdFilter ? isCategoryByIdFetching : isCategorySlugFetching)
+  const shouldSkipProducts = Boolean(categoryFilter && !resolvedCategoryId)
   const {
     data: productList,
     isError: hasProductsError,
     isLoading: isProductsLoading,
-  } = useGetProductsQuery({
-    limit: DEFAULT_LIMIT,
-    page: currentPage,
-    brand: brandFilter || undefined,
-    category: categoryFilter || undefined,
-    maxPrice: getNumericFilter(maxPrice),
-    minPrice: getNumericFilter(minPrice),
-    minRating: getNumericFilter(minRating),
-    searchTerm: searchTerm || undefined,
-    stock: stockFilter === 'all' ? undefined : stockFilter,
-    ...sortParams,
-  })
-  const { data: activeCategory } = useGetCategoryByIdQuery(categoryFilter, {
-    skip: !categoryFilter,
-  })
+  } = useGetProductsQuery(
+    {
+      limit: DEFAULT_LIMIT,
+      page: currentPage,
+      brand: brandFilter || undefined,
+      category: resolvedCategoryId,
+      maxPrice: getNumericFilter(maxPrice),
+      minPrice: getNumericFilter(minPrice),
+      minRating: getNumericFilter(minRating),
+      searchTerm: searchTerm || undefined,
+      stock: stockFilter === 'all' ? undefined : stockFilter,
+      ...sortParams,
+    },
+    { skip: shouldSkipProducts },
+  )
+  const isCatalogLoading = isProductsLoading || isResolvingCategory
+
+  useEffect(() => {
+    if (!isCategoryIdFilter || !categoryById?.slug) {
+      return
+    }
+
+    const nextSearchParams = new URLSearchParams(searchParamString)
+    nextSearchParams.set('category', categoryById.slug)
+    setSearchParams(nextSearchParams, { replace: true })
+  }, [
+    categoryById?.slug,
+    isCategoryIdFilter,
+    searchParamString,
+    setSearchParams,
+  ])
   const products = useMemo(() => productList?.data ?? [], [productList?.data])
   const brandOptions = useMemo(
     () =>
@@ -230,8 +276,11 @@ function Products() {
           />
 
           <div className="min-w-0" ref={productGridRef}>
-            {isProductsLoading ? (
-              <SkeletonCard count={DEFAULT_LIMIT} gridCols="grid-cols-3 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" />
+            {isCatalogLoading ? (
+              <SkeletonCard
+                count={DEFAULT_LIMIT}
+                gridCols="grid-cols-3 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+              />
             ) : (
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
                 {products.map((product) => (
@@ -240,7 +289,7 @@ function Products() {
               </div>
             )}
 
-            {!isProductsLoading && !products.length ? (
+            {!isCatalogLoading && !products.length ? (
               <ProductCatalogEmptyState
                 hasActiveFilters={hasActiveFilters}
                 onClearFilters={handleClearFilters}

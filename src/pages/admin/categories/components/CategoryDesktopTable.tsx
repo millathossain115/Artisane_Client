@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Eye, EyeOff, Globe2, Pencil, Trash2 } from 'lucide-react'
 
 import type { Category } from '../../../../features/categories/categoryApi'
+import { getCategoryProductsUrl } from '../../../../utils/productDisplay'
 import {
   formatDate,
   getCategoryImageUrl,
@@ -33,18 +34,10 @@ function CategoryDesktopTable({
         <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
           <tr>
             <th className="w-[44%] px-3 py-3 2xl:px-5">Category</th>
-            <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">
-              Products
-            </th>
-            <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">
-              Created
-            </th>
-            <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">
-              Status
-            </th>
-            <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">
-              Actions
-            </th>
+            <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">Products</th>
+            <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">Created</th>
+            <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">Status</th>
+            <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -62,7 +55,7 @@ function CategoryDesktopTable({
                     <div className="flex min-w-0 items-center gap-3">
                       <Link
                         className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d] transition hover:opacity-80"
-                        to={`/products?category=${encodeURIComponent(category._id)}`}
+                        to={getCategoryProductsUrl(category)}
                       >
                         {imageUrl ? (
                           <img
@@ -78,7 +71,7 @@ function CategoryDesktopTable({
                         <Link
                           className="block truncate font-bold hover:underline"
                           title={category.name}
-                          to={`/products?category=${encodeURIComponent(category._id)}`}
+                          to={getCategoryProductsUrl(category)}
                         >
                           {category.name}
                         </Link>

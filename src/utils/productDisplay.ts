@@ -34,6 +34,25 @@ export function getProductCategoryName(product?: Product | null) {
   return product ? getCategoryName(product.category) : 'Studio goods'
 }
 
+export function getCategoryProductsUrl(
+  category?: { _id?: string; slug?: string } | string | null,
+) {
+  const categoryValue =
+    typeof category === 'string' ? category : category?.slug || category?._id
+
+  return categoryValue
+    ? `/products?category=${encodeURIComponent(categoryValue)}`
+    : '/products'
+}
+
+export function getProductCategoryUrl(product?: Product | null) {
+  if (!product) {
+    return '/products'
+  }
+
+  return getCategoryProductsUrl(product.category)
+}
+
 export function formatPrice(value?: number | null) {
   const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0
   return `$${safeValue.toFixed(safeValue % 1 === 0 ? 0 : 2)}`

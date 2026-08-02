@@ -158,7 +158,7 @@ function FlashSaleBannerSection({
                   buttonLink: e.target.value,
                 })
               }}
-              placeholder="Enter custom path (e.g. /products?category=123)"
+              placeholder="Enter custom path (e.g. /products?category=wall-art)"
               type="text"
               value={formState.buttonLink}
             />
@@ -168,8 +168,7 @@ function FlashSaleBannerSection({
 
       <div className="mt-6 border border-dashed border-black/20 bg-white p-4">
         <div className="mb-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#8f3f1d]">
-          <Sparkles className="h-4 w-4" /> Live Preview: Flash Sale
-          Banner
+          <Sparkles className="h-4 w-4" /> Live Preview: Flash Sale Banner
         </div>
         <div className="flex flex-wrap items-center justify-between gap-4 border-y border-black/10 bg-[#181512] p-5 text-xs text-white shadow-md sm:p-6">
           <div className="flex items-center gap-3">

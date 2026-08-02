@@ -4,7 +4,7 @@ import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import type { Category } from '../../features/categories/categoryApi'
-import { getAssetUrl } from '../../utils/productDisplay'
+import { getAssetUrl, getCategoryProductsUrl } from '../../utils/productDisplay'
 import { categoryFallbackImages, craftNotes } from './homeContent'
 import { HomeCategoryRailSkeleton } from './HomeSkeletons'
 
@@ -19,10 +19,6 @@ function getCategoryImage(category: Category, index: number) {
     getAssetUrl(category.image) ??
     categoryFallbackImages[index % categoryFallbackImages.length]
   )
-}
-
-function getCategoryUrl(categoryId: string) {
-  return `/products?category=${encodeURIComponent(categoryId)}`
 }
 
 function HomeCategories({
@@ -134,7 +130,7 @@ function HomeCategories({
               <Link
                 className="group relative h-72 w-72 shrink-0 overflow-hidden bg-[#181512]"
                 key={category._id}
-                to={getCategoryUrl(category._id)}
+                to={getCategoryProductsUrl(category)}
               >
                 <img
                   alt={`${category.name} category`}

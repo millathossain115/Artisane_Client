@@ -13,12 +13,8 @@ import {
   type Product,
   useGetProductsQuery,
 } from '../features/products/productApi'
-import { getAssetUrl } from '../utils/productDisplay'
+import { getAssetUrl, getCategoryProductsUrl } from '../utils/productDisplay'
 import { categoryFallbackImages } from './home/homeContent'
-
-function getCategoryUrl(categoryId: string) {
-  return `/products?category=${encodeURIComponent(categoryId)}`
-}
 
 function getCategoryImage(category: Category, index: number) {
   return (
@@ -79,8 +75,7 @@ function Categories() {
     return [...categories]
       .sort((firstCategory, secondCategory) => {
         return (
-          (secondCategory.productCount ?? 0) -
-          (firstCategory.productCount ?? 0)
+          (secondCategory.productCount ?? 0) - (firstCategory.productCount ?? 0)
         )
       })
       .slice(0, 4)
@@ -156,7 +151,7 @@ function Categories() {
                     <Link
                       className="group overflow-hidden border border-black/10 bg-white transition duration-300 hover:-translate-y-1 hover:border-[#181512] hover:shadow-[0_18px_34px_rgba(24,21,18,0.12)]"
                       key={category._id}
-                      to={getCategoryUrl(category._id)}
+                      to={getCategoryProductsUrl(category)}
                     >
                       <div className="aspect-[4/3] overflow-hidden bg-[#e4d8c8]">
                         {imageUrl ? (
@@ -219,7 +214,7 @@ function Categories() {
                     <Link
                       className="group relative min-h-72 overflow-hidden bg-[#181512] text-white"
                       key={category._id}
-                      to={getCategoryUrl(category._id)}
+                      to={getCategoryProductsUrl(category)}
                     >
                       {imageUrl ? (
                         <img

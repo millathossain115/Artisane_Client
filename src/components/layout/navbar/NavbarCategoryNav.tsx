@@ -8,16 +8,17 @@ import {
   useGetCategoriesQuery,
 } from '../../../features/categories/categoryApi'
 import { useGetProductsQuery } from '../../../features/products/productApi'
-import { formatPrice, getProductImage, getProductUrl } from '../../../utils/productDisplay'
+import {
+  formatPrice,
+  getCategoryProductsUrl,
+  getProductImage,
+  getProductUrl,
+} from '../../../utils/productDisplay'
 
 const FEATURED_CATEGORY_LIMIT = 6
 
 type NavbarCategoryNavProps = {
   fullWidth?: boolean
-}
-
-function getCategoryUrl(categoryId: string) {
-  return `/products?category=${encodeURIComponent(categoryId)}`
 }
 
 function getCategoryImageUrl(image?: string) {
@@ -149,7 +150,7 @@ function NavbarCategoryNav({ fullWidth = false }: NavbarCategoryNavProps) {
                 onClick={() => setActivePanel('')}
                 onFocus={() => setActivePanel(category._id)}
                 onMouseEnter={() => setActivePanel(category._id)}
-                to={getCategoryUrl(category._id)}
+                to={getCategoryProductsUrl(category)}
               >
                 <span>{category.name}</span>
                 <span
@@ -194,7 +195,7 @@ function NavbarCategoryNav({ fullWidth = false }: NavbarCategoryNavProps) {
                       className="group flex items-center gap-3.5 border border-black/10 bg-white p-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#181512] hover:bg-[#f8f3ea] hover:shadow-sm"
                       key={category._id}
                       onClick={() => setActivePanel('')}
-                      to={getCategoryUrl(category._id)}
+                      to={getCategoryProductsUrl(category)}
                     >
                       <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d] transition-transform duration-300 group-hover:scale-105">
                         {imageUrl ? (
@@ -257,7 +258,7 @@ function NavbarCategoryNav({ fullWidth = false }: NavbarCategoryNavProps) {
               <Link
                 className="ml-auto inline-flex min-h-8 items-center gap-1 bg-[#181512] px-3 text-xs font-bold text-white transition hover:bg-[#7a3f1d] lg:ml-2"
                 onClick={() => setActivePanel('')}
-                to={getCategoryUrl(activeCategory._id)}
+                to={getCategoryProductsUrl(activeCategory)}
               >
                 View all <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>

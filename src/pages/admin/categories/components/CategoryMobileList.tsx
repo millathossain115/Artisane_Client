@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Eye, EyeOff, Globe2, Pencil, Trash2 } from 'lucide-react'
 
 import type { Category } from '../../../../features/categories/categoryApi'
+import { getCategoryProductsUrl } from '../../../../utils/productDisplay'
 import {
   formatDate,
   getCategoryImageUrl,
@@ -41,7 +42,7 @@ function CategoryMobileList({
               <div className="flex items-start gap-3">
                 <Link
                   className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden bg-[#f8f3ea] text-[#7a3f1d]"
-                  to={`/products?category=${encodeURIComponent(category._id)}`}
+                  to={getCategoryProductsUrl(category)}
                 >
                   {imageUrl ? (
                     <img
@@ -56,7 +57,7 @@ function CategoryMobileList({
                 <div className="min-w-0 flex-1">
                   <Link
                     className="line-clamp-2 font-bold hover:underline"
-                    to={`/products?category=${encodeURIComponent(category._id)}`}
+                    to={getCategoryProductsUrl(category)}
                   >
                     {category.name}
                   </Link>

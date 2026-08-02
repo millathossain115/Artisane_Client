@@ -2,14 +2,11 @@ import { ChevronRight, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { useGetCategoriesQuery } from '../../../features/categories/categoryApi'
+import { getCategoryProductsUrl } from '../../../utils/productDisplay'
 
 type NavbarMobileDrawerProps = {
   isOpen: boolean
   onClose: () => void
-}
-
-function getCategoryUrl(categoryId: string) {
-  return `/products?category=${encodeURIComponent(categoryId)}`
 }
 
 function NavbarMobileDrawer({ isOpen, onClose }: NavbarMobileDrawerProps) {
@@ -93,7 +90,7 @@ function NavbarMobileDrawer({ isOpen, onClose }: NavbarMobileDrawerProps) {
                       className="flex min-h-16 items-center border border-black/10 bg-white px-3 text-sm font-bold transition hover:border-[#181512] hover:bg-[#f8f3ea]"
                       key={category._id}
                       onClick={onClose}
-                      to={getCategoryUrl(category._id)}
+                      to={getCategoryProductsUrl(category)}
                     >
                       <span className="line-clamp-2">{category.name}</span>
                     </Link>
