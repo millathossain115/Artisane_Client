@@ -136,13 +136,12 @@ function ProductRowsTable({
         <table className="w-full table-fixed border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
-              <th className="w-[26%] px-3 py-3 2xl:px-5">Product</th>
-              <th className="w-[14%] px-3 py-3 2xl:px-5">Category</th>
+              <th className="w-[40%] px-3 py-3 2xl:px-5">Product</th>
+              <th className="w-[12%] px-3 py-3 2xl:px-5">Brand</th>
               <th className="w-[11%] px-3 py-3 2xl:px-5">Price</th>
               <th className="w-[11%] px-3 py-3 2xl:px-5">Stock</th>
-              <th className="w-[12%] px-3 py-3 2xl:px-5">Brand</th>
               <th className="w-[10%] px-3 py-3 2xl:px-5">Created</th>
-              <th className="w-[16%] px-3 py-3 text-right 2xl:px-5">Action</th>
+              <th className="w-[16%] px-3 py-3 text-center 2xl:px-5">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -181,32 +180,11 @@ function ProductRowsTable({
                           >
                             {product.name}
                           </Link>
+                          <span className="mt-1 inline-flex max-w-full truncate bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
+                            {getCategoryName(product.category)}
+                          </span>
                         </div>
                       </div>
-                    </td>
-                    <td className="min-w-0 px-3 py-4 2xl:px-5">
-                      <span className="block truncate bg-[#f1dfc8] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
-                        {getCategoryName(product.category)}
-                      </span>
-                    </td>
-                    <td className="truncate px-3 py-4 font-bold text-[#181512] 2xl:px-5">
-                      {formatCurrency(product.price)}
-                    </td>
-                    <td className="px-3 py-4 2xl:px-5">
-                      {product.stock > 0 ? (
-                        <span className="inline-flex max-w-full items-center gap-1.5 bg-[#effaf3] px-2 py-1 text-xs font-bold text-[#1f6b43]">
-                          <span className="h-1.5 w-1.5 bg-[#1f6b43]" />
-                          <span className="truncate">
-                            {product.stock}
-                            <span className="hidden 2xl:inline"> in stock</span>
-                          </span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex max-w-full items-center gap-1.5 bg-[#fff5ef] px-2 py-1 text-xs font-bold text-[#8f3f1d]">
-                          <span className="h-1.5 w-1.5 bg-[#8f3f1d]" />
-                          <span className="truncate">Out</span>
-                        </span>
-                      )}
                     </td>
                     <td
                       className="truncate px-3 py-4 text-xs font-semibold text-[#6b5f53] 2xl:px-5"
@@ -214,11 +192,25 @@ function ProductRowsTable({
                     >
                       {product.brand || 'Artisane'}
                     </td>
+                    <td className="truncate px-3 py-4 font-bold text-[#181512] 2xl:px-5">
+                      {formatCurrency(product.price)}
+                    </td>
+                    <td className="px-3 py-4 2xl:px-5">
+                      {product.stock > 0 ? (
+                        <span className="inline-flex min-w-8 justify-center border border-[#7a3f1d]/15 bg-[#f8f3ea] px-2 py-1 text-xs font-bold text-[#7a3f1d]">
+                          {product.stock}
+                        </span>
+                      ) : (
+                        <span className="inline-flex min-w-8 justify-center border border-[#8f3f1d]/20 bg-[#fff5ef] px-2 py-1 text-xs font-bold text-[#8f3f1d]">
+                          0
+                        </span>
+                      )}
+                    </td>
                     <td className="truncate px-3 py-4 text-[#6b5f53] 2xl:px-5">
                       {formatDate(product.createdAt)}
                     </td>
-                    <td className="px-3 py-4 text-right 2xl:px-5">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="px-3 py-4 text-center 2xl:px-5">
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           aria-label={`Edit ${product.name}`}
                           className="inline-flex h-9 w-9 items-center justify-center border border-black/10 bg-white text-xs font-bold text-[#181512] transition hover:border-[#181512] 2xl:w-auto 2xl:px-3"
@@ -246,7 +238,7 @@ function ProductRowsTable({
               <tr>
                 <td
                   className="px-5 py-12 text-center text-sm font-semibold text-[#6b5f53]"
-                  colSpan={7}
+                  colSpan={6}
                 >
                   No products match your current search or category filter.
                 </td>
