@@ -185,7 +185,7 @@ function CategoryProductCount({ categoryId }: { categoryId: string }) {
 
   return (
     <span
-      className="inline-flex min-h-8 min-w-10 items-center justify-center bg-[#effaf3] px-3 text-xs font-bold text-[#1f6b43]"
+      className="inline-flex min-h-8 min-w-10 items-center justify-center border border-[#7a3f1d]/15 bg-[#f8f3ea] px-3 text-xs font-bold text-[#7a3f1d]"
       title={`${productCount} ${productCount === 1 ? 'product' : 'products'}`}
     >
       {productCount}
@@ -613,7 +613,7 @@ function CategoryTable() {
                       <button
                         className={`inline-flex min-h-8 items-center gap-2 border px-2 text-xs font-bold transition ${
                           categoryIsActive
-                            ? 'border-[#1f7a4d]/20 bg-[#effaf3] text-[#1f6b43] hover:border-[#1f6b43]'
+                            ? 'border-[#7a3f1d]/15 bg-[#f8f3ea] text-[#7a3f1d] hover:border-[#7a3f1d]'
                             : 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d] hover:border-[#8f3f1d]'
                         } disabled:cursor-not-allowed disabled:opacity-60`}
                         disabled={isUpdating}
@@ -670,13 +670,17 @@ function CategoryTable() {
             <table className="w-full table-fixed border-collapse text-left text-sm">
               <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
                 <tr>
-                  <th className="w-[48%] px-3 py-3 2xl:px-5">Category</th>
-                  <th className="w-[10%] px-2 py-3 text-center 2xl:px-4">
+                  <th className="w-[44%] px-3 py-3 2xl:px-5">Category</th>
+                  <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">
                     Products
                   </th>
-                  <th className="w-[14%] px-2 py-3 2xl:px-4">Created</th>
-                  <th className="w-[14%] px-2 py-3 2xl:px-4">Status</th>
-                  <th className="w-[14%] px-2 py-3 text-right 2xl:px-4">
+                  <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">
+                    Created
+                  </th>
+                  <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">
+                    Status
+                  </th>
+                  <th className="w-[14%] px-2 py-3 text-center 2xl:px-4">
                     Actions
                   </th>
                 </tr>
@@ -731,16 +735,16 @@ function CategoryTable() {
                           <CategoryProductCount categoryId={category._id} />
                         </td>
                         <td
-                          className="truncate px-2 py-4 text-[#6b5f53] 2xl:px-4"
+                          className="truncate px-2 py-4 text-center text-[#6b5f53] 2xl:px-4"
                           title={formatDate(category.createdAt)}
                         >
                           {formatDate(category.createdAt)}
                         </td>
-                        <td className="px-2 py-4 2xl:px-4">
+                        <td className="px-2 py-4 text-center 2xl:px-4">
                           <button
-                            className={`inline-flex max-w-full min-h-9 items-center gap-2 border px-2 text-xs font-bold transition 2xl:px-3 ${
+                            className={`inline-flex max-w-full min-h-9 items-center justify-center gap-2 border px-2 text-xs font-bold transition 2xl:px-3 ${
                               categoryIsActive
-                                ? 'border-[#1f7a4d]/20 bg-[#effaf3] text-[#1f6b43] hover:border-[#1f6b43]'
+                                ? 'border-[#7a3f1d]/15 bg-[#f8f3ea] text-[#7a3f1d] hover:border-[#7a3f1d]'
                                 : 'border-[#c85f2f]/30 bg-[#fff5ef] text-[#8f3f1d] hover:border-[#8f3f1d]'
                             } disabled:cursor-not-allowed disabled:opacity-60`}
                             disabled={isUpdating}
@@ -757,8 +761,8 @@ function CategoryTable() {
                             </span>
                           </button>
                         </td>
-                        <td className="px-2 py-4 2xl:px-4">
-                          <div className="flex items-center justify-end gap-2">
+                        <td className="px-2 py-4 text-center 2xl:px-4">
+                          <div className="flex items-center justify-center gap-2">
                             <button
                               className="inline-flex h-9 w-9 items-center justify-center border border-black/10 text-[#181512] transition hover:border-[#181512] hover:bg-white"
                               aria-label={`Update ${category.name}`}
