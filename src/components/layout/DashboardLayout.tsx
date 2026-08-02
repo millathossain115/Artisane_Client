@@ -1,73 +1,30 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import {
-  Bell,
-  Brush,
-  ChevronDown,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  Package,
-  UserRound,
-  X,
-  type LucideIcon,
-} from 'lucide-react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Menu } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
-import CartButton from '../cart/CartButton'
 import {
   clearAuthSession,
   getStoredUser,
   isAdminRole,
-  isSuperAdminRole,
   type AuthUser,
 } from '../../features/auth/authApi'
 import { syncCartForCurrentUser } from '../../features/cart/cartSlice'
 import { useAppDispatch } from '../../redux/hooks'
+import DashboardAdminTopbar from './DashboardAdminTopbar'
+import DashboardPageHeading from './DashboardPageHeading'
+import DashboardSidebar from './DashboardSidebar'
 import Footer from './Footer'
 import Navbar from './Navbar'
+import type { DashboardLayoutProps } from './dashboardLayoutTypes'
 
-export type SidebarLinkItem = {
-  label: string
-  to: string
-  icon: LucideIcon
-  requiredRole?: 'super_admin'
-}
-
-export type SidebarActionItem = {
-  label: string
-  action: 'logout'
-  icon: LucideIcon
-  requiredRole?: 'super_admin'
-}
-
-export type SidebarNavItem = SidebarActionItem | SidebarLinkItem
-
-export type SidebarGroupItem = {
-  label: string
-  items: SidebarNavItem[]
-  requiredRole?: 'super_admin'
-}
-
-export type SidebarItem = SidebarGroupItem | SidebarNavItem
-
-type DashboardAction = {
-  label: string
-  to?: string
-  variant?: 'primary' | 'secondary'
-}
-
-type DashboardLayoutProps = {
-  children: ReactNode
-  title: string
-  subtitle: string
-  sidebarItems: SidebarItem[]
-  actions?: DashboardAction[]
-  eyebrow?: string
-  helperTitle?: string
-  helperText?: string
-  layoutVariant?: 'admin' | 'customer'
-  workspaceLabel?: string
-}
+export type {
+  DashboardAction,
+  SidebarActionItem,
+  SidebarGroupItem,
+  SidebarItem,
+  SidebarLinkItem,
+  SidebarNavItem,
+} from './dashboardLayoutTypes'
 
 function DashboardLayout({
   actions = [],
@@ -138,255 +95,30 @@ function DashboardLayout({
     navigate('/login')
   }
 
-  function getSidebarItemClass(isActive: boolean) {
-    const baseClass =
-      'flex items-center gap-3 px-4 py-3 text-sm font-medium tracking-wide transition'
+  const sidebar = (showCloseButton = false) => (
+    <DashboardSidebar
+      displayName={displayName}
+      helperText={helperText}
+      helperTitle={helperTitle}
+      isCustomerLayout={isCustomerLayout}
+      location={location}
+      onClose={() => setIsSidebarOpen(false)}
+      onLogout={handleLogout}
+      showCloseButton={showCloseButton}
+      sidebarItems={sidebarItems}
+      user={user}
+      workspaceLabel={workspaceLabel}
+    />
+  )
 
-    if (isCustomerLayout) {
-      return isActive
-        ? `${baseClass} border border-black/10 bg-[#f8f3ea] font-bold text-[#181512] shadow-sm hover:bg-[#f8f3ea]`
-        : `${baseClass} border border-transparent text-[#4f463d] hover:border-black/10 hover:bg-[#f8f3ea] hover:text-[#181512]`
-    }
-
-    return isActive
-      ? `${baseClass} bg-white text-[#181512] font-semibold hover:bg-white hover:text-[#181512]`
-      : `${baseClass} text-white/70 hover:bg-white/10 hover:text-white`
-  }
-
-  function isSidebarGroup(item: SidebarItem): item is SidebarGroupItem {
-    return 'items' in item
-  }
-
-  function isSidebarAction(item: SidebarNavItem): item is SidebarActionItem {
-    return 'action' in item
-  }
-
-  function canAccessSidebarItem(item: SidebarItem) {
-    return item.requiredRole !== 'super_admin' || isSuperAdminRole(user?.role)
-  }
-
-  function getSidebarLinkTarget(to: string) {
-    if (to.startsWith('#')) {
-      return {
-        hash: to,
-        path: '/dashboard',
-        to: `/dashboard${to}`,
-      }
-    }
-
-    const [path, hashValue] = to.split('#')
-
-    return {
-      hash: hashValue ? `#${hashValue}` : '',
-      path,
-      to,
-    }
-  }
-
-  function renderSidebarAction(item: SidebarActionItem, isNested = false) {
-    const Icon = item.icon
-    const className = `${getSidebarItemClass(false)} w-full text-left ${
-      isNested ? 'pl-7' : ''
-    }`
-
-    return (
-      <button
-        className={className}
-        key={item.label}
-        onClick={handleLogout}
-        type="button"
-      >
-        <Icon className="h-4 w-4 shrink-0" />
-        <span className="truncate">{item.label}</span>
-      </button>
-    )
-  }
-
-  function renderSidebarLink(item: SidebarLinkItem, isNested = false) {
-    const Icon = item.icon
-    const linkTarget = getSidebarLinkTarget(item.to)
-    const isCustomerNestedRoute =
-      isCustomerLayout &&
-      item.to === '/dashboard/orders' &&
-      location.pathname.startsWith('/dashboard/orders')
-    const isActive = linkTarget.hash
-      ? location.pathname === linkTarget.path &&
-        location.hash === linkTarget.hash
-      : (isCustomerNestedRoute || location.pathname === linkTarget.path) &&
-        !location.hash
-    const className = `${getSidebarItemClass(isActive)} ${
-      isNested ? 'pl-7' : ''
-    }`
-
-    return (
-      <Link
-        className={className}
-        key={item.label}
-        onClick={() => setIsSidebarOpen(false)}
-        to={linkTarget.to}
-      >
-        <Icon className="h-4 w-4 shrink-0" />
-        <span className="truncate">{item.label}</span>
-      </Link>
-    )
-  }
-
-  function renderSidebarContent(showCloseButton = false) {
-    const navClass = isCustomerLayout
-      ? 'dashboard-sidebar-scroll flex-1 space-y-1 overflow-y-auto px-3 py-4'
-      : 'dashboard-sidebar-scroll flex-1 space-y-1 overflow-y-auto px-4 py-5'
-    const groupLabelClass = isCustomerLayout
-      ? 'px-4 pb-2 text-xs font-semibold tracking-wider uppercase text-[#7a3f1d]'
-      : 'px-4 pb-2 text-xs font-semibold tracking-wider uppercase text-[#f1c9a6]'
-    const helperWrapClass = isCustomerLayout
-      ? 'border-t border-black/10 p-3'
-      : 'border-t border-white/10 p-4'
-    const helperCardClass = isCustomerLayout
-      ? 'border border-black/10 bg-[#f8f3ea] p-4'
-      : 'border border-white/10 bg-white/5 p-4'
-    const helperTitleClass = isCustomerLayout
-      ? 'text-xs font-semibold tracking-wider uppercase text-[#7a3f1d]'
-      : 'text-xs font-semibold tracking-wider uppercase text-[#f1c9a6]'
-    const helperTextClass = isCustomerLayout
-      ? 'mt-2 text-sm leading-6 text-[#6b5f53]'
-      : 'mt-2 text-sm leading-6 text-white/70'
-
-    return (
-      <>
-        {isCustomerLayout ? (
-          <div className="flex min-h-16 items-center gap-3 border-b border-black/10 px-4 py-4">
-            <span className="grid h-10 w-10 shrink-0 place-items-center bg-[#181512] text-white">
-              <UserRound className="h-4 w-4" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold tracking-wider uppercase text-[#7a3f1d]">
-                {workspaceLabel}
-              </p>
-              <p className="truncate text-sm font-bold text-[#181512]">
-                {displayName}
-              </p>
-            </div>
-
-            {showCloseButton ? (
-              <button
-                className="ml-auto grid h-10 w-10 place-items-center border border-black/10 bg-white text-[#181512] transition hover:border-[#181512]"
-                aria-label="Close dashboard menu"
-                onClick={() => setIsSidebarOpen(false)}
-                type="button"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            ) : null}
-          </div>
-        ) : (
-          <div className="flex h-20 items-center gap-3 border-b border-white/10 px-6">
-            <span className="grid h-11 w-11 place-items-center bg-white text-base font-bold text-[#181512]">
-              A
-            </span>
-            <div className="min-w-0">
-              <Link
-                className="font-display text-3xl font-bold tracking-tight"
-                onClick={() => setIsSidebarOpen(false)}
-                to="/"
-              >
-                Artisane
-              </Link>
-              <p className="truncate text-xs font-medium tracking-wider uppercase text-white/55">
-                {workspaceLabel}
-              </p>
-            </div>
-
-            {showCloseButton && (
-              <button
-                className="ml-auto grid h-10 w-10 place-items-center border border-white/10 text-white transition hover:bg-white hover:text-[#181512]"
-                aria-label="Close dashboard menu"
-                onClick={() => setIsSidebarOpen(false)}
-                type="button"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            )}
-          </div>
-        )}
-
-        <nav className={navClass}>
-          {sidebarItems.map((item) => {
-            if (!canAccessSidebarItem(item)) {
-              return null
-            }
-
-            if (!isSidebarGroup(item)) {
-              return isSidebarAction(item)
-                ? renderSidebarAction(item)
-                : renderSidebarLink(item)
-            }
-
-            const visibleItems = item.items.filter(canAccessSidebarItem)
-
-            if (!visibleItems.length) {
-              return null
-            }
-
-            return (
-              <div className="pt-3 first:pt-0" key={item.label}>
-                <p className={groupLabelClass}>{item.label}</p>
-                <div className="space-y-1">
-                  {visibleItems.map((childItem) =>
-                    isSidebarAction(childItem)
-                      ? renderSidebarAction(childItem, true)
-                      : renderSidebarLink(childItem, true),
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </nav>
-
-        <div className={helperWrapClass}>
-          <div className={helperCardClass}>
-            <p className={helperTitleClass}>{helperTitle}</p>
-            <p className={helperTextClass}>
-              {helperText ??
-                'Review your latest marketplace activity and account tasks.'}
-            </p>
-          </div>
-        </div>
-      </>
-    )
-  }
-
-  function renderPageHeading() {
-    return (
-      <div className="mb-6 flex flex-col justify-between gap-4 border-b border-black/10 pb-6 md:flex-row md:items-end">
-        <div>
-          <p className="text-sm font-semibold text-[#7a3f1d]">{eyebrow}</p>
-          <h1 className="mt-2 text-4xl font-bold sm:text-5xl">{title}</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6b5f53]">
-            {subtitle}
-          </p>
-        </div>
-
-        {actions.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {actions.map((action) => {
-              const className =
-                action.variant === 'primary' ? 'btn-primary' : 'btn-secondary'
-
-              return action.to ? (
-                <Link className={className} key={action.label} to={action.to}>
-                  {action.label}
-                </Link>
-              ) : (
-                <button className={className} key={action.label} type="button">
-                  {action.label}
-                </button>
-              )
-            })}
-          </div>
-        )}
-      </div>
-    )
-  }
+  const pageHeading = (
+    <DashboardPageHeading
+      actions={actions}
+      eyebrow={eyebrow}
+      subtitle={subtitle}
+      title={title}
+    />
+  )
 
   if (isCustomerLayout) {
     return (
@@ -412,13 +144,13 @@ function DashboardLayout({
               isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
             }`}
           >
-            {renderSidebarContent(true)}
+            {sidebar(true)}
           </aside>
         </div>
 
         <div className="mx-auto grid max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:min-h-[calc(100dvh-132px)] lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start lg:px-8">
           <aside className="hidden border border-black/10 bg-white shadow-sm lg:sticky lg:top-[132px] lg:flex lg:h-[calc(100dvh-132px)] lg:max-h-[calc(100dvh-132px)] lg:flex-col">
-            {renderSidebarContent()}
+            {sidebar()}
           </aside>
 
           <div className="min-w-0">
@@ -436,7 +168,7 @@ function DashboardLayout({
             </div>
 
             <main className="min-w-0">
-              {renderPageHeading()}
+              {pageHeading}
               {children}
             </main>
           </div>
@@ -448,9 +180,9 @@ function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f8f3ea] text-[#181512]">
+    <div className="min-h-screen overflow-x-clip bg-[#f8f3ea] text-[#181512]">
       <aside className="fixed bottom-0 left-0 top-0 z-40 hidden w-72 border-r border-black/10 bg-[#181512] text-white lg:flex lg:flex-col">
-        {renderSidebarContent()}
+        {sidebar()}
       </aside>
 
       <div
@@ -472,136 +204,26 @@ function DashboardLayout({
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          {renderSidebarContent(true)}
+          {sidebar(true)}
         </aside>
       </div>
 
       <div className="lg:pl-72">
-        <header className="sticky top-0 z-30 border-b border-black/10 bg-[#f8f3ea]/95 backdrop-blur">
-          <div className="flex min-h-20 items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
-            <button
-              className="grid h-10 w-10 shrink-0 place-items-center border border-black/10 bg-white text-[#181512] transition hover:border-[#181512] lg:hidden"
-              aria-label="Open dashboard menu"
-              aria-expanded={isSidebarOpen}
-              onClick={() => setIsSidebarOpen(true)}
-              type="button"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-
-            <Link className="flex items-center gap-3 lg:hidden" to="/">
-              <span className="grid h-10 w-10 place-items-center bg-[#181512] text-base font-bold text-white">
-                A
-              </span>
-              <span className="hidden font-display text-2xl font-bold sm:inline">
-                Artisane
-              </span>
-            </Link>
-
-            <div className="ml-auto flex items-center gap-2">
-              <button
-                className="relative grid h-10 w-10 place-items-center border border-black/10 bg-white transition hover:border-[#181512]"
-                aria-label="Notifications"
-                type="button"
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute right-2 top-2 h-2 w-2 bg-[#c85f2f]" />
-              </button>
-
-              {!isAdmin ? <CartButton /> : null}
-
-              <div className="relative" ref={profileMenuRef}>
-                <button
-                  className="flex min-w-0 items-center gap-3 border border-black/10 bg-white px-3 py-2 text-left transition hover:border-[#181512]"
-                  aria-expanded={isProfileOpen}
-                  aria-haspopup="menu"
-                  onClick={() => setIsProfileOpen((current) => !current)}
-                  type="button"
-                >
-                  <span className="grid h-9 w-9 shrink-0 place-items-center bg-[#181512] text-white">
-                    <Brush className="h-4 w-4" />
-                  </span>
-                  <span className="hidden min-w-0 sm:block">
-                    <span className="block truncate text-sm font-bold">
-                      {displayName}
-                    </span>
-                    <span className="block truncate text-xs text-[#6b5f53]">
-                      {displayEmail}
-                    </span>
-                  </span>
-                  <ChevronDown className="hidden h-4 w-4 text-[#6b5f53] sm:block" />
-                </button>
-
-                {isProfileOpen ? (
-                  <div
-                    className="absolute right-0 top-[calc(100%+0.5rem)] z-40 w-64 border border-black/10 bg-white p-2 shadow-[0_22px_40px_rgba(24,21,18,0.14)]"
-                    role="menu"
-                  >
-                    <div className="border-b border-black/10 px-3 py-3">
-                      <p className="truncate text-sm font-bold">
-                        {displayName}
-                      </p>
-                      <p className="truncate text-xs text-[#6b5f53]">
-                        {displayEmail}
-                      </p>
-                    </div>
-
-                    <Link
-                      className="mt-2 flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
-                      onClick={() => setIsProfileOpen(false)}
-                      role="menuitem"
-                      to="/dashboard"
-                    >
-                      <LayoutDashboard className="h-4 w-4" />
-                      Dashboard
-                    </Link>
-                    <Link
-                      className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
-                      onClick={() => setIsProfileOpen(false)}
-                      role="menuitem"
-                      to="/dashboard/profile"
-                    >
-                      <UserRound className="h-4 w-4" />
-                      My profile
-                    </Link>
-                    {!isAdmin && (
-                      <Link
-                        className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#4f463d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
-                        onClick={() => setIsProfileOpen(false)}
-                        role="menuitem"
-                        to="/dashboard/orders"
-                      >
-                        <Package className="h-4 w-4" />
-                        My orders
-                      </Link>
-                    )}
-                    <button
-                      className="mt-2 flex w-full items-center gap-3 border-t border-black/10 px-3 py-3 text-left text-sm font-bold text-[#7a3f1d] transition hover:bg-[#f8f3ea] hover:text-[#181512]"
-                      onClick={handleLogout}
-                      role="menuitem"
-                      type="button"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Logout
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-
-              <button
-                className="hidden min-h-10 items-center gap-2 border border-black/10 bg-white px-3 text-sm font-bold transition hover:border-[#181512] sm:inline-flex"
-                onClick={handleLogout}
-                type="button"
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </header>
+        <DashboardAdminTopbar
+          displayEmail={displayEmail}
+          displayName={displayName}
+          isAdmin={isAdmin}
+          isProfileOpen={isProfileOpen}
+          isSidebarOpen={isSidebarOpen}
+          onLogout={handleLogout}
+          onOpenSidebar={() => setIsSidebarOpen(true)}
+          onToggleProfile={() => setIsProfileOpen((current) => !current)}
+          profileMenuRef={profileMenuRef}
+          setIsProfileOpen={setIsProfileOpen}
+        />
 
         <main className="px-4 py-6 sm:px-6 lg:px-8">
-          {renderPageHeading()}
+          {pageHeading}
           {children}
         </main>
       </div>
