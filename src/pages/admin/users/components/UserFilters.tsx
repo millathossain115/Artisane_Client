@@ -35,13 +35,13 @@ function UserFilters({
     statusFilter !== '' ||
     pageSize !== PAGE_SIZE_OPTIONS[1]
   return (
-    <div className="grid gap-3 border-b border-black/10 p-5 2xl:grid-cols-[minmax(0,1fr)_auto_auto] 2xl:items-end">
-      <label className="grid gap-2 text-sm font-bold">
+    <div className="grid gap-2 border-b border-black/10 p-3 sm:p-4 2xl:grid-cols-[minmax(0,1fr)_auto_auto] 2xl:items-end">
+      <label className="grid gap-1.5 text-xs font-bold">
         Search users
         <span className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6b5f53]" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#6b5f53]" />
           <input
-            className="min-h-12 w-full border border-black/10 pl-10 pr-3 text-sm font-medium outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
+            className="min-h-9 w-full border border-black/10 pl-8 pr-2 text-xs font-semibold outline-none transition placeholder:text-[#8a7d71] focus:border-[#181512]"
             onChange={(event) => {
               setSearchTerm(event.target.value)
               setCurrentPage(1)
@@ -53,11 +53,11 @@ function UserFilters({
         </span>
       </label>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <label className="grid gap-2 text-sm font-bold">
+      <div className="grid gap-2 sm:grid-cols-3">
+        <label className="grid gap-1.5 text-xs font-bold">
           Role
           <select
-            className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+            className="min-h-9 border border-black/10 bg-white px-2 text-xs font-bold outline-none transition focus:border-[#181512]"
             onChange={(event) => {
               setRoleFilter(event.target.value as UserRole | '')
               setCurrentPage(1)
@@ -71,10 +71,10 @@ function UserFilters({
           </select>
         </label>
 
-        <label className="grid gap-2 text-sm font-bold">
+        <label className="grid gap-1.5 text-xs font-bold">
           Status
           <select
-            className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+            className="min-h-9 border border-black/10 bg-white px-2 text-xs font-bold outline-none transition focus:border-[#181512]"
             onChange={(event) => {
               setStatusFilter(event.target.value as UserStatus | '')
               setCurrentPage(1)
@@ -87,10 +87,10 @@ function UserFilters({
           </select>
         </label>
 
-        <label className="grid gap-2 text-sm font-bold">
+        <label className="grid gap-1.5 text-xs font-bold">
           Rows
           <select
-            className="min-h-12 border border-black/10 bg-white px-3 text-sm font-bold outline-none transition focus:border-[#181512]"
+            className="min-h-9 border border-black/10 bg-white px-2 text-xs font-bold outline-none transition focus:border-[#181512]"
             onChange={(event) => {
               setPageSize(Number(event.target.value))
               setCurrentPage(1)
@@ -107,13 +107,13 @@ function UserFilters({
       </div>
 
       <button
-        className="inline-flex min-h-12 items-center justify-center gap-2 border border-black/10 bg-white px-4 text-sm font-bold text-[#181512] transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
+        className="inline-flex min-h-9 items-center justify-center gap-1.5 border border-black/10 bg-white px-3 text-xs font-bold text-[#181512] transition hover:border-[#181512] disabled:cursor-not-allowed disabled:opacity-45"
         disabled={!hasActiveFilters}
         onClick={onResetFilters}
         type="button"
       >
-        <RotateCcw className="h-4 w-4" />
-        Reset filters
+        <RotateCcw className="h-3.5 w-3.5" />
+        Reset
       </button>
     </div>
   )

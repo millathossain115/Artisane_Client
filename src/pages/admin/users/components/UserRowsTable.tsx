@@ -159,14 +159,15 @@ function UserRowsTable({
         <table className="w-full table-fixed border-collapse text-left text-sm">
           <thead className="bg-[#f8f3ea] text-xs uppercase text-[#6b5f53]">
             <tr>
-              <th className="w-[26%] px-3 py-3 2xl:px-5">User</th>
-              <th className="w-[10%] px-3 py-3 2xl:px-5">Role</th>
-              <th className="w-[10%] px-3 py-3 2xl:px-5">Status</th>
-              <th className="w-[12%] px-3 py-3 2xl:px-5">Phone</th>
-              <th className="w-[12%] px-3 py-3 2xl:px-5">City</th>
-              <th className="w-[18%] px-3 py-3 2xl:px-5">Address</th>
-              <th className="w-[8%] px-3 py-3 2xl:px-5">Joined</th>
-              <th className="w-[4%] px-3 py-3 2xl:px-5">Actions</th>
+              <th className="w-[34%] px-3 py-3 2xl:px-5">User</th>
+              <th className="w-[18%] px-3 py-3 2xl:px-5">Access</th>
+              <th className="w-[26%] px-3 py-3 2xl:px-5">Location</th>
+              <th className="w-[12%] px-3 py-3 text-center 2xl:px-5">
+                Joined
+              </th>
+              <th className="w-[10%] px-3 py-3 text-center 2xl:px-5">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -184,7 +185,7 @@ function UserRowsTable({
               <tr className="border-t border-black/10">
                 <td
                   className="px-5 py-6 text-center font-semibold text-[#6b5f53]"
-                  colSpan={8}
+                  colSpan={5}
                 >
                   No users found.
                 </td>

@@ -88,57 +88,59 @@ function UserRow({ onDelete, onEdit, onToggleStatus, user }: UserRowProps) {
               <Mail className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">{user.email}</span>
             </span>
+            <span
+              className="mt-1 block truncate text-xs font-semibold text-[#6b5f53]"
+              title={user.phone || 'No phone'}
+            >
+              {user.phone || 'No phone'}
+            </span>
           </span>
         </div>
       </td>
       <td className="px-3 py-4 2xl:px-5">
-        <span
-          className={`inline-flex max-w-full min-h-8 items-center px-2 text-xs font-bold 2xl:px-3 ${
-            isAdmin ? 'bg-[#181512] text-white' : 'bg-[#f8f3ea] text-[#7a3f1d]'
-          }`}
-        >
-          <span className="truncate">{formatRole(user.role)}</span>
-        </span>
-      </td>
-      <td className="px-3 py-4 2xl:px-5">
-        <span
-          className={`inline-flex max-w-full min-h-8 items-center px-2 text-xs font-bold 2xl:px-3 ${
-            isBlocked
-              ? 'bg-[#fff5ef] text-[#8f3f1d]'
-              : 'bg-[#effaf3] text-[#1f6b43]'
-          }`}
-        >
-          <span className="truncate">{formatStatus(user.status)}</span>
-        </span>
-      </td>
-      <td
-        className="truncate px-3 py-4 text-[#6b5f53] 2xl:px-5"
-        title={user.phone || 'No phone'}
-      >
-        {user.phone || 'No phone'}
-      </td>
-      <td className="min-w-0 px-3 py-4 text-[#6b5f53] 2xl:px-5">
-        {user.city ? (
-          <span className="inline-flex min-w-0 max-w-full items-center gap-1">
-            <MapPin className="h-4 w-4 shrink-0 text-[#7a3f1d]" />
-            <span className="truncate" title={user.city}>
-              {user.city}
-            </span>
+        <div className="grid justify-start gap-1.5">
+          <span
+            className={`inline-flex max-w-full min-h-6 items-center px-2 text-xs font-bold 2xl:px-3 ${
+              isAdmin
+                ? 'bg-[#181512] text-white'
+                : 'bg-[#f8f3ea] text-[#7a3f1d]'
+            }`}
+          >
+            <span className="truncate">{formatRole(user.role)}</span>
           </span>
-        ) : (
-          'No city'
-        )}
+          <span
+            className={`inline-flex max-w-full min-h-6 items-center px-2 text-xs font-bold 2xl:px-3 ${
+              isBlocked
+                ? 'bg-[#fff5ef] text-[#8f3f1d]'
+                : 'bg-[#effaf3] text-[#1f6b43]'
+            }`}
+          >
+            <span className="truncate">{formatStatus(user.status)}</span>
+          </span>
+        </div>
       </td>
       <td className="min-w-0 px-3 py-4 text-[#6b5f53] 2xl:px-5">
-        <span className="line-clamp-2" title={user.address || 'No address'}>
-          {user.address || 'No address'}
-        </span>
+        <div className="grid min-w-0 gap-1">
+          {user.city ? (
+            <span className="inline-flex min-w-0 max-w-full items-center gap-1">
+              <MapPin className="h-4 w-4 shrink-0 text-[#7a3f1d]" />
+              <span className="truncate" title={user.city}>
+                {user.city}
+              </span>
+            </span>
+          ) : (
+            <span>No city</span>
+          )}
+          <span className="line-clamp-2" title={user.address || 'No address'}>
+            {user.address || 'No address'}
+          </span>
+        </div>
       </td>
-      <td className="truncate px-3 py-4 text-[#6b5f53] 2xl:px-5">
+      <td className="truncate px-3 py-4 text-center text-[#6b5f53] 2xl:px-5">
         {formatDate(user.createdAt)}
       </td>
-      <td className="px-3 py-4 2xl:px-5">
-        <div className="relative flex" ref={menuRef}>
+      <td className="px-3 py-4 text-center 2xl:px-5">
+        <div className="relative flex justify-center" ref={menuRef}>
           <button
             aria-expanded={isMenuOpen}
             aria-haspopup="menu"
@@ -152,7 +154,7 @@ function UserRow({ onDelete, onEdit, onToggleStatus, user }: UserRowProps) {
 
           {isMenuOpen ? (
             <div
-              className="absolute right-0 top-10 z-30 min-w-40 border border-black/10 bg-white p-1 shadow-[0_18px_38px_rgba(24,21,18,0.16)]"
+              className="absolute right-0 top-10 z-30 min-w-40 border border-black/10 bg-white p-1 text-left shadow-[0_18px_38px_rgba(24,21,18,0.16)]"
               role="menu"
             >
               <button
