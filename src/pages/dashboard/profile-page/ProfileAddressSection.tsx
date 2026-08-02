@@ -21,6 +21,8 @@ type ProfileAddressSectionProps = {
   isAdminProfile: boolean
 }
 
+const addressLabelOptions = ['Home', 'Office'] as const
+
 function ProfileAddressSection({
   fieldClass,
   isAdminProfile,
@@ -49,6 +51,11 @@ function ProfileAddressSection({
   const { data: zones = [] } = useGetZonesQuery(formState.districtId, {
     skip: !formState.districtId,
   })
+  const selectedLabelOption = addressLabelOptions.includes(
+    formState.label as (typeof addressLabelOptions)[number],
+  )
+    ? formState.label
+    : 'Other'
 
   const [pendingConfirm, setPendingConfirm] = useState<
     'save' | 'delete' | 'setDefault' | null
@@ -315,15 +322,36 @@ function ProfileAddressSection({
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1 text-xs font-bold">
                   Label (e.g. Home, Office)
-                  <input
+                  <select
                     className={fieldClass}
                     onChange={(e) =>
-                      setFormState({ ...formState, label: e.target.value })
+                      setFormState({
+                        ...formState,
+                        label:
+                          e.target.value === 'Other' ? '' : e.target.value,
+                      })
                     }
                     required
-                    type="text"
-                    value={formState.label}
-                  />
+                    value={selectedLabelOption}
+                  >
+                    {addressLabelOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                    <option value="Other">Other</option>
+                  </select>
+                  {selectedLabelOption === 'Other' ? (
+                    <input
+                      className={fieldClass}
+                      onChange={(e) =>
+                        setFormState({ ...formState, label: e.target.value })
+                      }
+                      required
+                      type="text"
+                      value={formState.label}
+                    />
+                  ) : null}
                 </label>
                 <label className="grid gap-1 text-xs font-bold">
                   Recipient Name
