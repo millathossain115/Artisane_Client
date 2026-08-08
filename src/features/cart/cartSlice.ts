@@ -26,12 +26,13 @@ export type CartState = {
 }
 
 const CART_STORAGE_KEY = 'artisane_cart'
+const GUEST_CART_STORAGE_KEY = `${CART_STORAGE_KEY}:guest`
 
 function getCartStorageKey() {
   const user = getStoredUser()
   const userKey = user?._id || user?.email
 
-  return userKey ? `${CART_STORAGE_KEY}:${userKey}` : `${CART_STORAGE_KEY}:guest`
+  return userKey ? `${CART_STORAGE_KEY}:${userKey}` : GUEST_CART_STORAGE_KEY
 }
 
 function getProductCategory(product: Product) {
@@ -145,11 +146,68 @@ function readCartState(storageKey: string): CartState {
   }
 }
 
+function mergeCartItems(primaryItems: CartItem[], incomingItems: CartItem[]) {
+  const itemsById = new Map<string, CartItem>()
+
+  primaryItems.forEach((item) => {
+    itemsById.set(item.id, item)
+  })
+
+  incomingItems.forEach((incomingItem) => {
+    const existingItem = itemsById.get(incomingItem.id)
+
+    if (!existingItem) {
+      itemsById.set(incomingItem.id, incomingItem)
+      return
+    }
+
+    itemsById.set(incomingItem.id, {
+      ...existingItem,
+      quantity: clampQuantity(
+        existingItem.quantity + incomingItem.quantity,
+        existingItem.stock,
+      ),
+    })
+  })
+
+  return Array.from(itemsById.values())
+}
+
+function loadCartStateForCurrentUser(): CartState {
+  const storageKey = getCartStorageKey()
+  const userCartState = readCartState(storageKey)
+
+  if (storageKey === GUEST_CART_STORAGE_KEY) {
+    return userCartState
+  }
+
+  const guestCartState = readCartState(GUEST_CART_STORAGE_KEY)
+
+  if (!guestCartState.items.length) {
+    return userCartState
+  }
+
+  const mergedItems = mergeCartItems(userCartState.items, guestCartState.items)
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify({ items: mergedItems }),
+    )
+    window.localStorage.removeItem(GUEST_CART_STORAGE_KEY)
+  }
+
+  return {
+    feedback: null,
+    items: mergedItems,
+  }
+}
+
 export function loadCartState(): CartState {
   const storageKey = getCartStorageKey()
   const cartState = readCartState(storageKey)
 
-  if (cartState.items.length || storageKey !== `${CART_STORAGE_KEY}:guest`) {
+  if (cartState.items.length || storageKey !== GUEST_CART_STORAGE_KEY) {
     return cartState
   }
 
@@ -276,7 +334,7 @@ const cartSlice = createSlice({
       item.quantity = clampQuantity(action.payload.quantity, item.stock)
     },
     syncCartForCurrentUser: (state) => {
-      const nextCart = loadCartState()
+      const nextCart = loadCartStateForCurrentUser()
 
       state.feedback = null
       state.items = nextCart.items
