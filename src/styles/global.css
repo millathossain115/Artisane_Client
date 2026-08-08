@@ -53,6 +53,25 @@ input {
   border-radius: 2px;
 }
 
+button {
+  touch-action: manipulation;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :where(button:enabled) {
+    transition-property:
+      transform, box-shadow, background-color, border-color, color, opacity,
+      filter;
+    transition-duration: 140ms;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+:where(button:enabled):active {
+  transform: translateY(1px) scale(0.985);
+  filter: brightness(0.96);
+}
+
 .btn-primary {
   display: inline-flex;
   align-items: center;
